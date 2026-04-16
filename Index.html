@@ -869,13 +869,13 @@
         ? themes.join(" • ")
         : "Trilha completa";
 
-      const nameSize = width > height ? 24 : 20;
-      const topicsSize = width > height ? 7 : 6;
+      const nameSize = width > height ? 24 : 19;
+      const topicsSize = width > height ? 7 : 5.5;
       const titleWidth = fontBold.widthOfTextAtSize(name, nameSize);
 
       page.drawText(name, {
         x: (width - titleWidth) / 2,
-        y: height * 0.405,
+        y: height * 0.545,
         size: nameSize,
         font: fontBold,
         color: rgb(0.15, 0.15, 0.15)
@@ -886,7 +886,7 @@
         const lineWidth = font.widthOfTextAtSize(line, topicsSize);
         page.drawText(line, {
           x: (width - lineWidth) / 2,
-          y: height * 0.355 - (index * (topicsSize + 4)),
+          y: height * 0.485 - (index * (topicsSize + 5)),
           size: topicsSize,
           font,
           color: rgb(0.22, 0.22, 0.22)
