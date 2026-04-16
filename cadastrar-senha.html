@@ -392,6 +392,8 @@
     const modalShell = document.getElementById("mba-modal-shell");
     const modalContinue = document.getElementById("modal-continue");
     const choiceButtons = Array.from(document.querySelectorAll("[data-choice]"));
+    const ATTR_STORAGE_KEY = "fundace_trilha_attribution";
+    const ATTR_STORAGE_EMAIL_PREFIX = "fundace_trilha_attribution:";
 
     const offerState = {
       needsPopup: false,
@@ -407,6 +409,109 @@
     }
 
     if (!emailParam) window.location.href = "./captacao.html";
+
+    function readCookie(name) {
+      const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const match = document.cookie.match(new RegExp(`(?:^|; )${escapedName}=([^;]*)`));
+      return match ? decodeURIComponent(match[1]) : "";
+    }
+
+    function mergeAttribution(base, overlay) {
+      const merged = { ...(base || {}) };
+      Object.entries(overlay || {}).forEach(([key, value]) => {
+        if (value !== null && value !== undefined && value !== "") {
+          merged[key] = value;
+        }
+      });
+      return merged;
+    }
+
+    function generatePseudoClientId() {
+      const now = Date.now();
+      const random = Math.floor(Math.random() * 1e9);
+      return `${now}.${random}`;
+    }
+
+    function getOrCreateGaClientId() {
+      const gaCookie = readCookie("_ga");
+      if (gaCookie) {
+        const parts = gaCookie.split(".");
+        if (parts.length >= 4) {
+          return `${parts[2]}.${parts[3]}`;
+        }
+      }
+
+      const storageKey = "fundace_ga_client_id";
+      const existing = localStorage.getItem(storageKey);
+      if (existing) return existing;
+
+      const generated = generatePseudoClientId();
+      localStorage.setItem(storageKey, generated);
+      return generated;
+    }
+
+    function getOrCreateGaSessionId() {
+      const storageKey = "fundace_ga_session_id";
+      const existing = sessionStorage.getItem(storageKey);
+      if (existing) return existing;
+
+      const generated = String(Math.floor(Date.now() / 1000));
+      sessionStorage.setItem(storageKey, generated);
+      return generated;
+    }
+
+    function buildDerivedFbc(fbclid) {
+      if (!fbclid) return "";
+      return `fb.1.${Date.now()}.${fbclid}`;
+    }
+
+    function readStoredAttribution() {
+      const sources = [
+        localStorage.getItem(`${ATTR_STORAGE_EMAIL_PREFIX}${emailParam.toLowerCase()}`),
+        localStorage.getItem(ATTR_STORAGE_KEY),
+      ].filter(Boolean);
+
+      for (const source of sources) {
+        try {
+          return JSON.parse(source);
+        } catch {
+          continue;
+        }
+      }
+
+      return {};
+    }
+
+    function buildAttributionSnapshot() {
+      const url = new URL(window.location.href);
+      const query = url.searchParams;
+      const stored = readStoredAttribution();
+      const fbclid = query.get("fbclid") || stored.fbclid || "";
+      const fbp = readCookie("_fbp") || stored.fbp || localStorage.getItem("fundace_fbp") || "";
+      const fbc = readCookie("_fbc") || stored.fbc || localStorage.getItem("fundace_fbc") || buildDerivedFbc(fbclid);
+
+      const snapshot = mergeAttribution(stored, {
+        utm_source: query.get("utm_source") || stored.utm_source || "",
+        utm_medium: query.get("utm_medium") || stored.utm_medium || "",
+        utm_campaign: query.get("utm_campaign") || stored.utm_campaign || "",
+        utm_term: query.get("utm_term") || stored.utm_term || "",
+        utm_content: query.get("utm_content") || stored.utm_content || "",
+        gclid: query.get("gclid") || stored.gclid || "",
+        fbclid,
+        fbp,
+        fbc,
+        landing_page_url: stored.landing_page_url || window.location.href,
+        page_url: window.location.href,
+        referrer_url: document.referrer || stored.referrer_url || "",
+        ga_client_id: stored.ga_client_id || getOrCreateGaClientId(),
+        ga_session_id: stored.ga_session_id || getOrCreateGaSessionId(),
+        captured_at: stored.captured_at || new Date().toISOString(),
+      });
+
+      localStorage.setItem(ATTR_STORAGE_KEY, JSON.stringify(snapshot));
+      localStorage.setItem(`${ATTR_STORAGE_EMAIL_PREFIX}${emailParam.toLowerCase()}`, JSON.stringify(snapshot));
+      return snapshot;
+    }
 
     function updateStrength() {
       const val = pwdInput.value;
@@ -472,6 +577,51 @@
       modalShell.setAttribute("aria-hidden", "true");
     }
 
+    async function syncLeadToPloomes() {
+      try {
+        const response = await fetch(`${window.SUPABASE_CONFIG.url}/functions/v1/ploomes-sync-lead`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: window.SUPABASE_CONFIG.anonKey,
+            Authorization: `Bearer ${window.SUPABASE_CONFIG.anonKey}`
+          },
+          body: JSON.stringify({ email: emailParam })
+        });
+
+        if (!response.ok) {
+          const result = await response.json().catch(() => ({}));
+          console.error("Erro ao sincronizar lead no Ploomes:", result.error || response.statusText);
+        }
+      } catch (error) {
+        console.error("Falha ao chamar integração com Ploomes:", error);
+      }
+    }
+
+    async function trackQualifiedLead() {
+      try {
+        const response = await fetch(`${window.SUPABASE_CONFIG.url}/functions/v1/qualified-lead-tracking`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: window.SUPABASE_CONFIG.anonKey,
+            Authorization: `Bearer ${window.SUPABASE_CONFIG.anonKey}`
+          },
+          body: JSON.stringify({
+            email: emailParam,
+            attribution: buildAttributionSnapshot()
+          })
+        });
+
+        if (!response.ok) {
+          const result = await response.json().catch(() => ({}));
+          console.error("Erro ao enviar evento qualificado:", result.error || response.statusText);
+        }
+      } catch (error) {
+        console.error("Falha ao chamar tracking server-side:", error);
+      }
+    }
+
     async function saveOfferChoice() {
       const wantsConsultor = offerState.selectedChoice === "sim";
 
@@ -483,6 +633,13 @@
 
       if (error) {
         throw error;
+      }
+
+      if (wantsConsultor) {
+        await Promise.allSettled([
+          syncLeadToPloomes(),
+          trackQualifiedLead()
+        ]);
       }
 
       offerState.resolved = true;

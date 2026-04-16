@@ -15,6 +15,29 @@ alter table public.leads
   add column if not exists empresa text,
   add column if not exists cargo text,
   add column if not exists pretende_pos text,
+  add column if not exists utm_source text,
+  add column if not exists utm_medium text,
+  add column if not exists utm_campaign text,
+  add column if not exists utm_term text,
+  add column if not exists utm_content text,
+  add column if not exists gclid text,
+  add column if not exists fbclid text,
+  add column if not exists landing_page_url text,
+  add column if not exists referrer_url text,
+  add column if not exists activecampaign_contact_id text,
+  add column if not exists activecampaign_list_id text,
+  add column if not exists activecampaign_sync_status text not null default 'pending',
+  add column if not exists activecampaign_synced_at timestamptz,
+  add column if not exists activecampaign_last_attempt_at timestamptz,
+  add column if not exists activecampaign_sync_error text,
+  add column if not exists ploomes_contact_id text,
+  add column if not exists ploomes_deal_id text,
+  add column if not exists ploomes_pipeline_id text,
+  add column if not exists ploomes_stage_id text,
+  add column if not exists ploomes_sync_status text not null default 'pending',
+  add column if not exists ploomes_synced_at timestamptz,
+  add column if not exists ploomes_last_attempt_at timestamptz,
+  add column if not exists ploomes_sync_error text,
   add column if not exists mba_offer_shown_at timestamptz,
   add column if not exists mba_offer_acknowledged boolean not null default false,
   add column if not exists consultor_contact_opt_in boolean,
@@ -47,7 +70,11 @@ alter table public.leads
   alter column area_formacao set not null,
   alter column empresa set not null,
   alter column cargo set not null,
-  alter column pretende_pos set not null;
+  alter column pretende_pos set not null,
+  alter column activecampaign_sync_status set default 'pending',
+  alter column activecampaign_sync_status set not null,
+  alter column ploomes_sync_status set default 'pending',
+  alter column ploomes_sync_status set not null;
 
 do $$
 begin
@@ -71,6 +98,28 @@ begin
       add constraint leads_pretende_pos_check
       check (pretende_pos in ('sim_agora', 'sim_depois', 'nao'));
   end if;
+
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'leads_activecampaign_sync_status_check'
+      and conrelid = 'public.leads'::regclass
+  ) then
+    alter table public.leads
+      add constraint leads_activecampaign_sync_status_check
+      check (activecampaign_sync_status in ('pending', 'synced', 'error'));
+  end if;
+
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'leads_ploomes_sync_status_check'
+      and conrelid = 'public.leads'::regclass
+  ) then
+    alter table public.leads
+      add constraint leads_ploomes_sync_status_check
+      check (ploomes_sync_status in ('pending', 'synced', 'error'));
+  end if;
 end $$;
 
 alter table public.leads enable row level security;
@@ -86,7 +135,16 @@ create or replace function public.capture_lead(
   p_area_formacao text,
   p_empresa text,
   p_cargo text,
-  p_pretende_pos text
+  p_pretende_pos text,
+  p_utm_source text default null,
+  p_utm_medium text default null,
+  p_utm_campaign text default null,
+  p_utm_term text default null,
+  p_utm_content text default null,
+  p_gclid text default null,
+  p_fbclid text default null,
+  p_landing_page_url text default null,
+  p_referrer_url text default null
 )
 returns public.leads
 language plpgsql
@@ -102,6 +160,15 @@ declare
   v_empresa text := trim(coalesce(p_empresa, ''));
   v_cargo text := trim(coalesce(p_cargo, ''));
   v_pretende_pos text := trim(coalesce(p_pretende_pos, ''));
+  v_utm_source text := nullif(trim(coalesce(p_utm_source, '')), '');
+  v_utm_medium text := nullif(trim(coalesce(p_utm_medium, '')), '');
+  v_utm_campaign text := nullif(trim(coalesce(p_utm_campaign, '')), '');
+  v_utm_term text := nullif(trim(coalesce(p_utm_term, '')), '');
+  v_utm_content text := nullif(trim(coalesce(p_utm_content, '')), '');
+  v_gclid text := nullif(trim(coalesce(p_gclid, '')), '');
+  v_fbclid text := nullif(trim(coalesce(p_fbclid, '')), '');
+  v_landing_page_url text := nullif(trim(coalesce(p_landing_page_url, '')), '');
+  v_referrer_url text := nullif(trim(coalesce(p_referrer_url, '')), '');
   v_lead public.leads;
 begin
   if v_nome = '' then
@@ -145,7 +212,16 @@ begin
     area_formacao,
     empresa,
     cargo,
-    pretende_pos
+    pretende_pos,
+    utm_source,
+    utm_medium,
+    utm_campaign,
+    utm_term,
+    utm_content,
+    gclid,
+    fbclid,
+    landing_page_url,
+    referrer_url
   )
   values (
     v_nome,
@@ -156,7 +232,16 @@ begin
     v_area_formacao,
     v_empresa,
     v_cargo,
-    v_pretende_pos
+    v_pretende_pos,
+    v_utm_source,
+    v_utm_medium,
+    v_utm_campaign,
+    v_utm_term,
+    v_utm_content,
+    v_gclid,
+    v_fbclid,
+    v_landing_page_url,
+    v_referrer_url
   )
   on conflict (email) do update
   set
@@ -167,15 +252,24 @@ begin
     area_formacao = excluded.area_formacao,
     empresa = excluded.empresa,
     cargo = excluded.cargo,
-    pretende_pos = excluded.pretende_pos
+    pretende_pos = excluded.pretende_pos,
+    utm_source = coalesce(excluded.utm_source, public.leads.utm_source),
+    utm_medium = coalesce(excluded.utm_medium, public.leads.utm_medium),
+    utm_campaign = coalesce(excluded.utm_campaign, public.leads.utm_campaign),
+    utm_term = coalesce(excluded.utm_term, public.leads.utm_term),
+    utm_content = coalesce(excluded.utm_content, public.leads.utm_content),
+    gclid = coalesce(excluded.gclid, public.leads.gclid),
+    fbclid = coalesce(excluded.fbclid, public.leads.fbclid),
+    landing_page_url = coalesce(excluded.landing_page_url, public.leads.landing_page_url),
+    referrer_url = coalesce(excluded.referrer_url, public.leads.referrer_url)
   returning * into v_lead;
 
   return v_lead;
 end;
 $$;
 
-revoke all on function public.capture_lead(text, text, text, text, boolean, text, text, text, text) from public;
-grant execute on function public.capture_lead(text, text, text, text, boolean, text, text, text, text) to anon, authenticated;
+revoke all on function public.capture_lead(text, text, text, text, boolean, text, text, text, text, text, text, text, text, text, text, text, text, text) from public;
+grant execute on function public.capture_lead(text, text, text, text, boolean, text, text, text, text, text, text, text, text, text, text, text, text, text) to anon, authenticated;
 
 create or replace function public.get_lead_offer_context(
   p_email text
@@ -257,3 +351,101 @@ $$;
 
 revoke all on function public.record_lead_offer_response(text, boolean, boolean) from public;
 grant execute on function public.record_lead_offer_response(text, boolean, boolean) to anon, authenticated;
+
+create or replace function public.update_lead_activecampaign_sync(
+  p_email text,
+  p_contact_id text default null,
+  p_list_id text default null,
+  p_status text default 'synced',
+  p_error text default null
+)
+returns public.leads
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_email citext := lower(trim(coalesce(p_email, '')));
+  v_status text := lower(trim(coalesce(p_status, '')));
+  v_lead public.leads;
+begin
+  if v_email = '' then
+    raise exception 'E-mail é obrigatório.';
+  end if;
+
+  if v_status not in ('pending', 'synced', 'error') then
+    raise exception 'Status inválido para ActiveCampaign.';
+  end if;
+
+  update public.leads
+  set
+    activecampaign_contact_id = nullif(trim(coalesce(p_contact_id, '')), ''),
+    activecampaign_list_id = nullif(trim(coalesce(p_list_id, '')), ''),
+    activecampaign_sync_status = v_status,
+    activecampaign_last_attempt_at = now(),
+    activecampaign_synced_at = case when v_status = 'synced' then now() else activecampaign_synced_at end,
+    activecampaign_sync_error = case when v_status = 'error' then left(coalesce(p_error, 'Erro desconhecido.'), 1000) else null end
+  where email = v_email
+  returning * into v_lead;
+
+  if v_lead.id is null then
+    raise exception 'Lead não encontrado.';
+  end if;
+
+  return v_lead;
+end;
+$$;
+
+revoke all on function public.update_lead_activecampaign_sync(text, text, text, text, text) from public;
+grant execute on function public.update_lead_activecampaign_sync(text, text, text, text, text) to anon, authenticated;
+
+create or replace function public.update_lead_ploomes_sync(
+  p_email text,
+  p_contact_id text default null,
+  p_deal_id text default null,
+  p_pipeline_id text default null,
+  p_stage_id text default null,
+  p_status text default 'synced',
+  p_error text default null
+)
+returns public.leads
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_email citext := lower(trim(coalesce(p_email, '')));
+  v_status text := lower(trim(coalesce(p_status, '')));
+  v_lead public.leads;
+begin
+  if v_email = '' then
+    raise exception 'E-mail é obrigatório.';
+  end if;
+
+  if v_status not in ('pending', 'synced', 'error') then
+    raise exception 'Status inválido para Ploomes.';
+  end if;
+
+  update public.leads
+  set
+    ploomes_contact_id = nullif(trim(coalesce(p_contact_id, '')), ''),
+    ploomes_deal_id = nullif(trim(coalesce(p_deal_id, '')), ''),
+    ploomes_pipeline_id = nullif(trim(coalesce(p_pipeline_id, '')), ''),
+    ploomes_stage_id = nullif(trim(coalesce(p_stage_id, '')), ''),
+    ploomes_sync_status = v_status,
+    ploomes_last_attempt_at = now(),
+    ploomes_synced_at = case when v_status = 'synced' then now() else ploomes_synced_at end,
+    ploomes_sync_error = case when v_status = 'error' then left(coalesce(p_error, 'Erro desconhecido.'), 1000) else null end
+  where email = v_email
+  returning * into v_lead;
+
+  if v_lead.id is null then
+    raise exception 'Lead não encontrado.';
+  end if;
+
+  return v_lead;
+end;
+$$;
+
+revoke all on function public.update_lead_ploomes_sync(text, text, text, text, text, text, text) from public;
+grant execute on function public.update_lead_ploomes_sync(text, text, text, text, text, text, text) to anon, authenticated;
