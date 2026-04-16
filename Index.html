@@ -869,24 +869,24 @@
         ? themes.join(" • ")
         : "Trilha completa";
 
-      const nameSize = width > height ? 28 : 22;
-      const topicsSize = width > height ? 10 : 9;
+      const nameSize = width > height ? 26 : 21;
+      const topicsSize = width > height ? 8 : 7;
       const titleWidth = fontBold.widthOfTextAtSize(name, nameSize);
 
       page.drawText(name, {
         x: (width - titleWidth) / 2,
-        y: height * 0.36,
+        y: height * 0.34,
         size: nameSize,
         font: fontBold,
         color: rgb(0.15, 0.15, 0.15)
       });
 
-      const topicLines = wrapCertificateText(themesLabel, width > height ? 72 : 46).slice(0, 3);
+      const topicLines = wrapCertificateText(themesLabel, width > height ? 58 : 38).slice(0, 2);
       topicLines.forEach((line, index) => {
         const lineWidth = font.widthOfTextAtSize(line, topicsSize);
         page.drawText(line, {
           x: (width - lineWidth) / 2,
-          y: height * 0.30 - (index * (topicsSize + 5)),
+          y: height * 0.275 - (index * (topicsSize + 4)),
           size: topicsSize,
           font,
           color: rgb(0.22, 0.22, 0.22)
