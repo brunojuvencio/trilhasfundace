@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nova senha | Trilha IFRS Fundace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --yellow: #feb737;
+      --black: #080808;
+      --white: #ffffff;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Inter", sans-serif;
+      background: var(--black);
+      min-height: 100vh;
+      display: grid; place-items: center;
+      padding: 24px; position: relative; overflow: hidden;
+    }
+    body::before {
+      content: ""; position: fixed; inset: 0; pointer-events: none;
+      background: radial-gradient(ellipse 55% 60% at 50% 100%, rgba(254,183,55,0.08) 0%, transparent 60%);
+    }
+    .card {
+      width: 100%; max-width: 440px; position: relative; z-index: 1;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 28px; padding: 44px 40px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 32px 80px rgba(0,0,0,0.4);
+    }
+    .logo-wrap { text-align: center; margin-bottom: 28px; }
+    .logo-wrap img { height: 28px; width: auto; filter: brightness(0) invert(1); opacity: 0.85; display: inline-block; }
+    .card-title {
+      font-size: 1.5rem; font-weight: 600; color: var(--white);
+      letter-spacing: -0.03em; text-align: center; margin-bottom: 8px;
+    }
+    .card-sub {
+      font-size: 0.88rem; color: rgba(255,255,255,0.44);
+      text-align: center; line-height: 1.6; margin-bottom: 28px;
+    }
+    .info-note {
+      margin-top: -8px; margin-bottom: 20px;
+      font-size: 0.77rem; line-height: 1.6; text-align: center;
+      color: rgba(255,255,255,0.34);
+    }
+    .form-grid { display: grid; gap: 16px; }
+    .field { display: grid; gap: 7px; }
+    .field label {
+      font-size: 0.8rem; font-weight: 600;
+      color: rgba(255,255,255,0.6); letter-spacing: 0.02em;
+    }
+    .field input {
+      width: 100%; padding: 13px 16px;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px; font: inherit; font-size: 0.94rem;
+      color: var(--white);
+    }
+    .field input:focus {
+      outline: none; border-color: rgba(254,183,55,0.6);
+      background: rgba(255,255,255,0.09);
+      box-shadow: 0 0 0 3px rgba(254,183,55,0.12);
+    }
+    .submit-btn {
+      width: 100%; padding: 15px 20px; border: none; border-radius: 14px;
+      background: var(--yellow); color: var(--black);
+      font: inherit; font-size: 0.95rem; font-weight: 700; cursor: pointer;
+      box-shadow: 0 8px 28px rgba(254,183,55,0.32);
+    }
+    .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .msg-box {
+      padding: 12px 16px; border-radius: 12px; font-size: 0.86rem;
+      font-weight: 600; display: none; text-align: center;
+    }
+    .msg-box.success {
+      background: rgba(22,120,55,0.15); border: 1px solid rgba(22,120,55,0.3);
+      color: #4ade80; display: block;
+    }
+    .msg-box.error-msg {
+      background: rgba(220,60,60,0.12); border: 1px solid rgba(220,60,60,0.28);
+      color: #f87171; display: block;
+    }
+    .card-footer {
+      margin-top: 22px; text-align: center;
+      font-size: 0.82rem; color: rgba(255,255,255,0.36); line-height: 1.8;
+    }
+    .card-footer a { color: rgba(254,183,55,0.8); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo-wrap">
+      <img src="./Logo Fundace-USP-FEARP-PRETO.png" alt="Fundace FEA-RP USP">
+    </div>
+
+    <h1 class="card-title">Defina sua nova senha</h1>
+    <p class="card-sub">Escolha uma nova senha para voltar a acessar a trilha com segurança.</p>
+    <p class="info-note">Use o link mais recente enviado para o seu e-mail. Se ele tiver expirado, solicite uma nova redefinição.</p>
+
+    <form id="update-form" class="form-grid" novalidate>
+      <div class="field">
+        <label for="password">Nova senha</label>
+        <input id="password" type="password" placeholder="Mínimo 6 caracteres" autocomplete="new-password" required>
+      </div>
+
+      <div class="field">
+        <label for="confirm">Confirmar nova senha</label>
+        <input id="confirm" type="password" placeholder="Repita a nova senha" autocomplete="new-password" required>
+      </div>
+
+      <div class="msg-box" id="msg-box"></div>
+
+      <button type="submit" class="submit-btn" id="submit-btn">Salvar nova senha</button>
+    </form>
+
+    <div class="card-footer">
+      <a href="./login.html">Voltar para o login</a>
+    </div>
+  </div>
+
+  <script src="./supabase/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const { createClient } = supabase;
+    const db = createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
+
+    const form = document.getElementById("update-form");
+    const msgBox = document.getElementById("msg-box");
+    const submitBtn = document.getElementById("submit-btn");
+
+    db.auth.getSession().then(({ data: { session } }) => {
+      if (!session && !window.location.hash.includes("access_token")) {
+        msgBox.className = "msg-box error-msg";
+        msgBox.textContent = "Abra este link a partir do e-mail de recuperação.";
+      }
+    });
+
+    form.addEventListener("submit", async event => {
+      event.preventDefault();
+      msgBox.className = "msg-box";
+      msgBox.textContent = "";
+
+      const password = document.getElementById("password").value;
+      const confirm = document.getElementById("confirm").value;
+
+      if (password.length < 6) {
+        msgBox.className = "msg-box error-msg";
+        msgBox.textContent = "A senha deve ter ao menos 6 caracteres.";
+        return;
+      }
+
+      if (password !== confirm) {
+        msgBox.className = "msg-box error-msg";
+        msgBox.textContent = "As senhas não coincidem.";
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Salvando...";
+
+      const { error } = await db.auth.updateUser({ password });
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Salvar nova senha";
+
+      if (error) {
+        msgBox.className = "msg-box error-msg";
+        msgBox.textContent = "Não foi possível atualizar a senha. Solicite um novo link.";
+        return;
+      }
+
+      window.location.href = "./login.html?reset=done";
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,580 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crie sua senha | Trilha IFRS Fundace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --yellow: #feb737;
+      --yellow-soft: rgba(254, 183, 55, 0.14);
+      --black: #080808;
+      --white: #ffffff;
+      --muted: rgba(255,255,255,0.54);
+      --line: rgba(255,255,255,0.1);
+      --danger: #f87171;
+      --success: #4ade80;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Manrope", sans-serif;
+      background: var(--black);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      color: var(--white);
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 55% 60% at 50% 100%, rgba(254,183,55,0.08) 0%, transparent 60%),
+        radial-gradient(circle at 10% 20%, rgba(254,183,55,0.08), transparent 20%);
+    }
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.038;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 460px;
+      position: relative;
+      z-index: 1;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      padding: 44px 40px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 32px 80px rgba(0,0,0,0.4);
+      animation: fadeUp 0.45s cubic-bezier(0.22,0.68,0,1.12) both;
+    }
+
+    .logo-wrap { text-align: center; margin-bottom: 28px; }
+    .logo-wrap img { height: 26px; width: auto; filter: brightness(0) invert(1); opacity: 0.86; display: inline-block; }
+
+    .step-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 28px;
+    }
+    .step-dot { width: 28px; height: 4px; border-radius: 999px; }
+    .step-dot.done,
+    .step-dot.active { background: var(--yellow); }
+    .step-dot.pending { background: rgba(255,255,255,0.12); }
+
+    .card-title {
+      font-family: "Fraunces", serif;
+      font-size: 1.9rem;
+      font-weight: 600;
+      color: var(--white);
+      letter-spacing: -0.04em;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .card-sub {
+      font-size: 0.9rem;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.72;
+      margin-bottom: 28px;
+    }
+    .card-sub strong { color: rgba(254,183,55,0.96); font-weight: 700; }
+
+    .form-grid { display: grid; gap: 14px; }
+    .field { display: grid; gap: 7px; }
+    .field label { font-size: 0.78rem; font-weight: 700; color: rgba(255,255,255,0.62); letter-spacing: 0.02em; }
+    .field input {
+      width: 100%;
+      padding: 13px 16px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      font: inherit;
+      font-size: 0.94rem;
+      color: var(--white);
+      transition: border-color 0.16s, background 0.16s, box-shadow 0.16s;
+    }
+    .field input::placeholder { color: rgba(255,255,255,0.26); }
+    .field input:focus {
+      outline: none;
+      border-color: rgba(254,183,55,0.55);
+      background: rgba(255,255,255,0.09);
+      box-shadow: 0 0 0 3px rgba(254,183,55,0.1);
+    }
+    .field-hint { font-size: 0.74rem; color: rgba(255,255,255,0.3); margin-top: 2px; }
+
+    .password-strength { height: 3px; border-radius: 999px; background: rgba(255,255,255,0.08); margin-top: 6px; overflow: hidden; }
+    .password-strength-bar { height: 100%; border-radius: 999px; width: 0; transition: width 0.3s, background 0.3s; }
+
+    .submit-btn,
+    .modal-continue,
+    .choice-button {
+      width: 100%;
+      padding: 15px 20px;
+      border: none;
+      border-radius: 14px;
+      font: inherit;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.18s, box-shadow 0.18s, opacity 0.18s, border-color 0.18s, background 0.18s;
+    }
+    .submit-btn,
+    .modal-continue {
+      background: var(--yellow);
+      color: var(--black);
+      box-shadow: 0 8px 28px rgba(254,183,55,0.32);
+    }
+    .submit-btn:hover:not(:disabled),
+    .modal-continue:hover:not(:disabled),
+    .choice-button:hover { transform: translateY(-2px); }
+    .submit-btn:disabled,
+    .modal-continue:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .msg-box {
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      display: none;
+      text-align: center;
+      line-height: 1.55;
+    }
+    .msg-box.success { background: rgba(22,120,55,0.15); border: 1px solid rgba(22,120,55,0.3); color: var(--success); display: block; }
+    .msg-box.error-msg { background: rgba(220,60,60,0.12); border: 1px solid rgba(220,60,60,0.28); color: var(--danger); display: block; }
+
+    .card-footer {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.34);
+    }
+    .card-footer a { color: rgba(254,183,55,0.78); font-weight: 700; text-decoration: none; }
+
+    .modal-shell {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.72);
+      backdrop-filter: blur(12px);
+      display: none;
+      place-items: center;
+      padding: 24px;
+      z-index: 20;
+    }
+    .modal-shell.open { display: grid; }
+    .modal {
+      width: min(100%, 560px);
+      background: linear-gradient(180deg, rgba(18,18,18,0.99), rgba(8,8,8,0.99));
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 28px;
+      padding: 0 0 36px 0;
+      box-shadow: 0 32px 100px rgba(0,0,0,0.6);
+      overflow: hidden;
+    }
+
+    /* Loading bar */
+    .modal-loader {
+      height: 3px;
+      background: rgba(255,255,255,0.06);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 32px;
+    }
+    .modal-loader-bar {
+      position: absolute; top: 0; left: 0; height: 100%;
+      background: var(--yellow);
+      border-radius: 0 999px 999px 0;
+      animation: loaderFill 2.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+    @keyframes loaderFill {
+      0%   { width: 0%; }
+      40%  { width: 55%; }
+      70%  { width: 78%; }
+      100% { width: 92%; }
+    }
+
+    .modal-inner { padding: 0 32px; }
+
+    .modal-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 7px 13px;
+      border-radius: 999px;
+      background: var(--yellow-soft);
+      color: var(--yellow);
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .modal-eyebrow-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--yellow);
+      animation: blink 1.4s ease-in-out infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .modal h2 {
+      font-family: "Fraunces", serif;
+      font-size: 1.9rem;
+      line-height: 1.05;
+      margin-bottom: 16px;
+      letter-spacing: -0.04em;
+    }
+    .modal p {
+      color: var(--muted);
+      line-height: 1.74;
+      font-size: 0.94rem;
+    }
+    .modal-copy-strong {
+      margin-top: 20px;
+      padding: 18px 20px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.09);
+      color: rgba(255,255,255,0.88);
+      font-size: 0.92rem;
+      line-height: 1.7;
+    }
+    .choice-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .choice-button {
+      background: rgba(255,255,255,0.05);
+      color: var(--white);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    .choice-button.active {
+      background: rgba(254,183,55,0.14);
+      border-color: rgba(254,183,55,0.5);
+      color: var(--yellow);
+    }
+    .modal-footer {
+      margin-top: 24px;
+      display: grid;
+      gap: 10px;
+    }
+    .modal-helper {
+      text-align: center;
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.38);
+      line-height: 1.6;
+    }
+
+    @media (max-width: 560px) {
+      .card { padding: 34px 24px; }
+      .modal { padding: 24px 20px; }
+      .choice-grid { grid-template-columns: 1fr; }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo-wrap">
+      <img src="./Logo Fundace-USP-FEARP-PRETO.png" alt="Fundace FEA-RP USP">
+    </div>
+
+    <div class="step-indicator">
+      <div class="step-dot done"></div>
+      <div class="step-dot active"></div>
+      <div class="step-dot pending"></div>
+    </div>
+
+    <h1 class="card-title">Crie sua senha de acesso</h1>
+    <p class="card-sub" id="card-sub">Quase lá. Defina sua senha para entrar na trilha gratuita.</p>
+
+    <form id="senha-form" class="form-grid" novalidate>
+      <div class="field">
+        <label for="email">E-mail</label>
+        <input id="email" type="email" readonly style="opacity:0.55; cursor:default;">
+      </div>
+
+      <div class="field">
+        <label for="password">Crie uma senha</label>
+        <input id="password" type="password" placeholder="Mínimo 6 caracteres" autocomplete="new-password" required>
+        <div class="password-strength"><div class="password-strength-bar" id="strength-bar"></div></div>
+        <span class="field-hint" id="strength-label"></span>
+      </div>
+
+      <div class="field">
+        <label for="confirm">Confirme a senha</label>
+        <input id="confirm" type="password" placeholder="Repita a senha" autocomplete="new-password" required>
+      </div>
+
+      <div class="msg-box" id="msg-box"></div>
+
+      <button type="submit" class="submit-btn" id="submit-btn">Acessar a trilha</button>
+    </form>
+
+    <div class="card-footer">
+      <a href="./captacao.html">← Voltar ao início</a>
+    </div>
+  </div>
+
+  <div class="modal-shell" id="mba-modal-shell" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mba-modal-title">
+
+      <div class="modal-loader">
+        <div class="modal-loader-bar"></div>
+      </div>
+
+      <div class="modal-inner">
+        <div class="modal-eyebrow">
+          <span class="modal-eyebrow-dot"></span>
+          Enquanto criamos seu acesso
+        </div>
+        <h2 id="mba-modal-title">A trilha é o começo. O que vem depois pode mudar sua carreira.</h2>
+        <p>Profissionais que dominam IFRS de verdade costumam querer ir além de uma introdução. O MBA USP Contabilidade em IFRS é o programa completo — professores da FEA-RP/USP, certificado USP e aplicação real das normas internacionais.</p>
+        <div class="modal-copy-strong">
+          O programa tem investimento médio de <strong>R$ 500 por mês</strong>. Se quiser entender a estrutura e o formato, nosso time explica — sem compromisso.
+        </div>
+        <div class="choice-grid">
+          <button type="button" class="choice-button" data-choice="sim">Quero conhecer o programa</button>
+          <button type="button" class="choice-button" data-choice="nao">Agora não, obrigado</button>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="modal-continue" id="modal-continue" disabled>Acessar minha trilha gratuita</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="./supabase/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const { createClient } = supabase;
+    const db = createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
+
+    db.auth.getSession().then(({ data: { session } }) => {
+      if (session) window.location.href = "./Index.html";
+    });
+
+    const params = new URLSearchParams(window.location.search);
+    const emailParam = (params.get("email") || "").trim();
+    const nomeParam = (params.get("nome") || "").trim();
+
+    const emailInput = document.getElementById("email");
+    const cardSub = document.getElementById("card-sub");
+    const pwdInput = document.getElementById("password");
+    const strengthBar = document.getElementById("strength-bar");
+    const strengthLbl = document.getElementById("strength-label");
+    const form = document.getElementById("senha-form");
+    const submitBtn = document.getElementById("submit-btn");
+    const msgBox = document.getElementById("msg-box");
+    const modalShell = document.getElementById("mba-modal-shell");
+    const modalContinue = document.getElementById("modal-continue");
+    const choiceButtons = Array.from(document.querySelectorAll("[data-choice]"));
+
+    const offerState = {
+      needsPopup: false,
+      resolved: false,
+      selectedChoice: null,
+      leadContext: null,
+    };
+
+    emailInput.value = emailParam;
+
+    if (nomeParam) {
+      cardSub.innerHTML = `Olá, <strong>${nomeParam.split(" ")[0]}</strong>. Defina sua senha para entrar na trilha gratuita.`;
+    }
+
+    if (!emailParam) window.location.href = "./captacao.html";
+
+    function updateStrength() {
+      const val = pwdInput.value;
+      let strength = 0;
+      if (val.length >= 6) strength++;
+      if (val.length >= 10) strength++;
+      if (/[A-Z]/.test(val)) strength++;
+      if (/[0-9]/.test(val)) strength++;
+      if (/[^A-Za-z0-9]/.test(val)) strength++;
+
+      const pct = Math.min((strength / 4) * 100, 100);
+      strengthBar.style.width = pct + "%";
+
+      if (strength <= 1) {
+        strengthBar.style.background = "#f87171";
+        strengthLbl.textContent = "Senha fraca";
+      } else if (strength <= 2) {
+        strengthBar.style.background = "#fb923c";
+        strengthLbl.textContent = "Senha razoável";
+      } else if (strength <= 3) {
+        strengthBar.style.background = "#facc15";
+        strengthLbl.textContent = "Senha boa";
+      } else {
+        strengthBar.style.background = "#4ade80";
+        strengthLbl.textContent = "Senha forte";
+      }
+    }
+
+    function showMessage(type, text) {
+      msgBox.className = `msg-box ${type}`;
+      msgBox.textContent = text;
+    }
+
+    function shouldShowPopup(context) {
+      if (!context) return false;
+      if (context.consultor_contact_answered_at) return false;
+      return Boolean(context.possui_formacao_superior) && context.pretende_pos === "sim_agora";
+    }
+
+    async function loadOfferContext() {
+      const { data, error } = await db.rpc("get_lead_offer_context", {
+        p_email: emailParam
+      });
+
+      if (error) {
+        console.error("Erro ao carregar contexto comercial:", error);
+        return;
+      }
+
+      const context = Array.isArray(data) ? data[0] : data;
+      offerState.leadContext = context || null;
+      offerState.needsPopup = shouldShowPopup(context);
+      offerState.resolved = !offerState.needsPopup;
+    }
+
+    function openOfferModal() {
+      modalShell.classList.add("open");
+      modalShell.setAttribute("aria-hidden", "false");
+    }
+
+    function closeOfferModal() {
+      modalShell.classList.remove("open");
+      modalShell.setAttribute("aria-hidden", "true");
+    }
+
+    async function saveOfferChoice() {
+      const wantsConsultor = offerState.selectedChoice === "sim";
+
+      const { error } = await db.rpc("record_lead_offer_response", {
+        p_email: emailParam,
+        p_consultor_contact_opt_in: wantsConsultor,
+        p_mba_offer_acknowledged: true
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      offerState.resolved = true;
+      closeOfferModal();
+    }
+
+    async function submitSignup() {
+      const password = document.getElementById("password").value;
+      const confirm = document.getElementById("confirm").value;
+
+      if (password.length < 6) {
+        showMessage("error-msg", "A senha deve ter ao menos 6 caracteres.");
+        return;
+      }
+
+      if (password !== confirm) {
+        showMessage("error-msg", "As senhas não coincidem.");
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Criando acesso...";
+
+      const { data, error } = await db.auth.signUp({
+        email: emailParam,
+        password,
+        options: { data: { name: nomeParam } }
+      });
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Acessar a trilha";
+
+      if (error) {
+        if (error.message.includes("already registered")) {
+          const { error: loginError } = await db.auth.signInWithPassword({ email: emailParam, password });
+          if (!loginError) {
+            window.location.href = "./Index.html";
+            return;
+          }
+        }
+
+        showMessage("error-msg", "Erro ao criar conta. Tente novamente.");
+        return;
+      }
+
+      if (data.session) {
+        window.location.href = "./Index.html";
+      } else {
+        showMessage("success", "Cadastro realizado com sucesso. Faça login para acessar a trilha.");
+      }
+    }
+
+    pwdInput.addEventListener("input", updateStrength);
+
+    choiceButtons.forEach(button => {
+      button.addEventListener("click", () => {
+        offerState.selectedChoice = button.dataset.choice;
+        choiceButtons.forEach(item => item.classList.toggle("active", item === button));
+        modalContinue.disabled = false;
+      });
+    });
+
+    modalContinue.addEventListener("click", async () => {
+      modalContinue.disabled = true;
+      modalContinue.textContent = "Salvando resposta...";
+
+      try {
+        await saveOfferChoice();
+        await submitSignup();
+      } catch (error) {
+        showMessage("error-msg", "Não foi possível salvar sua resposta agora. Tente novamente.");
+        openOfferModal();
+      } finally {
+        modalContinue.disabled = false;
+        modalContinue.textContent = "Cadastrar senha na trilha gratuita";
+      }
+    });
+
+    form.addEventListener("submit", async event => {
+      event.preventDefault();
+      showMessage("", "");
+      msgBox.className = "msg-box";
+
+      if (offerState.needsPopup && !offerState.resolved) {
+        openOfferModal();
+        return;
+      }
+
+      await submitSignup();
+    });
+
+    loadOfferContext();
+  </script>
+</body>
+</html>

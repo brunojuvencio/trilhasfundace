@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel Admin | Fundace IFRS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f6f0e7;
+      --ink: #181411;
+      --muted: #695f57;
+      --line: rgba(24, 20, 17, 0.11);
+      --panel: rgba(255, 252, 248, 0.92);
+      --panel-strong: #fffdfa;
+      --accent: #d47a1f;
+      --accent-soft: rgba(212, 122, 31, 0.14);
+      --ok: #1f7a52;
+      --warn: #9b5d16;
+      --danger: #9d2f2f;
+      --shadow: 0 24px 80px rgba(66, 43, 18, 0.1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Manrope", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(212, 122, 31, 0.18), transparent 32%),
+        linear-gradient(180deg, #f9f4ed 0%, var(--bg) 100%);
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: "";
+      position: fixed; inset: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(24,20,17,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(24,20,17,0.03) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: linear-gradient(180deg, rgba(0,0,0,0.4), transparent 90%);
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(249,244,237,0.94);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--line);
+      padding: 0 40px;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 20px; height: 60px;
+    }
+    .topbar-brand {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .topbar-eyebrow {
+      font-size: 0.68rem; letter-spacing: 0.16em;
+      text-transform: uppercase; color: var(--accent); font-weight: 800;
+    }
+    .topbar-title {
+      font-family: "Fraunces", serif;
+      font-size: 1.2rem; line-height: 1; letter-spacing: -0.03em;
+    }
+    .topbar-divider {
+      width: 1px; height: 24px;
+      background: var(--line);
+    }
+    .topbar-actions {
+      display: flex; gap: 8px; align-items: center;
+    }
+
+    /* ── TAB NAV ── */
+    .tab-nav {
+      position: sticky; top: 60px; z-index: 40;
+      background: rgba(249,244,237,0.96);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--line);
+      padding: 0 40px;
+      display: flex; align-items: stretch; gap: 0;
+    }
+    .tab-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 0 20px; height: 48px;
+      font: inherit; font-size: 0.86rem; font-weight: 700;
+      color: var(--muted); background: transparent;
+      border: none; border-bottom: 2px solid transparent;
+      cursor: pointer; white-space: nowrap;
+      transition: color 0.18s, border-color 0.18s;
+      position: relative;
+    }
+    .tab-btn:hover { color: var(--ink); }
+    .tab-btn.active { color: var(--ink); border-bottom-color: var(--accent); }
+    .tab-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 18px; height: 18px; padding: 0 5px;
+      border-radius: 999px; font-size: 0.68rem; font-weight: 800;
+      background: var(--accent); color: #fff;
+    }
+
+    /* ── SHELL ── */
+    .shell {
+      width: min(1320px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 32px 0 64px;
+      position: relative; z-index: 1;
+    }
+
+    /* ── TAB PANELS ── */
+    .tab-panel {
+      display: none;
+      animation: fadeIn 0.22s ease both;
+    }
+    .tab-panel.active { display: block; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── BUTTONS ── */
+    .button, button, select, input, textarea { font: inherit; }
+    .button, button {
+      border: 0; border-radius: 999px;
+      padding: 9px 16px; font-weight: 700;
+      cursor: pointer; font-size: 0.84rem;
+      transition: transform 0.18s, opacity 0.18s;
+    }
+    .button:hover, button:hover:not(:disabled) { transform: translateY(-1px); }
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    .button-primary {
+      background: linear-gradient(135deg, #201710 0%, #493022 100%);
+      color: #fff; box-shadow: 0 10px 24px rgba(32,23,16,0.18);
+    }
+    .button-secondary {
+      background: rgba(255,255,255,0.75); color: var(--ink);
+      border: 1px solid var(--line);
+    }
+    .button-ghost {
+      background: transparent; border: 1px solid var(--line); color: var(--ink);
+    }
+    .button-ok   { background: rgba(31,122,82,0.12);  color: var(--ok);    border: 0; }
+    .button-danger { background: rgba(157,47,47,0.12); color: var(--danger); border: 0; }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--panel); backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.72);
+      box-shadow: var(--shadow); border-radius: 24px;
+      padding: 24px; position: relative; overflow: hidden;
+    }
+    .card::after {
+      content: ""; position: absolute;
+      inset: auto -30px -30px auto;
+      width: 120px; height: 120px;
+      background: radial-gradient(circle, rgba(212,122,31,0.1), transparent 72%);
+      pointer-events: none;
+    }
+
+    /* ── SECTION HEADER ── */
+    .section-title {
+      display: flex; justify-content: space-between;
+      align-items: flex-start; gap: 16px; margin-bottom: 20px;
+    }
+    .section-title h2 { font-size: 1.15rem; margin: 0; }
+    .section-title p  { margin: 4px 0 0; color: var(--muted); font-size: 0.88rem; }
+
+    /* ── METRICS ── */
+    .metrics {
+      display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px;
+    }
+    .metric {
+      background: var(--panel-strong); border: 1px solid var(--line);
+      border-radius: 18px; padding: 18px;
+      display: grid; align-content: space-between; gap: 10px; min-height: 120px;
+    }
+    .metric span  { color: var(--muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 800; }
+    .metric strong { font-size: clamp(1.8rem,3vw,2.6rem); line-height: 0.95; font-family: "Fraunces", serif; }
+    .metric small  { color: var(--muted); line-height: 1.5; font-size: 0.84rem; }
+
+    /* ── FORMS ── */
+    .form-grid {
+      display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px;
+    }
+    .field { display: grid; gap: 8px; }
+    .field.full { grid-column: 1 / -1; }
+    label {
+      font-size: 0.78rem; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted);
+    }
+    input, select, textarea {
+      width: 100%; border-radius: 14px; border: 1px solid var(--line);
+      background: rgba(255,255,255,0.85); padding: 12px 14px;
+      color: var(--ink); outline: none;
+      transition: border-color 0.16s, box-shadow 0.16s;
+    }
+    textarea { min-height: 100px; resize: vertical; }
+    input:focus, select:focus, textarea:focus {
+      border-color: rgba(212,122,31,0.65);
+      box-shadow: 0 0 0 3px rgba(212,122,31,0.1);
+    }
+
+    /* ── TABLE ── */
+    .table-wrap {
+      overflow: auto; border: 1px solid var(--line);
+      border-radius: 18px; background: rgba(255,255,255,0.55);
+    }
+    table { width: 100%; border-collapse: collapse; min-width: 800px; }
+    th, td { padding: 13px 15px; text-align: left; border-bottom: 1px solid rgba(24,20,17,0.06); vertical-align: top; font-size: 0.9rem; }
+    th { font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 800; background: rgba(255,255,255,0.75); position: sticky; top: 0; }
+    tbody tr:hover { background: rgba(212,122,31,0.04); }
+
+    /* ── TOOLBAR / SEARCH ── */
+    .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+    .search { flex: 1; min-width: 220px; }
+
+    /* ── STATUS CHIPS ── */
+    .status {
+      display: inline-flex; align-items: center; gap: 6px;
+      border-radius: 999px; padding: 6px 11px;
+      font-size: 0.74rem; font-weight: 800;
+      letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    .status.pending  { background: rgba(155,93,22,0.12);   color: var(--warn); }
+    .status.approved { background: rgba(31,122,82,0.12);   color: var(--ok); }
+    .status.rejected { background: rgba(157,47,47,0.12);   color: var(--danger); }
+
+    /* ── COMMENTS ── */
+    .comment-list { display: grid; gap: 12px; }
+    .comment-card {
+      border: 1px solid var(--line); border-radius: 18px;
+      background: rgba(255,255,255,0.72); padding: 16px 18px;
+    }
+    .comment-card header {
+      display: flex; justify-content: space-between;
+      gap: 12px; align-items: flex-start; margin-bottom: 10px;
+    }
+    .comment-card strong { display: block; font-size: 0.95rem; margin-bottom: 3px; }
+    .comment-card p { margin: 0; line-height: 1.7; font-size: 0.92rem; }
+    .comment-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+
+    /* ── ANALYTICS ── */
+    .analytics-list { display: grid; gap: 12px; }
+    .analytic-row {
+      border: 1px solid var(--line); border-radius: 18px;
+      background: rgba(255,255,255,0.72); padding: 16px 18px;
+    }
+    .analytic-row header {
+      display: flex; justify-content: space-between;
+      gap: 12px; align-items: flex-start; margin-bottom: 10px;
+    }
+    .analytic-row strong { display: block; font-size: 0.95rem; margin-bottom: 3px; }
+    .bar {
+      width: 100%; height: 8px; border-radius: 999px;
+      overflow: hidden; background: rgba(24,20,17,0.08);
+    }
+    .bar > span {
+      display: block; height: 100%; border-radius: inherit;
+      background: linear-gradient(90deg, #201710, var(--accent));
+    }
+
+    /* ── ADMIN LIST ── */
+    .admin-list { display: grid; gap: 10px; }
+    .admin-row {
+      border: 1px solid var(--line); border-radius: 16px;
+      background: rgba(255,255,255,0.72); padding: 14px 16px;
+      display: flex; justify-content: space-between;
+      gap: 14px; align-items: center;
+    }
+    .admin-row strong { display: block; margin-bottom: 3px; }
+
+    /* ── UTILS ── */
+    .mini { color: var(--muted); font-size: 0.82rem; line-height: 1.5; }
+    .helper { color: var(--muted); font-size: 0.84rem; line-height: 1.55; margin: 0; }
+    .empty {
+      padding: 28px; border-radius: 16px;
+      border: 1px dashed rgba(24,20,17,0.14);
+      color: var(--muted); text-align: center;
+      background: rgba(255,255,255,0.35); font-size: 0.9rem;
+    }
+    .notice {
+      padding: 13px 15px; border-radius: 14px;
+      font-size: 0.9rem; line-height: 1.55;
+      border: 1px solid transparent; display: none; margin-bottom: 14px;
+    }
+    .notice.show  { display: block; }
+    .notice.success { background: rgba(31,122,82,0.1);  border-color: rgba(31,122,82,0.18);  color: var(--ok); }
+    .notice.error   { background: rgba(157,47,47,0.1);  border-color: rgba(157,47,47,0.18);  color: var(--danger); }
+    .notice.info    { background: rgba(212,122,31,0.1); border-color: rgba(212,122,31,0.18); color: #7d4e1b; }
+    .loading { opacity: 0.55; pointer-events: none; }
+    .mini-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .mini-chip {
+      border: 1px solid var(--line); background: rgba(255,255,255,0.7);
+      border-radius: 999px; padding: 8px 14px;
+      font-size: 0.78rem; font-weight: 700; color: var(--muted);
+    }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .actions-right { justify-content: flex-end; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1100px) {
+      .metrics   { grid-template-columns: repeat(2, 1fr); }
+      .two-col   { grid-template-columns: 1fr; }
+      .form-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 720px) {
+      .topbar { padding: 0 20px; }
+      .tab-nav { padding: 0 16px; overflow-x: auto; }
+      .shell   { width: calc(100% - 24px); }
+      .card    { padding: 18px; border-radius: 18px; }
+      .metrics { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 480px) {
+      .metrics { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <div>
+        <div class="topbar-eyebrow">Fundace IFRS</div>
+        <div class="topbar-title">Painel Admin</div>
+      </div>
+      <div class="topbar-divider"></div>
+      <span class="status approved" id="admin-status">Admin validado</span>
+    </div>
+    <div class="topbar-actions">
+      <a class="button button-secondary" href="./Index.html">Portal do aluno</a>
+      <button class="button button-ghost" type="button" id="refresh-button">Atualizar</button>
+      <button class="button button-primary" type="button" id="logout-button">Sair</button>
+    </div>
+  </header>
+
+  <!-- TAB NAV -->
+  <nav class="tab-nav">
+    <button class="tab-btn active" data-tab="overview">Visão geral</button>
+    <button class="tab-btn" data-tab="students">Alunos</button>
+    <button class="tab-btn" data-tab="comments">
+      Comentários
+      <span class="tab-badge" id="pending-badge" style="display:none">0</span>
+    </button>
+    <button class="tab-btn" data-tab="analytics">Aulas</button>
+    <button class="tab-btn" data-tab="access">Acessos</button>
+  </nav>
+
+  <main class="shell">
+
+    <!-- ABA: VISÃO GERAL -->
+    <div class="tab-panel active" id="tab-overview">
+      <div class="metrics" id="metrics" style="margin-bottom:24px;"></div>
+      <div class="card">
+        <div class="section-title">
+          <div>
+            <h2>Resumo da operação</h2>
+            <p>Navegue pelas abas para acessar cada área do painel.</p>
+          </div>
+        </div>
+        <div class="mini-chips">
+          <div class="mini-chip">Alunos — cadastro manual e base completa</div>
+          <div class="mini-chip">Comentários — moderação com aprovação</div>
+          <div class="mini-chip">Aulas — ranking por visualizações</div>
+          <div class="mini-chip">Acessos — criar logins e gerenciar admins</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABA: ALUNOS -->
+    <div class="tab-panel" id="tab-students">
+      <div class="two-col" style="margin-bottom:20px;">
+        <div class="card">
+          <div class="section-title">
+            <div>
+              <h2>Cadastrar aluno manualmente</h2>
+              <p>Base de captação.</p>
+            </div>
+          </div>
+          <div class="notice" id="manual-feedback"></div>
+          <form id="manual-form">
+            <div class="form-grid">
+              <div class="field">
+                <label for="manual-nome">Nome</label>
+                <input id="manual-nome" required>
+              </div>
+              <div class="field">
+                <label for="manual-email">E-mail</label>
+                <input id="manual-email" type="email" required>
+              </div>
+              <div class="field">
+                <label for="manual-cidade">Cidade</label>
+                <input id="manual-cidade">
+              </div>
+              <div class="field">
+                <label for="manual-telefone">Telefone</label>
+                <input id="manual-telefone" required>
+              </div>
+              <div class="field">
+                <label for="manual-formacao">Formação superior?</label>
+                <select id="manual-formacao" required>
+                  <option value="true">Sim</option>
+                  <option value="false">Não</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="manual-pretende">Pretende cursar pós?</label>
+                <select id="manual-pretende" required>
+                  <option value="sim_agora">Sim, agora</option>
+                  <option value="sim_depois">Sim, depois</option>
+                  <option value="nao">Não</option>
+                </select>
+              </div>
+              <div class="field full">
+                <label for="manual-area">Área de formação</label>
+                <input id="manual-area" required>
+              </div>
+              <div class="field">
+                <label for="manual-empresa">Empresa</label>
+                <input id="manual-empresa" required>
+              </div>
+              <div class="field">
+                <label for="manual-cargo">Cargo</label>
+                <input id="manual-cargo" required>
+              </div>
+            </div>
+            <div class="actions" style="margin-top:16px;">
+              <button type="submit" class="button-primary" id="manual-submit">Salvar aluno</button>
+            </div>
+          </form>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:0;"><!-- placeholder para alinhar --></div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">
+          <div>
+            <h2>Alunos cadastrados</h2>
+            <p>Base completa de captação.</p>
+          </div>
+          <span class="mini" id="student-count">0 registros</span>
+        </div>
+        <div class="toolbar">
+          <input class="search" id="student-search" placeholder="Buscar por nome, e-mail, empresa...">
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Aluno</th>
+                <th>Contato</th>
+                <th>Perfil</th>
+                <th>Interesse</th>
+                <th>Cadastro</th>
+              </tr>
+            </thead>
+            <tbody id="students-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABA: COMENTÁRIOS -->
+    <div class="tab-panel" id="tab-comments">
+      <div class="card">
+        <div class="section-title">
+          <div>
+            <h2>Moderação de comentários</h2>
+            <p>Todo comentário novo entra como pendente.</p>
+          </div>
+        </div>
+        <div class="toolbar">
+          <input class="search" id="comment-search" placeholder="Buscar comentário ou autor...">
+          <select id="comment-filter">
+            <option value="all">Todos os status</option>
+            <option value="pending">Pendentes</option>
+            <option value="approved">Aprovados</option>
+            <option value="rejected">Rejeitados</option>
+          </select>
+        </div>
+        <div class="comment-list" id="comments-list"></div>
+      </div>
+    </div>
+
+    <!-- ABA: AULAS -->
+    <div class="tab-panel" id="tab-analytics">
+      <div class="card">
+        <div class="section-title">
+          <div>
+            <h2>Aulas mais assistidas</h2>
+            <p>Ranking por total de visualizações.</p>
+          </div>
+        </div>
+        <div class="analytics-list" id="analytics-list"></div>
+      </div>
+    </div>
+
+    <!-- ABA: ACESSOS -->
+    <div class="tab-panel" id="tab-access">
+      <div class="two-col">
+        <div class="card">
+          <div class="section-title">
+            <div>
+              <h2>Criar acesso</h2>
+              <p>Aluno ou administrador.</p>
+            </div>
+          </div>
+          <div class="notice info show" id="access-notice">A criação de senha usa a edge function com <code>service_role</code>. Depois de criar um admin, o e-mail já fica liberado no painel.</div>
+          <div class="notice" id="access-feedback"></div>
+          <form id="access-form">
+            <div class="form-grid">
+              <div class="field">
+                <label for="access-nome">Nome</label>
+                <input id="access-nome" required>
+              </div>
+              <div class="field">
+                <label for="access-email">E-mail</label>
+                <input id="access-email" type="email" required>
+              </div>
+              <div class="field">
+                <label for="access-password">Senha inicial</label>
+                <input id="access-password" type="password" minlength="6" required>
+              </div>
+              <div class="field">
+                <label for="access-role">Tipo de acesso</label>
+                <select id="access-role" required>
+                  <option value="student">Aluno</option>
+                  <option value="admin">Administrador</option>
+                </select>
+              </div>
+            </div>
+            <div class="actions" style="margin-top:16px;">
+              <button type="submit" class="button-primary" id="access-submit">Criar acesso</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="section-title">
+            <div>
+              <h2>Administradores</h2>
+              <p>Permissões ativas no painel.</p>
+            </div>
+          </div>
+          <div class="admin-list" id="admin-list"></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="./supabase/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    /* ── TAB LOGIC ── */
+    const tabBtns   = document.querySelectorAll(".tab-btn");
+    const tabPanels = document.querySelectorAll(".tab-panel");
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const target = btn.dataset.tab;
+        tabBtns.forEach(b => b.classList.remove("active"));
+        tabPanels.forEach(p => p.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById(`tab-${target}`).classList.add("active");
+      });
+    });
+
+    /* ── SUPABASE ── */
+    const { createClient } = supabase;
+    const db = createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
+
+    const lessonTitles = {
+      "lesson-1": "Contabilidade para PMEs - Parte 1",
+      "lesson-2": "Contabilidade para PMEs - Parte 2",
+      "lesson-3": "Tributação sobre o Lucro - Parte 1",
+      "lesson-4": "Tributação sobre o Lucro - Parte 2",
+      "lesson-5": "Instrumentos Derivativos - Parte 1",
+      "lesson-6": "Instrumentos Derivativos - Parte 2",
+      "lesson-7": "Receitas de Contratos - Parte 1",
+      "lesson-8": "Receitas de Contratos - Parte 2"
+    };
+
+    const state = {
+      leads: [], comments: [], analytics: [],
+      adminUsers: [], currentUser: null
+    };
+
+    const metrics        = document.getElementById("metrics");
+    const adminList      = document.getElementById("admin-list");
+    const studentsBody   = document.getElementById("students-body");
+    const commentsList   = document.getElementById("comments-list");
+    const analyticsList  = document.getElementById("analytics-list");
+    const studentSearch  = document.getElementById("student-search");
+    const commentSearch  = document.getElementById("comment-search");
+    const commentFilter  = document.getElementById("comment-filter");
+    const studentCount   = document.getElementById("student-count");
+    const pendingBadge   = document.getElementById("pending-badge");
+    const accessForm     = document.getElementById("access-form");
+    const accessSubmit   = document.getElementById("access-submit");
+    const accessFeedback = document.getElementById("access-feedback");
+    const manualForm     = document.getElementById("manual-form");
+    const manualSubmit   = document.getElementById("manual-submit");
+    const manualFeedback = document.getElementById("manual-feedback");
+    const refreshButton  = document.getElementById("refresh-button");
+    const logoutButton   = document.getElementById("logout-button");
+    const functionUrl    = `${window.SUPABASE_CONFIG.url}/functions/v1/admin-user-manager`;
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;").replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;").replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function formatDate(value) {
+      if (!value) return "-";
+      return new Date(value).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+    }
+
+    function setNotice(element, type, message) {
+      element.className = `notice show ${type}`;
+      element.textContent = message;
+    }
+
+    function clearNotice(element) {
+      element.className = "notice";
+      element.textContent = "";
+    }
+
+    function buildMetrics() {
+      const totalLeads = state.leads.length;
+      const last7Days  = state.leads.filter(item =>
+        new Date(item.created_at).getTime() >= Date.now() - 7 * 24 * 60 * 60 * 1000
+      ).length;
+      const pendingComments  = state.comments.filter(item => item.status === "pending").length;
+      const approvedComments = state.comments.filter(item => item.status === "approved").length;
+      const totalViews  = state.analytics.reduce((sum, item) => sum + Number(item.total_views || 0), 0);
+      const activeAdmins = state.adminUsers.filter(item => item.active).length;
+
+      // Update pending badge
+      if (pendingComments > 0) {
+        pendingBadge.textContent = pendingComments;
+        pendingBadge.style.display = "inline-flex";
+      } else {
+        pendingBadge.style.display = "none";
+      }
+
+      metrics.innerHTML = [
+        { label: "Alunos cadastrados",     value: totalLeads,       copy: `${last7Days} novos nos últimos 7 dias` },
+        { label: "Comentários pendentes",  value: pendingComments,  copy: `${approvedComments} já aprovados no portal` },
+        { label: "Visualizações totais",   value: totalViews,       copy: "Soma de todas as aulas assistidas" },
+        { label: "Admins ativos",          value: activeAdmins,     copy: "Contas com acesso ao painel" }
+      ].map(card => `
+        <article class="metric">
+          <span>${escapeHtml(card.label)}</span>
+          <strong>${escapeHtml(card.value)}</strong>
+          <small>${escapeHtml(card.copy)}</small>
+        </article>
+      `).join("");
+    }
+
+    function renderAdminUsers() {
+      if (!state.adminUsers.length) {
+        adminList.innerHTML = `<div class="empty">Nenhum administrador cadastrado ainda.</div>`;
+        return;
+      }
+      adminList.innerHTML = state.adminUsers.map(item => `
+        <article class="admin-row">
+          <div>
+            <strong>${escapeHtml(item.nome || item.email)}</strong>
+            <div class="mini">${escapeHtml(item.email)} · ${escapeHtml(formatDate(item.created_at))}</div>
+          </div>
+          <div class="actions">
+            <span class="status ${item.active ? "approved" : "rejected"}">${item.active ? "ativo" : "inativo"}</span>
+            <button type="button" class="button-ghost" data-admin-email="${escapeHtml(item.email)}" data-admin-name="${escapeHtml(item.nome || "")}" data-admin-active="${item.active ? "false" : "true"}">
+              ${item.active ? "Desativar" : "Ativar"}
+            </button>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    async function invokeAdminManager(payload) {
+      const { data: { session } } = await db.auth.getSession();
+      if (!session?.access_token) throw new Error("Sessão expirada. Faça login novamente.");
+      const response = await fetch(functionUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || "Não foi possível executar a ação.");
+      return result;
+    }
+
+    function renderStudents() {
+      const term = studentSearch.value.trim().toLowerCase();
+      const filtered = state.leads.filter(item => {
+        const haystack = [item.nome, item.email, item.cidade, item.empresa, item.cargo, item.area_formacao].join(" ").toLowerCase();
+        return haystack.includes(term);
+      });
+      studentCount.textContent = `${filtered.length} registro${filtered.length === 1 ? "" : "s"}`;
+      if (!filtered.length) {
+        studentsBody.innerHTML = `<tr><td colspan="5"><div class="empty">Nenhum aluno encontrado.</div></td></tr>`;
+        return;
+      }
+      studentsBody.innerHTML = filtered.map(item => `
+        <tr>
+          <td><strong>${escapeHtml(item.nome)}</strong><div class="mini">${escapeHtml(item.area_formacao || "-")}</div></td>
+          <td><div>${escapeHtml(item.email)}</div><div class="mini">${escapeHtml(item.telefone || "-")}</div></td>
+          <td><div>${escapeHtml(item.empresa || "-")}</div><div class="mini">${escapeHtml(item.cargo || "-")}</div></td>
+          <td>
+            <div>${escapeHtml(item.cidade || "Cidade não informada")}</div>
+            <div class="mini">Formação: ${item.possui_formacao_superior ? "Sim" : "Não"} · Pós: ${escapeHtml(item.pretende_pos || "-")}</div>
+          </td>
+          <td>${escapeHtml(formatDate(item.created_at))}</td>
+        </tr>
+      `).join("");
+    }
+
+    function renderComments() {
+      const term   = commentSearch.value.trim().toLowerCase();
+      const filter = commentFilter.value;
+      const filtered = state.comments.filter(item => {
+        const haystack = `${item.name} ${item.text} ${item.lesson_id}`.toLowerCase();
+        const termMatch   = haystack.includes(term);
+        const statusMatch = filter === "all" ? true : item.status === filter;
+        return termMatch && statusMatch;
+      });
+      if (!filtered.length) {
+        commentsList.innerHTML = `<div class="empty">Nenhum comentário encontrado para esse recorte.</div>`;
+        return;
+      }
+      commentsList.innerHTML = filtered.map(item => `
+        <article class="comment-card" data-comment-id="${item.id}">
+          <header>
+            <div>
+              <strong>${escapeHtml(item.name)}</strong>
+              <div class="mini">${escapeHtml(lessonTitles[item.lesson_id] || item.lesson_id)} · ${escapeHtml(formatDate(item.created_at))}</div>
+            </div>
+            <span class="status ${escapeHtml(item.status)}">${escapeHtml(item.status)}</span>
+          </header>
+          <p>${escapeHtml(item.text)}</p>
+          <div class="comment-actions">
+            <button type="button" class="button-ok"     data-action="approved" data-id="${item.id}">Aprovar</button>
+            <button type="button" class="button-danger" data-action="rejected" data-id="${item.id}">Rejeitar</button>
+            <button type="button" class="button-ghost"  data-action="pending"  data-id="${item.id}">Voltar para pendente</button>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function renderAnalytics() {
+      const analytics = Object.keys(lessonTitles).map(lessonId => {
+        const found = state.analytics.find(item => item.lesson_id === lessonId);
+        return found || { lesson_id: lessonId, unique_viewers: 0, total_views: 0, last_viewed_at: null };
+      }).sort((a, b) => Number(b.total_views) - Number(a.total_views));
+
+      const topViews = Math.max(...analytics.map(item => Number(item.total_views || 0)), 1);
+
+      analyticsList.innerHTML = analytics.map(item => {
+        const width = Math.max(6, Math.round((Number(item.total_views || 0) / topViews) * 100));
+        return `
+          <article class="analytic-row">
+            <header>
+              <div>
+                <strong>${escapeHtml(lessonTitles[item.lesson_id] || item.lesson_id)}</strong>
+                <div class="mini">${escapeHtml(Number(item.unique_viewers || 0))} alunos únicos · Última visualização: ${escapeHtml(formatDate(item.last_viewed_at))}</div>
+              </div>
+              <span class="status approved">${escapeHtml(Number(item.total_views || 0))} views</span>
+            </header>
+            <div class="bar"><span style="width:${width}%"></span></div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    async function loadDashboard() {
+      document.body.classList.add("loading");
+      const [{ data: leads, error: leadsError }, { data: comments, error: commentsError }, { data: analytics, error: analyticsError }, { data: adminUsers, error: adminUsersError }] = await Promise.all([
+        db.from("leads").select("*").order("created_at", { ascending: false }),
+        db.from("comments").select("id, lesson_id, name, text, status, approved, created_at").order("created_at", { ascending: false }),
+        db.rpc("get_lesson_analytics"),
+        db.rpc("list_admin_users")
+      ]);
+      document.body.classList.remove("loading");
+      if (leadsError)      throw leadsError;
+      if (commentsError)   throw commentsError;
+      if (analyticsError)  throw analyticsError;
+      if (adminUsersError) throw adminUsersError;
+      state.leads      = leads      || [];
+      state.comments   = comments   || [];
+      state.analytics  = analytics  || [];
+      state.adminUsers = adminUsers || [];
+      buildMetrics();
+      renderAdminUsers();
+      renderStudents();
+      renderComments();
+      renderAnalytics();
+    }
+
+    async function moderateComment(commentId, status) {
+      const { error } = await db.rpc("moderate_comment", { p_comment_id: commentId, p_status: status });
+      if (error) throw error;
+      await loadDashboard();
+    }
+
+    accessForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      clearNotice(accessFeedback);
+      accessSubmit.disabled = true;
+      accessSubmit.textContent = "Criando...";
+      try {
+        await invokeAdminManager({
+          action: "create_user",
+          email: document.getElementById("access-email").value,
+          password: document.getElementById("access-password").value,
+          nome: document.getElementById("access-nome").value,
+          isAdmin: document.getElementById("access-role").value === "admin"
+        });
+        accessForm.reset();
+        setNotice(accessFeedback, "success", "Acesso criado com sucesso.");
+        await loadDashboard();
+      } catch (error) {
+        setNotice(accessFeedback, "error", error.message || "Não foi possível criar o acesso.");
+      } finally {
+        accessSubmit.disabled = false;
+        accessSubmit.textContent = "Criar acesso";
+      }
+    });
+
+    manualForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      clearNotice(manualFeedback);
+      manualSubmit.disabled = true;
+      manualSubmit.textContent = "Salvando...";
+      const payload = {
+        p_nome: document.getElementById("manual-nome").value,
+        p_email: document.getElementById("manual-email").value,
+        p_cidade: document.getElementById("manual-cidade").value,
+        p_telefone: document.getElementById("manual-telefone").value,
+        p_possui_formacao_superior: document.getElementById("manual-formacao").value === "true",
+        p_area_formacao: document.getElementById("manual-area").value,
+        p_empresa: document.getElementById("manual-empresa").value,
+        p_cargo: document.getElementById("manual-cargo").value,
+        p_pretende_pos: document.getElementById("manual-pretende").value
+      };
+      const { error } = await db.rpc("capture_lead", payload);
+      manualSubmit.disabled = false;
+      manualSubmit.textContent = "Salvar aluno";
+      if (error) {
+        setNotice(manualFeedback, "error", error.message || "Não foi possível salvar o aluno.");
+        return;
+      }
+      manualForm.reset();
+      setNotice(manualFeedback, "success", "Aluno salvo com sucesso na base de captação.");
+      await loadDashboard();
+    });
+
+    studentSearch.addEventListener("input", renderStudents);
+    commentSearch.addEventListener("input", renderComments);
+    commentFilter.addEventListener("change", renderComments);
+
+    commentsList.addEventListener("click", async event => {
+      const target = event.target.closest("button[data-id]");
+      if (!target) return;
+      const commentId = Number(target.dataset.id);
+      const action    = target.dataset.action;
+      target.disabled = true;
+      try {
+        await moderateComment(commentId, action);
+      } catch (error) {
+        alert(error.message || "Não foi possível atualizar o comentário.");
+      } finally {
+        target.disabled = false;
+      }
+    });
+
+    adminList.addEventListener("click", async event => {
+      const target = event.target.closest("button[data-admin-email]");
+      if (!target) return;
+      target.disabled = true;
+      try {
+        await invokeAdminManager({
+          action: "set_admin_status",
+          email: target.dataset.adminEmail,
+          nome: target.dataset.adminName,
+          active: target.dataset.adminActive === "true"
+        });
+        await loadDashboard();
+      } catch (error) {
+        alert(error.message || "Não foi possível atualizar o admin.");
+      } finally {
+        target.disabled = false;
+      }
+    });
+
+    refreshButton.addEventListener("click", async () => {
+      try { await loadDashboard(); }
+      catch (error) { alert(error.message || "Não foi possível atualizar os dados."); }
+    });
+
+    logoutButton.addEventListener("click", async () => {
+      await db.auth.signOut();
+      window.location.href = "./admin-login.html";
+    });
+
+    (async () => {
+      const { data: { session } } = await db.auth.getSession();
+      if (!session) { window.location.href = "./admin-login.html"; return; }
+      state.currentUser = session.user;
+      const { data: isAdmin, error: adminError } = await db.rpc("is_admin");
+      if (adminError || !isAdmin) {
+        alert("Seu usuário ainda não está liberado para o painel admin.");
+        window.location.href = "./Index.html";
+        return;
+      }
+      try { await loadDashboard(); }
+      catch (error) { alert(error.message || "Não foi possível carregar o painel."); }
+    })();
+  </script>
+</body>
+</html>

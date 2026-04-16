@@ -1,0 +1,1191 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trilha MBA Contabilidade em IFRS | Fundace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --brand-yellow: #feb737;
+      --brand-yellow-dark: #d9970e;
+      --brand-black: #0a0a0a;
+      --brand-cream: #f4efe5;
+      --brand-gray: #e8e4dc;
+      --brand-white: #ffffff;
+      --brand-ink: #111111;
+      --brand-ink-soft: rgba(17,17,17,0.62);
+      --shadow: 0 20px 56px rgba(0,0,0,0.11);
+      --shadow-strong: 0 28px 72px rgba(0,0,0,0.2);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --container: 1180px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Inter", sans-serif;
+      color: var(--brand-ink);
+      background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.048'/%3E%3C/svg%3E") repeat 200px 200px,
+        radial-gradient(ellipse 70% 55% at 2% 0%, rgba(254,183,55,0.28) 0%, transparent 52%),
+        radial-gradient(ellipse 50% 40% at 100% 80%, rgba(0,0,0,0.05) 0%, transparent 50%),
+        linear-gradient(168deg, #f7f2eb 0%, #ede7d8 52%, #f6f1e9 100%);
+      min-height: 100vh;
+    }
+    body::before {
+      content: "";
+      position: fixed; inset: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(0,0,0,0.022) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,0.022) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.05) 38%, transparent 70%);
+    }
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+    .container { width: min(calc(100% - 32px), var(--container)); margin: 0 auto; }
+
+    /* ── HEADINGS — Inter Semibold ──────────────────────────── */
+    h1, h2 {
+      margin: 0;
+      font-family: "Inter", sans-serif;
+      font-weight: 600;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+    h3 {
+      margin: 0;
+      font-family: "Inter", sans-serif;
+      font-weight: 600;
+      line-height: 1.1;
+      letter-spacing: -0.025em;
+    }
+    h1 { font-size: clamp(2.4rem, 5.5vw, 4.6rem); max-width: 15ch; }
+    h2 { font-size: clamp(1.8rem, 3.6vw, 3.2rem); max-width: 20ch; }
+
+    /* ── TOPBAR ─────────────────────────────────────────────── */
+    .topbar {
+      display: flex; justify-content: space-between; align-items: center; gap: 16px;
+      padding: 10px 16px 10px 20px;
+      background: rgba(255,255,255,0.72); border: 1px solid rgba(255,255,255,0.88);
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border-radius: 999px; box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+      position: sticky; top: 16px; z-index: 20;
+      animation: fadeUp 0.42s cubic-bezier(0.22,0.68,0,1.15) both;
+    }
+    .brand { display: flex; align-items: center; }
+    .topbar-logo { height: 32px; width: auto; display: block; object-fit: contain; }
+    .nav-links { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+    .ghost-button, .solid-button, .primary-button { font: inherit; }
+    .ghost-button, .solid-button, .primary-button {
+      padding: 10px 18px; border-radius: 999px; font-weight: 700; font-size: 0.88rem;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+      cursor: pointer; display: inline-flex; align-items: center; gap: 7px; border: none;
+    }
+    .ghost-button {
+      background: rgba(0,0,0,0.04); color: var(--brand-ink);
+      border: 1px solid rgba(0,0,0,0.09);
+    }
+    .ghost-button:hover, .solid-button:hover, .primary-button:hover { transform: translateY(-2px); }
+    .solid-button {
+      background: var(--brand-black); color: var(--brand-white);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    }
+    .primary-button.gold {
+      background: var(--brand-yellow); color: var(--brand-black);
+      box-shadow: 0 8px 28px rgba(254,183,55,0.36);
+    }
+    .primary-button.gold:hover { box-shadow: 0 12px 36px rgba(254,183,55,0.5); }
+
+    /* ── PORTAL HEADER ──────────────────────────────────────── */
+    .portal-header {
+      display: block;
+      margin-top: 24px; padding: 48px 28px;
+      border-radius: 32px; color: var(--brand-white);
+      background: var(--brand-black);
+      box-shadow: var(--shadow-strong); position: relative; overflow: hidden;
+      animation: fadeUp 0.44s 0.07s cubic-bezier(0.22,0.68,0,1.15) both;
+    }
+    .portal-header::before {
+      content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px;
+      background: var(--brand-yellow);
+    }
+    .portal-header::after {
+      content: ""; position: absolute;
+      width: 600px; height: 600px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(254,183,55,0.12) 0%, transparent 65%);
+      right: -140px; top: -240px; pointer-events: none;
+      animation: floatOrb 9s ease-in-out infinite;
+    }
+    .portal-header h1 { color: var(--brand-white); position: relative; z-index: 1; }
+    .portal-header p {
+      margin: 14px 0 0; max-width: 54ch; line-height: 1.72;
+      color: rgba(255,255,255,0.72); position: relative; z-index: 1; font-size: 1rem;
+    }
+    .portal-stats {
+      position: relative; z-index: 1; display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;
+    }
+    .pill {
+      padding: 10px 16px; border-radius: 999px;
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.14);
+      font-size: 0.84rem; font-weight: 600; line-height: 1.2;
+    }
+    .pill-yellow {
+      background: rgba(254,183,55,0.16); border-color: rgba(254,183,55,0.38);
+      color: var(--brand-yellow);
+    }
+
+    /* ── EYEBROW ────────────────────────────────────────────── */
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 9px; padding: 7px 13px;
+      background: var(--brand-black); color: var(--brand-white); border-radius: 999px;
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.11em;
+      text-transform: uppercase; margin-bottom: 14px;
+    }
+    .eyebrow::before {
+      content: ""; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+      background: var(--brand-yellow); box-shadow: 0 0 0 5px rgba(254,183,55,0.2);
+      animation: pulseYellow 2.6s ease-in-out infinite;
+    }
+    .eyebrow-light {
+      background: rgba(254,183,55,0.14); color: var(--brand-black);
+      border: 1px solid rgba(254,183,55,0.32);
+    }
+    .eyebrow-light::before { background: var(--brand-yellow-dark); }
+
+    /* ── USP STRIP ──────────────────────────────────────────── */
+    .usp-strip {
+      display: inline-flex; align-items: center; gap: 8px; margin-top: 18px;
+      padding: 10px 16px; border-radius: 999px; font-size: 0.8rem; font-weight: 600;
+      color: rgba(255,255,255,0.7); width: fit-content;
+      border: 1px solid rgba(254,183,55,0.28); background: rgba(254,183,55,0.08);
+      position: relative; z-index: 1;
+    }
+    .usp-strip::before { content: "★"; color: var(--brand-yellow); font-size: 0.9rem; flex-shrink: 0; }
+
+    /* ── PORTAL GRID ────────────────────────────────────────── */
+    .portal-grid { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 22px; margin-top: 22px; }
+    .sidebar {
+      background: rgba(255,255,255,0.9); border: 1px solid rgba(255,255,255,0.92);
+      backdrop-filter: blur(18px); padding: 20px; border-radius: 30px;
+      box-shadow: var(--shadow); align-self: start; position: sticky; top: 104px;
+      animation: fadeUp 0.44s 0.15s cubic-bezier(0.22,0.68,0,1.15) both;
+    }
+    .progress-card {
+      padding: 20px; border-radius: 22px; background: var(--brand-black); color: var(--brand-white);
+      margin-bottom: 18px; position: relative; overflow: hidden;
+    }
+    .progress-card::after {
+      content: ""; position: absolute; width: 90px; height: 90px; border-radius: 50%;
+      background: rgba(254,183,55,0.14); right: -22px; top: -22px; pointer-events: none;
+    }
+    .progress-card strong { font-size: 0.88rem; font-weight: 700; letter-spacing: 0.02em; }
+    .progress-track {
+      width: 100%; height: 8px; background: rgba(255,255,255,0.1);
+      border-radius: 999px; overflow: hidden; margin: 14px 0 10px;
+    }
+    .progress-fill {
+      height: 100%; width: 0; border-radius: inherit;
+      background: linear-gradient(90deg, #d9970e, var(--brand-yellow), #ffe396, var(--brand-yellow), #d9970e);
+      background-size: 300% 100%;
+      transition: width 0.45s ease;
+      animation: shimmerSlide 3.5s linear infinite;
+    }
+    .progress-card > div:last-child { font-size: 0.82rem; color: rgba(255,255,255,0.56); line-height: 1.5; }
+
+    /* ── COURSE ACCESS CTA (sidebar) ─────────────────────────── */
+    .sidebar-cta {
+      margin-top: 18px; padding: 18px;
+      background: linear-gradient(135deg, rgba(254,183,55,0.15) 0%, rgba(254,183,55,0.06) 100%);
+      border: 1px solid rgba(254,183,55,0.36); border-radius: 20px;
+    }
+    .sidebar-cta p {
+      margin: 0 0 12px; font-size: 0.85rem; line-height: 1.55;
+      color: rgba(0,0,0,0.68); font-weight: 500;
+    }
+    .sidebar-cta a {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 13px 18px; border-radius: 14px; font-weight: 700; font-size: 0.88rem;
+      background: var(--brand-yellow); color: var(--brand-black);
+      box-shadow: 0 6px 20px rgba(254,183,55,0.32);
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+    .sidebar-cta a:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(254,183,55,0.46); }
+
+    /* ── LESSON MENU ────────────────────────────────────────── */
+    .lesson-menu { display: grid; gap: 10px; }
+    .lesson-nav-item {
+      padding: 14px 16px; border-radius: 18px; border: 1px solid rgba(0,0,0,0.07);
+      background: rgba(255,255,255,0.92); cursor: pointer; text-align: left;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+      font-family: inherit; position: relative; overflow: hidden;
+    }
+    .lesson-nav-item:hover:not(.locked) { box-shadow: 0 4px 16px rgba(0,0,0,0.08); transform: translateY(-1px); }
+    .lesson-nav-item.active {
+      background: rgba(254,183,55,0.11); border-color: rgba(254,183,55,0.5);
+      box-shadow: 0 4px 18px rgba(254,183,55,0.16);
+    }
+    .lesson-nav-item.active::before {
+      content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+      background: var(--brand-yellow); border-radius: 0 3px 3px 0;
+    }
+    .lesson-nav-item.locked { opacity: 0.48; cursor: not-allowed; }
+    .lesson-nav-top { display: flex; justify-content: space-between; gap: 10px; align-items: center; margin-bottom: 7px; }
+    .lesson-nav-top strong { font-size: 0.84rem; font-weight: 700; }
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 4px; padding: 4px 9px; border-radius: 999px;
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; white-space: nowrap;
+    }
+    .status-open { background: rgba(0,0,0,0.07); color: var(--brand-black); }
+    .status-done { background: rgba(22,120,55,0.1); color: #167837; }
+    .status-locked { background: rgba(0,0,0,0.05); color: rgba(0,0,0,0.4); }
+    .lesson-nav-item > div:nth-child(2) { font-size: 0.87rem; font-weight: 600; line-height: 1.4; }
+    .lesson-nav-item > div:last-child { margin-top: 6px; font-size: 0.77rem; color: rgba(0,0,0,0.46); }
+
+    /* ── LESSON STAGE ───────────────────────────────────────── */
+    .lesson-stage { display: grid; gap: 18px; }
+    .lesson-panel {
+      background: rgba(255,255,255,0.96); border: 1px solid rgba(255,255,255,0.92);
+      backdrop-filter: blur(16px); border-top: 3px solid var(--brand-yellow);
+      padding: 30px; border-radius: var(--radius-xl); box-shadow: var(--shadow);
+      animation: fadeUp 0.44s 0.21s cubic-bezier(0.22,0.68,0,1.15) both;
+    }
+    .lesson-top { display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: start; margin-bottom: 22px; }
+    .lesson-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+    .meta-chip {
+      padding: 8px 13px; border-radius: 999px; font-size: 0.78rem; font-weight: 600;
+      background: rgba(0,0,0,0.06); border: 1px solid rgba(0,0,0,0.04);
+    }
+
+    /* ── VIDEO ──────────────────────────────────────────────── */
+    .video-shell {
+      position: relative; padding-top: 56.25%; overflow: hidden; border-radius: 20px; background: #000;
+      box-shadow: 0 18px 48px rgba(0,0,0,0.22);
+      transition: box-shadow 0.35s ease;
+    }
+    .video-shell:not(.locked) {
+      box-shadow: 0 18px 48px rgba(0,0,0,0.22), 0 0 0 3px rgba(254,183,55,0.38), 0 0 32px rgba(254,183,55,0.09);
+    }
+    .video-shell iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+    .locked-overlay {
+      position: absolute; inset: 0; display: grid; place-items: center; padding: 32px; text-align: center;
+      background: linear-gradient(180deg, rgba(0,0,0,0.06), rgba(0,0,0,0.84)); color: var(--brand-white);
+    }
+    .locked-overlay strong { display: block; font-size: 1.3rem; font-weight: 600; margin-bottom: 10px; }
+
+    /* ── LEARNING GRID ──────────────────────────────────────── */
+    .learning-grid {
+      display: grid; grid-template-columns: 1fr; gap: 0; margin-top: 24px;
+      border-top: 1px solid rgba(0,0,0,0.07); border-bottom: 1px solid rgba(0,0,0,0.07);
+    }
+    .insight-box { padding: 24px 20px 22px; }
+    .insight-box:first-child { border-right: 1px solid rgba(0,0,0,0.07); padding-right: 28px; }
+    .insight-box:last-child { padding-left: 28px; }
+    .insight-box > strong {
+      display: block; margin-bottom: 14px;
+      font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.14em; color: rgba(0,0,0,0.3);
+    }
+    .insight-box ul { padding-left: 0; margin: 0; line-height: 1.8; list-style: none; }
+    .insight-box ul li {
+      margin-bottom: 10px; padding-left: 18px; position: relative;
+      font-size: 0.93rem; color: rgba(0,0,0,0.78);
+    }
+    .insight-box ul li::before {
+      content: ""; position: absolute; left: 0; top: 9px;
+      width: 6px; height: 6px; border-radius: 2px; background: var(--brand-yellow);
+    }
+
+    /* ── LESSON ACTIONS ─────────────────────────────────────── */
+    .lesson-actions {
+      display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+      padding: 20px 0 0; margin-top: 4px;
+    }
+    .complete-button {
+      background: var(--brand-yellow); color: var(--brand-black); border: none;
+      padding: 13px 24px; border-radius: 14px; cursor: pointer;
+      font-weight: 700; font-size: 0.9rem; flex: 1; text-align: center;
+      box-shadow: 0 4px 18px rgba(254,183,55,0.32);
+      transition: transform 0.18s, box-shadow 0.18s;
+    }
+    .complete-button:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(254,183,55,0.44); }
+    .complete-button.completed { background: #167837; color: var(--brand-white); box-shadow: 0 4px 16px rgba(22,120,55,0.28); }
+    .certificate-button {
+      background: transparent; color: var(--brand-black); border: 1px solid rgba(17,17,17,0.14);
+      padding: 13px 24px; border-radius: 14px; cursor: pointer;
+      font-weight: 700; font-size: 0.9rem; flex: 1; text-align: center;
+      transition: transform 0.18s, box-shadow 0.18s, background 0.18s, opacity 0.18s;
+    }
+    .certificate-button:hover:not(:disabled) { transform: translateY(-1px); background: rgba(254,183,55,0.08); box-shadow: 0 8px 24px rgba(17,17,17,0.08); }
+    .certificate-button:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    /* ── ACCESS CTA BANNER ───────────────────────────────────── */
+    .access-cta-banner {
+      margin-top: 24px; padding: 30px 36px;
+      background: var(--brand-black); border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-strong); position: relative; overflow: hidden;
+      display: flex; align-items: center; justify-content: space-between; gap: 24px;
+    }
+    .access-cta-banner::after {
+      content: ""; position: absolute;
+      width: 400px; height: 400px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(254,183,55,0.14) 0%, transparent 65%);
+      right: -80px; top: -180px; pointer-events: none;
+    }
+    .access-cta-banner-text { position: relative; z-index: 1; }
+    .access-cta-banner-text span {
+      display: block; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--brand-yellow); margin-bottom: 8px;
+    }
+    .access-cta-banner-text h3 {
+      font-size: clamp(1.2rem, 2.5vw, 1.7rem); color: var(--brand-white);
+      font-weight: 600; letter-spacing: -0.025em;
+    }
+    .access-cta-banner-text p {
+      margin: 8px 0 0; font-size: 0.9rem; color: rgba(255,255,255,0.6); line-height: 1.55;
+    }
+    .access-cta-btn {
+      position: relative; z-index: 1; flex-shrink: 0;
+      display: inline-flex; align-items: center; gap: 9px;
+      padding: 16px 30px; border-radius: 16px; font-weight: 700; font-size: 0.95rem;
+      background: var(--brand-yellow); color: var(--brand-black);
+      box-shadow: 0 10px 32px rgba(254,183,55,0.4);
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+      white-space: nowrap;
+    }
+    .access-cta-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(254,183,55,0.54); }
+    .access-cta-btn svg { flex-shrink: 0; }
+
+    /* ── COMMUNITY / COMMENTS ───────────────────────────────── */
+    .community-panel {
+      background: rgba(245,240,232,0.86); border: 1px solid rgba(255,255,255,0.78);
+      backdrop-filter: blur(16px); padding: 30px; border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      animation: fadeUp 0.44s 0.27s cubic-bezier(0.22,0.68,0,1.15) both;
+    }
+    .section-header { display: flex; justify-content: space-between; align-items: end; gap: 16px; margin-bottom: 22px; }
+    .hero-form {
+      display: grid; gap: 14px; background: rgba(255,255,255,0.7);
+      border: 1px solid rgba(0,0,0,0.07); padding: 20px; border-radius: 20px;
+    }
+    .field { display: grid; gap: 8px; }
+    .field label { font-weight: 600; font-size: 0.88rem; }
+    .field input, .field textarea {
+      width: 100%; border: 1px solid rgba(0,0,0,0.11); border-radius: 13px; padding: 12px 14px;
+      font: inherit; font-size: 0.94rem; background: rgba(255,255,255,0.97);
+      color: var(--brand-ink); resize: vertical; min-height: 52px;
+      transition: border-color 0.18s, box-shadow 0.18s;
+    }
+    .field textarea { min-height: 108px; }
+    .field input:focus, .field textarea:focus {
+      outline: none; border-color: rgba(254,183,55,0.8);
+      box-shadow: 0 0 0 3px rgba(254,183,55,0.16);
+    }
+    button[type="submit"] {
+      background: var(--brand-yellow); color: var(--brand-black);
+      padding: 13px 20px; border-radius: 14px; font: inherit; font-weight: 700; font-size: 0.9rem;
+      border: none; box-shadow: 0 6px 20px rgba(254,183,55,0.3); cursor: pointer;
+      transition: transform 0.18s, box-shadow 0.18s;
+    }
+    button[type="submit"]:hover { transform: translateY(-1px); box-shadow: 0 10px 26px rgba(254,183,55,0.42); }
+    .comment-list { display: grid; gap: 12px; margin-top: 18px; }
+    .comment-item {
+      padding: 18px 20px; border-radius: 16px;
+      background: rgba(255,255,255,0.97); border: 1px solid rgba(0,0,0,0.07);
+    }
+    .comment-item strong { display: block; margin-bottom: 6px; font-size: 0.9rem; font-weight: 700; }
+    .comment-item p { margin: 0; line-height: 1.7; font-size: 0.94rem; }
+
+    /* ── TESTIMONIALS ───────────────────────────────────────── */
+    .testimonial-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
+    .testimonial-card { display: flex; flex-direction: column; }
+    .testimonial-card p { flex: 1; }
+    .testimonial-card {
+      padding: 26px; background: rgba(255,255,255,0.9); border: 1px solid rgba(255,255,255,0.94);
+      border-radius: var(--radius-xl); box-shadow: var(--shadow); position: relative; overflow: hidden;
+    }
+    .testimonial-card::before {
+      content: "\201C"; position: absolute; right: 18px; top: 8px;
+      font-size: 5rem; line-height: 1; color: rgba(254,183,55,0.16); pointer-events: none;
+    }
+    .testimonial-person { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+    .testimonial-person img { width: 64px; height: 64px; object-fit: cover; border-radius: 16px; box-shadow: 0 4px 14px rgba(0,0,0,0.12); }
+    .testimonial-person strong { display: block; font-size: 0.98rem; font-weight: 700; }
+    .testimonial-person span { font-size: 0.8rem; color: rgba(0,0,0,0.5); font-weight: 500; }
+    .testimonial-card p { line-height: 1.74; margin: 0; font-size: 0.96rem; }
+
+    /* ── KEYFRAMES ──────────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulseYellow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(254,183,55,0); }
+      50%       { box-shadow: 0 0 0 6px rgba(254,183,55,0.22); }
+    }
+    @keyframes shimmerSlide {
+      0%   { background-position: 200% center; }
+      100% { background-position: -200% center; }
+    }
+    @keyframes floatOrb {
+      0%, 100% { transform: scale(1) translate(0, 0); opacity: 1; }
+      50%       { transform: scale(1.1) translate(10px, -12px); opacity: 0.85; }
+    }
+
+    .hidden { display: none !important; }
+
+    /* ── RESPONSIVE ─────────────────────────────────────────── */
+    @media (max-width: 1080px) {
+      .portal-grid, .learning-grid { grid-template-columns: 1fr; }
+      .testimonial-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .sidebar { position: static; }
+      .access-cta-banner { flex-direction: column; align-items: flex-start; }
+    }
+    @media (max-width: 720px) {
+      .portal-header, .lesson-top { display: grid; grid-template-columns: 1fr; }
+      .topbar { border-radius: 22px; top: 12px; padding: 10px 14px 10px 18px; }
+      .portal-stats { justify-content: center; }
+      .portal-header { padding: 28px 24px; margin-top: 18px; }
+      .lesson-panel, .community-panel, .sidebar { padding: 20px; }
+      .testimonial-grid { grid-template-columns: 1fr; }
+      .learning-grid { grid-template-columns: 1fr; }
+      .insight-box:first-child { border-right: none; border-bottom: 1px solid rgba(0,0,0,0.07); padding-right: 20px; padding-bottom: 20px; }
+      .insight-box:last-child { padding-left: 20px; padding-top: 20px; }
+      h1 { font-size: clamp(2.1rem, 9vw, 3.4rem); }
+      h2 { font-size: clamp(1.6rem, 6.5vw, 2.6rem); }
+      .access-cta-banner { padding: 24px 22px; }
+      .access-cta-btn { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <main id="screen-acesso" class="screen active">
+      <div class="container" style="padding-bottom: 72px;">
+        <header class="topbar">
+          <div class="brand">
+            <img src="./Logo Fundace-USP-FEARP-PRETO.png" alt="Fundace FEA-RP USP" class="topbar-logo">
+          </div>
+          <nav class="nav-links">
+            <span id="user-name" style="font-size:0.82rem; font-weight:600; color:rgba(0,0,0,0.5);"></span>
+            <a href="https://www.fundace.org.br/lp/mba-ead-usp-contabilidade-em-ifrs" target="_blank" rel="noreferrer" class="primary-button gold">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+              Acessar o Curso
+            </a>
+            <button id="logout-btn" class="ghost-button" style="font-size:0.82rem; padding:9px 14px;">Sair</button>
+          </nav>
+        </header>
+
+        <section class="portal-header">
+          <div style="position: relative; z-index: 1; text-align: center;">
+            <div class="eyebrow" style="margin-left: auto; margin-right: auto;">Trilha gratuita · Acesso liberado</div>
+            <h1 style="max-width: 100%;">Contabilidade, tributação e normas internacionais na prática.</h1>
+            <p id="welcome-copy" style="max-width: 60ch; margin-left: auto; margin-right: auto;">
+              Conteúdos extraídos das aulas do MBA USP Contabilidade em IFRS. Assista na ordem, avance no seu ritmo e compreenda como as informações contábeis e fiscais impactam a gestão e a tomada de decisão.
+            </p>
+            <div class="usp-strip" style="margin-left: auto; margin-right: auto;">
+              Certificado Fundace · 100% gratuito
+            </div>
+          </div>
+          <div class="portal-stats" style="justify-content: center; margin-top: 20px;">
+            <div class="pill" id="pill-progress">0% concluído</div>
+            <div class="pill">4 temas · 8 aulas</div>
+          </div>
+        </section>
+
+        <section class="portal-grid">
+          <aside class="sidebar">
+            <div class="progress-card">
+              <strong>Seu avanço na trilha</strong>
+              <div class="progress-track">
+                <div class="progress-fill" id="progress-fill"></div>
+              </div>
+              <div id="progress-copy">Conclua a primeira aula para liberar a próxima.</div>
+            </div>
+
+            <div class="lesson-menu" id="lesson-menu"></div>
+
+          </aside>
+
+          <div class="lesson-stage">
+            <article class="lesson-panel">
+              <div class="lesson-top">
+                <div>
+                  <div class="eyebrow eyebrow-light" id="lesson-eyebrow">Aula 1 liberada</div>
+                  <h2 id="lesson-title">Título da aula</h2>
+                  <div class="lesson-meta" id="lesson-meta"></div>
+                </div>
+              </div>
+
+              <div class="video-shell" id="video-shell">
+                <iframe id="lesson-video" src="" title="Aula da trilha IFRS" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                <div class="locked-overlay hidden" id="locked-overlay">
+                  <div>
+                    <strong>Esta aula ainda está bloqueada.</strong>
+                    <div style="font-size: 0.92rem; opacity: 0.72; margin-top: 6px;">Conclua a aula anterior para liberar o próximo conteúdo.</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="learning-grid">
+                <div class="insight-box">
+                  <strong>O que você vai absorver</strong>
+                  <ul id="lesson-highlights"></ul>
+                </div>
+              </div>
+
+              <div class="lesson-actions">
+                <button type="button" class="complete-button" id="complete-button">Marcar como concluída</button>
+                <button type="button" class="certificate-button" id="certificate-button" disabled>Baixar certificado</button>
+              </div>
+            </article>
+
+            <!-- CTA Banner de acesso ao curso -->
+            <div class="access-cta-banner">
+              <div class="access-cta-banner-text">
+                <span>Trilha em Contabilidade em IFRS · Fundace / FEA-RP · USP</span>
+                <h3>Quer aprofundar com método e sair com certificado?</h3>
+                <p>Acesse o MBA USP Contabilidade em IFRS completo: conteúdo avançado, corpo docente da FEA-RP/USP e certificado emitido pela Fundace.</p>
+              </div>
+              <a href="https://www.fundace.org.br/lp/mba-ead-usp-contabilidade-em-ifrs" target="_blank" rel="noreferrer" class="access-cta-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                Acessar o curso completo
+              </a>
+            </div>
+
+            <article class="community-panel">
+              <div class="section-header" style="margin:0;">
+                <div>
+                  <div class="eyebrow eyebrow-light">Comentários da aula</div>
+                  <h3 style="font-size: clamp(1.4rem, 2.8vw, 2rem);">Deixe sua dúvida ou insight.</h3>
+                </div>
+              </div>
+
+              <form id="comment-form" class="hero-form" style="margin-top: 20px;">
+                <div class="field">
+                  <label for="comment-name">Nome</label>
+                  <input id="comment-name" type="text" placeholder="Seu nome">
+                </div>
+                <div class="field">
+                  <label for="comment-text">Comentário</label>
+                  <textarea id="comment-text" placeholder="Compartilhe uma dúvida, insight ou aplicação prática desta aula." required></textarea>
+                </div>
+                <button type="submit">Publicar comentário</button>
+              </form>
+
+              <div class="comment-list" id="comment-list"></div>
+            </article>
+
+            <article class="community-panel">
+              <div style="margin-bottom: 22px;">
+                <div class="eyebrow eyebrow-light">Quem já passou por aqui</div>
+                <h3 style="font-size: clamp(1.3rem, 2.6vw, 1.9rem);">Quem já fez o MBA conta o que mudou.</h3>
+                <p style="margin: 10px 0 0; line-height: 1.65; font-size: 0.9rem; color: var(--brand-ink-soft);">Profissionais de contabilidade, finanças e gestão que avançaram com o MBA USP Contabilidade em IFRS.</p>
+              </div>
+
+              <div class="testimonial-grid">
+                <article class="testimonial-card">
+                  <div class="testimonial-person">
+                    <img src="./TANISIA.jpg" alt="Foto de Tanísia Marinho Rodrigues">
+                    <div>
+                      <strong>Tanísia Marinho Rodrigues</strong>
+                      <span>Ex-Aluna MBA EAD Contabilidade em IFRS</span>
+                    </div>
+                  </div>
+                  <p>"O MBA Contabilidade em IFRS/USP é sem dúvida um divisor de águas. Aprendi muito e continuo aplicando no dia a dia. Tive o privilégio de fazer parte da Primeira Turma e, além do conteúdo, fiz amizades no Brasil inteiro. É de grande valia para quem quer se manter atualizado com as Normas Contábeis."</p>
+                </article>
+                <article class="testimonial-card">
+                  <div class="testimonial-person">
+                    <img src="./Marcio Eduardo.jpg" alt="Foto de Márcio Eduardo">
+                    <div>
+                      <strong>Márcio Eduardo</strong>
+                      <span>Ex-Aluno MBA EAD Contabilidade em IFRS</span>
+                    </div>
+                  </div>
+                  <p>"A opção oferecida pela USP em EAD foi a possibilidade ideal de continuar meu desenvolvimento. O cronograma bem definido me permitiu participar ativamente das aulas. O conhecimento teórico e prático dos professores enriqueceu cada encontro. Com base nessa experiência, passei a recomendar o curso aos meus colegas."</p>
+                </article>
+              </div>
+            </article>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="./supabase/config.js"></script>
+  <script src="./supabase/certificate-template.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
+  <script>
+    const { createClient } = supabase;
+    const db = createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
+    let currentUser = null;
+    let lastTrackedLessonId = null;
+
+    // Proteção da página — redireciona para login se não autenticado
+    (async () => {
+      const { data: { session } } = await db.auth.getSession();
+      if (!session) { window.location.href = "./login.html"; return; }
+      // Exibe nome do usuário no topbar
+      const userName = session.user.user_metadata?.name || session.user.email;
+      document.getElementById("user-name").textContent = userName;
+    })();
+
+    const lessons = [
+      {
+        id: "lesson-1",
+        title: "Contabilidade para Pequenas e Médias Empresas — Parte 1",
+        duration: "Parte 1",
+        level: "PME · Fundamentos",
+        teacher: "Corpo docente Fundace",
+        videoUrl: "https://vimeo.com/1016215682/aec8db18aa",
+        eyebrow: "Aula 1 · liberada",
+        highlights: [
+          "Fundamentos da contabilidade aplicados às pequenas e médias empresas.",
+          "Normas simplificadas (IFRS para PMEs): o que muda na prática.",
+          "Reconhecimento e mensuração de ativos, passivos, receitas e despesas."
+        ]
+      },
+      {
+        id: "lesson-2",
+        title: "Contabilidade para Pequenas e Médias Empresas — Parte 2",
+        duration: "Parte 2",
+        level: "PME · Aprofundamento",
+        teacher: "Corpo docente Fundace",
+        videoUrl: "https://vimeo.com/1126227055/0764827570",
+        eyebrow: "Aula 2 · disponível após a Parte 1",
+        highlights: [
+          "Elaboração e interpretação das demonstrações financeiras para PMEs.",
+          "Como usar a informação contábil como base para a tomada de decisão.",
+          "Aplicação prática das normas no contexto de empresas de menor porte."
+        ]
+      },
+      {
+        id: "lesson-3",
+        title: "Tributação Brasileira sobre o Lucro — Parte 1",
+        duration: "Parte 1",
+        level: "Tributação · Fundamentos",
+        teacher: "Corpo docente Fundace",
+        videoUrl: "https://vimeo.com/1091222787/833ec6dd79",
+        eyebrow: "Aula 3",
+        highlights: [
+          "Apuração de tributos sobre o lucro: IRPJ e CSLL na prática.",
+          "Regimes tributários: Lucro Real, Lucro Presumido e Lucro Arbitrado.",
+          "Como calcular o lucro tributável e seus impactos financeiros e gerenciais."
+        ]
+      },
+      {
+        id: "lesson-4",
+        title: "Tributação Brasileira sobre o Lucro — Parte 2",
+        duration: "Parte 2",
+        level: "Tributação · Aplicação",
+        teacher: "Corpo docente Fundace",
+        videoUrl: "https://vimeo.com/1093192101/03404e2b2e",
+        eyebrow: "Aula 4",
+        highlights: [
+          "Planejamento tributário: como estruturar decisões fiscais com segurança.",
+          "Diferenças temporárias e permanentes entre resultado contábil e fiscal.",
+          "Reflexos dos tributos nas demonstrações e nos relatórios gerenciais."
+        ]
+      },
+      {
+        id: "lesson-5",
+        title: "Instrumentos Financeiros Derivativos — Parte 1",
+        duration: "Parte 1",
+        level: "Derivativos · Fundamentos",
+        teacher: "Especialistas do MBA",
+        videoUrl: "https://vimeo.com/1100721384/3c020b9e98",
+        eyebrow: "Aula 5",
+        highlights: [
+          "Conceitos essenciais: swaps, opções e futuros no contexto empresarial.",
+          "Hedge: como usar derivativos para proteger a empresa contra riscos.",
+          "Reconhecimento inicial e subsequente conforme normas internacionais."
+        ]
+      },
+      {
+        id: "lesson-6",
+        title: "Instrumentos Financeiros Derivativos — Parte 2",
+        duration: "Parte 2",
+        level: "Derivativos · Aplicação",
+        teacher: "Especialistas do MBA",
+        videoUrl: "https://vimeo.com/1103111785/a9ba50b22e",
+        eyebrow: "Aula 6",
+        highlights: [
+          "Mensuração a valor justo e impacto dos derivativos no resultado.",
+          "Contabilização conforme normas internacionais: o que exige atenção.",
+          "Como ler derivativos nas demonstrações financeiras e notas explicativas."
+        ]
+      },
+      {
+        id: "lesson-7",
+        title: "Receitas de Contratos de Clientes — Parte 1",
+        duration: "Parte 1",
+        level: "IFRS 15 · Fundamentos",
+        teacher: "Corpo docente Fundace",
+        videoUrl: "https://vimeo.com/1142568306/2bc508dcdb",
+        eyebrow: "Aula 7",
+        highlights: [
+          "IFRS 15 e CPC 47: o modelo de cinco passos para reconhecimento de receita.",
+          "Como identificar contratos e obrigações de desempenho na prática.",
+          "Impactos do novo modelo em empresas com contratos de longo prazo."
+        ]
+      },
+      {
+        id: "lesson-8",
+        title: "Receitas de Contratos de Clientes — Parte 2",
+        duration: "Parte 2",
+        level: "IFRS 15 · Aplicação",
+        teacher: "Corpo docente Fundace",
+        videoUrl: "https://vimeo.com/1145040303/fe677c124a",
+        eyebrow: "Aula 8 · Encerramento da trilha",
+        highlights: [
+          "Mensuração e alocação do preço de transação entre obrigações de desempenho.",
+          "Receita ao longo do tempo versus em um ponto no tempo: critérios práticos.",
+          "Divulgações exigidas pelo IFRS 15 e como interpretá-las nas demonstrações."
+        ]
+      }
+    ];
+
+    const defaults = {
+      notes: {},
+      completed: [],
+      user: { name: "Trilha premium Fundace" }
+    };
+
+    const state = loadState();
+    let currentLessonIndex = 0;
+
+    const lessonMenu       = document.getElementById("lesson-menu");
+    const lessonTitle      = document.getElementById("lesson-title");
+    const lessonEyebrow    = document.getElementById("lesson-eyebrow");
+    const lessonMeta       = document.getElementById("lesson-meta");
+    const lessonVideo      = document.getElementById("lesson-video");
+    const lessonHighlights = document.getElementById("lesson-highlights");
+    const completeButton   = document.getElementById("complete-button");
+    const certificateButton = document.getElementById("certificate-button");
+    const progressFill     = document.getElementById("progress-fill");
+    const progressCopy     = document.getElementById("progress-copy");
+    const pillProgress     = document.getElementById("pill-progress");
+    const welcomeCopy      = document.getElementById("welcome-copy");
+    const commentForm      = document.getElementById("comment-form");
+    const commentName      = document.getElementById("comment-name");
+    const commentText      = document.getElementById("comment-text");
+    const commentList      = document.getElementById("comment-list");
+    const lockedOverlay    = document.getElementById("locked-overlay");
+    const videoShell       = document.getElementById("video-shell");
+
+    function storageKey() {
+      return currentUser?.id ? `ifrsTrailState_v3:${currentUser.id}` : "ifrsTrailState_v3:guest";
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(storageKey());
+        if (!raw) return structuredClone(defaults);
+        const parsed = JSON.parse(raw);
+        return {
+          completed: Array.isArray(parsed.completed) ? parsed.completed : [],
+          user: parsed.user || null
+        };
+      } catch (e) {
+        return structuredClone(defaults);
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(storageKey(), JSON.stringify(state));
+    }
+
+    function isUnlocked(index) {
+      if (index === 0) return true;
+      return state.completed.includes(lessons[index - 1].id);
+    }
+
+    function isCompleted(id) {
+      return state.completed.includes(id);
+    }
+
+    function progressPercent() {
+      return Math.round((state.completed.length / lessons.length) * 100);
+    }
+
+    function completedThemes() {
+      return [...new Set(
+        lessons
+          .filter(lesson => isCompleted(lesson.id))
+          .map(lesson => lesson.title.split(" — ")[0].trim())
+      )];
+    }
+
+    function certificateName() {
+      const fullName = state.user?.name || currentUser?.user_metadata?.name || currentUser?.email || "Aluno";
+      return fullName.trim();
+    }
+
+    function wrapCertificateText(text, maxChars) {
+      const words = text.split(/\s+/).filter(Boolean);
+      const lines = [];
+      let current = "";
+
+      words.forEach(word => {
+        const candidate = current ? `${current} ${word}` : word;
+        if (candidate.length <= maxChars) {
+          current = candidate;
+        } else {
+          if (current) lines.push(current);
+          current = word;
+        }
+      });
+
+      if (current) lines.push(current);
+      return lines;
+    }
+    async function generateCertificate() {
+      const { PDFDocument, StandardFonts, rgb } = PDFLib;
+      const base64 = window.CERTIFICATE_TEMPLATE_BASE64;
+      if (!base64) {
+        throw new Error("Template do certificado não encontrado.");
+      }
+
+      const binary = atob(base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i += 1) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      const pdfDoc = await PDFDocument.load(bytes);
+      const page = pdfDoc.getPages()[0];
+      const width = page.getWidth();
+      const height = page.getHeight();
+      const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+      const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+      const name = certificateName();
+      const themes = completedThemes();
+      const themesLabel = themes.length
+        ? themes.join(" • ")
+        : "Trilha completa";
+
+      const nameSize = width > height ? 28 : 22;
+      const topicsSize = width > height ? 10 : 9;
+      const titleWidth = fontBold.widthOfTextAtSize(name, nameSize);
+
+      page.drawText(name, {
+        x: (width - titleWidth) / 2,
+        y: height * 0.36,
+        size: nameSize,
+        font: fontBold,
+        color: rgb(0.15, 0.15, 0.15)
+      });
+
+      const topicLines = wrapCertificateText(themesLabel, width > height ? 72 : 46).slice(0, 3);
+      topicLines.forEach((line, index) => {
+        const lineWidth = font.widthOfTextAtSize(line, topicsSize);
+        page.drawText(line, {
+          x: (width - lineWidth) / 2,
+          y: height * 0.30 - (index * (topicsSize + 5)),
+          size: topicsSize,
+          font,
+          color: rgb(0.22, 0.22, 0.22)
+        });
+      });
+
+      const output = await pdfDoc.save();
+      const blob = new Blob([output], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const safeName = name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      link.href = url;
+      link.download = `certificado-ifrs-${safeName || "aluno"}.pdf`;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function hydrateUser() {
+      if (!state.user) return;
+      commentName.value = state.user.name;
+    }
+
+    async function syncProgressFromSupabase() {
+      if (!currentUser) return;
+
+      const { data, error } = await db
+        .from("user_lesson_progress")
+        .select("lesson_id")
+        .eq("user_id", currentUser.id);
+
+      if (error) {
+        console.error("Erro ao carregar progresso:", error);
+        return;
+      }
+
+      state.completed = Array.isArray(data)
+        ? data.map(item => item.lesson_id).filter(Boolean)
+        : [];
+
+      saveState();
+    }
+
+    function renderMenu() {
+      lessonMenu.innerHTML = "";
+      lessons.forEach((lesson, index) => {
+        const unlocked  = isUnlocked(index);
+        const completed = isCompleted(lesson.id);
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = `lesson-nav-item${index === currentLessonIndex ? " active" : ""}${!unlocked ? " locked" : ""}`;
+        btn.innerHTML = `
+          <div class="lesson-nav-top">
+            <strong>Aula ${index + 1}</strong>
+            <span class="status-badge ${completed ? "status-done" : unlocked ? "status-open" : "status-locked"}">
+              ${completed ? "Concluída" : unlocked ? "Liberada" : "Bloqueada"}
+            </span>
+          </div>
+          <div>${lesson.title}</div>
+          <div>${lesson.duration} · ${lesson.level}</div>
+        `;
+        btn.addEventListener("click", () => {
+          if (!unlocked) return;
+          currentLessonIndex = index;
+          renderPortal();
+        });
+        lessonMenu.appendChild(btn);
+      });
+    }
+
+    function renderLessonMeta(lesson) {
+      lessonMeta.innerHTML = "";
+      [`${lesson.duration}`, lesson.level, lesson.teacher].forEach(text => {
+        const chip = document.createElement("span");
+        chip.className = "meta-chip";
+        chip.textContent = text;
+        lessonMeta.appendChild(chip);
+      });
+    }
+
+    function renderHighlights(lesson) {
+      lessonHighlights.innerHTML = "";
+      lesson.highlights.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = item;
+        lessonHighlights.appendChild(li);
+      });
+    }
+
+    async function renderComments(lessonId) {
+      commentList.innerHTML = `<div class="comment-item" style="opacity:0.45; font-size:0.88rem;">Carregando comentários…</div>`;
+      const { data, error } = await db
+        .from("comments")
+        .select("name, text, created_at")
+        .eq("lesson_id", lessonId)
+        .eq("approved", true)
+        .order("created_at", { ascending: false });
+
+      commentList.innerHTML = "";
+      const comments = data || [];
+      if (!comments.length) {
+        const empty = document.createElement("div");
+        empty.className = "comment-item";
+        empty.innerHTML = "<strong>Nenhum comentário ainda.</strong><p>Seja o primeiro a compartilhar um insight sobre esta aula.</p>";
+        commentList.appendChild(empty);
+      } else {
+        comments.forEach(comment => {
+          const item = document.createElement("article");
+          item.className = "comment-item";
+          item.innerHTML = `<strong>${escapeHtml(comment.name)}</strong><p>${escapeHtml(comment.text)}</p>`;
+          commentList.appendChild(item);
+        });
+      }
+    }
+
+    async function trackLessonView(lessonId, unlocked) {
+      if (!currentUser || !unlocked) return;
+      if (lastTrackedLessonId === lessonId) return;
+
+      lastTrackedLessonId = lessonId;
+
+      const { error } = await db.rpc("track_lesson_view", {
+        p_lesson_id: lessonId
+      });
+
+      if (error) {
+        console.error("Erro ao registrar visualização:", error);
+      }
+    }
+
+    function buildEmbedUrl(videoUrl) {
+      if (!videoUrl) return "";
+      if (videoUrl.includes("vimeo.com/")) {
+        const match = videoUrl.match(/vimeo\.com\/(\d+)\/([A-Za-z0-9]+)/);
+        if (match) return `https://player.vimeo.com/video/${match[1]}?h=${match[2]}&title=0&byline=0&portrait=0`;
+        const simple = videoUrl.match(/vimeo\.com\/(\d+)/);
+        if (simple) return `https://player.vimeo.com/video/${simple[1]}?title=0&byline=0&portrait=0`;
+      }
+      if (videoUrl.includes("youtube.com/") || videoUrl.includes("youtu.be/")) {
+        const match = videoUrl.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+        if (match) return `https://www.youtube.com/embed/${match[1]}?rel=0&modestbranding=1`;
+      }
+      return videoUrl;
+    }
+
+    async function renderPortal() {
+      const lesson   = lessons[currentLessonIndex];
+      const unlocked = isUnlocked(currentLessonIndex);
+      const percent  = progressPercent();
+      const next     = lessons.find(l => !isCompleted(l.id));
+
+      hydrateUser();
+      renderMenu();
+
+      lessonTitle.textContent   = lesson.title;
+      lessonEyebrow.textContent = lesson.eyebrow;
+      renderLessonMeta(lesson);
+      renderHighlights(lesson);
+      renderComments(lesson.id);
+      trackLessonView(lesson.id, unlocked);
+
+      pillProgress.textContent = `${percent}% concluído`;
+      progressFill.style.width = `${percent}%`;
+      progressCopy.textContent = next
+        ? `Continue com "${next.title}" para avançar na trilha.`
+        : "Trilha finalizada. Hora de levar seu currículo para o próximo nível.";
+
+      lessonVideo.src = unlocked ? buildEmbedUrl(lesson.videoUrl) : "";
+      videoShell.classList.toggle("locked", !unlocked);
+      lockedOverlay.classList.toggle("hidden", unlocked);
+
+      completeButton.textContent = isCompleted(lesson.id) ? "Aula concluída ✓" : "Marcar como concluída";
+      completeButton.classList.toggle("completed", isCompleted(lesson.id));
+      completeButton.disabled = !unlocked || isCompleted(lesson.id);
+      completeButton.style.opacity = completeButton.disabled ? "0.72" : "1";
+      certificateButton.disabled = percent < 100;
+      certificateButton.textContent = percent < 100 ? "Baixar certificado" : "Baixar certificado em PDF";
+    }
+
+    function escapeHtml(value) {
+      return value
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    completeButton.addEventListener("click", async () => {
+      const lesson = lessons[currentLessonIndex];
+      if (!isUnlocked(currentLessonIndex) || isCompleted(lesson.id)) return;
+
+      completeButton.disabled = true;
+      completeButton.textContent = "Salvando progresso...";
+
+      if (currentUser) {
+        const { error } = await db
+          .from("user_lesson_progress")
+          .upsert(
+            { user_id: currentUser.id, lesson_id: lesson.id },
+            { onConflict: "user_id,lesson_id" }
+          );
+
+        if (error) {
+          console.error("Erro ao salvar progresso:", error);
+        }
+      }
+
+      if (!state.completed.includes(lesson.id)) {
+        state.completed.push(lesson.id);
+      }
+
+      saveState();
+      if (currentLessonIndex < lessons.length - 1) currentLessonIndex += 1;
+      renderPortal();
+    });
+
+    certificateButton.addEventListener("click", async () => {
+      if (progressPercent() < 100) return;
+
+      certificateButton.disabled = true;
+      certificateButton.textContent = "Gerando certificado...";
+
+      try {
+        await generateCertificate();
+      } catch (error) {
+        console.error("Erro ao gerar certificado:", error);
+        alert("Não foi possível gerar o certificado agora. Recarregue a página e tente novamente.");
+      } finally {
+        certificateButton.disabled = false;
+        certificateButton.textContent = "Baixar certificado em PDF";
+      }
+    });
+
+    commentForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      const lesson = lessons[currentLessonIndex];
+      const name = (commentName.value || "Aluno(a)").trim();
+      const text = commentText.value.trim();
+      if (!text) return;
+
+      const submitBtn = commentForm.querySelector("button[type='submit']");
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Publicando…";
+
+      const { error } = await db
+        .from("comments")
+        .insert({
+          lesson_id: lesson.id,
+          user_id: currentUser.id,
+          name,
+          text,
+          approved: false,
+          status: "pending"
+        });
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Publicar comentário";
+
+      if (!error) {
+        commentText.value = "";
+        alert("Comentário enviado para aprovação.");
+        await renderComments(lesson.id);
+      }
+    });
+
+    (async () => {
+      const { data: { session } } = await db.auth.getSession();
+      if (!session) { window.location.href = "./login.html"; return; }
+
+      currentUser = session.user;
+
+      const userName = session.user.user_metadata?.name || session.user.email;
+      document.getElementById("user-name").textContent = userName;
+      const persistedState = loadState();
+      state.completed = persistedState.completed;
+      state.user = { name: userName };
+
+      await syncProgressFromSupabase();
+      renderPortal();
+    })();
+
+    document.getElementById("logout-btn").addEventListener("click", async () => {
+      await db.auth.signOut();
+      window.location.href = "./login.html";
+    });
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

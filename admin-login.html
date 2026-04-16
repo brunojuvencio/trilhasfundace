@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Admin | Fundace IFRS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #16100c;
+      --panel: rgba(255, 249, 243, 0.07);
+      --panel-border: rgba(255, 255, 255, 0.1);
+      --text: #fff8f2;
+      --muted: rgba(255, 248, 242, 0.62);
+      --accent: #d47a1f;
+      --accent-strong: #f1a34d;
+      --danger: #ff8d8d;
+      --success: #97e2b6;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      font-family: "Manrope", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 12% 18%, rgba(212, 122, 31, 0.25), transparent 26%),
+        radial-gradient(circle at 85% 14%, rgba(255, 255, 255, 0.07), transparent 18%),
+        linear-gradient(180deg, #21160f 0%, var(--bg) 100%);
+      overflow: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.08;
+      background-image: linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px);
+      background-size: 36px 36px;
+      mask-image: radial-gradient(circle at center, black 45%, transparent 92%);
+    }
+
+    .layout {
+      width: min(480px, 100%);
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero { display: none; }
+
+    .card {
+      border-radius: 30px;
+      border: 1px solid var(--panel-border);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 32px 80px rgba(0, 0, 0, 0.34);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(212, 122, 31, 0.14);
+      color: var(--accent-strong);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .hero h1 {
+      margin: 18px 0 16px;
+      font-family: "Fraunces", serif;
+      font-size: clamp(2.4rem, 4vw, 4.4rem);
+      line-height: 0.94;
+      letter-spacing: -0.04em;
+      max-width: 8ch;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 52ch;
+      color: var(--muted);
+      line-height: 1.75;
+      font-size: 0.98rem;
+    }
+
+    .feature-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .feature {
+      padding: 16px 18px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .feature strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.98rem;
+    }
+
+    .feature span {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.06);
+      padding: 40px 36px 48px;
+      align-self: center;
+    }
+
+    .logo-wrap {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .logo-wrap img {
+      height: 30px;
+      filter: brightness(0) invert(1);
+      opacity: 0.92;
+    }
+
+    .card h2 {
+      margin: 0 0 10px;
+      text-align: center;
+      font-size: 1.65rem;
+    }
+
+    .card p {
+      margin: 0 0 28px;
+      text-align: center;
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 0.94rem;
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: rgba(255, 248, 242, 0.8);
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+      font: inherit;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    input::placeholder { color: rgba(255,248,242,0.32); }
+
+    input:focus {
+      outline: none;
+      border-color: rgba(241,163,77,0.7);
+      box-shadow: 0 0 0 4px rgba(212,122,31,0.16);
+      background: rgba(255,255,255,0.1);
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .row a,
+    .footer a {
+      color: var(--accent-strong);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .row a:hover,
+    .footer a:hover { color: #ffd2a1; }
+
+    .submit-btn,
+    .ghost-btn {
+      width: 100%;
+      border: 0;
+      border-radius: 16px;
+      padding: 15px 18px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.18s ease, opacity 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .submit-btn {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
+      color: #1b120d;
+      box-shadow: 0 18px 36px rgba(212, 122, 31, 0.34);
+    }
+
+    .ghost-btn {
+      margin-top: 10px;
+      background: transparent;
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .submit-btn:hover:not(:disabled),
+    .ghost-btn:hover { transform: translateY(-1px); }
+
+    .submit-btn:disabled {
+      opacity: 0.62;
+      cursor: not-allowed;
+    }
+
+    .msg-box {
+      padding: 13px 15px;
+      border-radius: 14px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      display: none;
+      text-align: center;
+      line-height: 1.55;
+    }
+
+    .msg-box.success {
+      display: block;
+      background: rgba(55, 145, 92, 0.18);
+      border: 1px solid rgba(55, 145, 92, 0.24);
+      color: var(--success);
+    }
+
+    .msg-box.error-msg {
+      display: block;
+      background: rgba(188, 64, 64, 0.18);
+      border: 1px solid rgba(188, 64, 64, 0.24);
+      color: var(--danger);
+    }
+
+    .footer {
+      margin-top: 28px;
+      text-align: center;
+      color: rgba(255,248,242,0.3);
+      font-size: 0.78rem;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 920px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        min-height: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="layout">
+    <section class="hero">
+      <div>
+        <div class="eyebrow">Área administrativa</div>
+        <h1>Controle a trilha com clareza.</h1>
+        <p>Entre com sua conta de administrador para acompanhar a base de alunos, aprovar comentários antes da publicação e enxergar quais aulas estão puxando mais engajamento.</p>
+      </div>
+
+      <div class="feature-list">
+        <article class="feature">
+          <strong>Base de alunos</strong>
+          <span>Visualize leads cadastrados e registre novos alunos manualmente sem sair do painel.</span>
+        </article>
+        <article class="feature">
+          <strong>Moderação centralizada</strong>
+          <span>Todo comentário novo entra como pendente e só sobe para o portal depois da sua aprovação.</span>
+        </article>
+        <article class="feature">
+          <strong>Métricas de consumo</strong>
+          <span>Veja o ranking de aulas mais assistidas e use isso para ajustar comunicação e acompanhamento.</span>
+        </article>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="logo-wrap">
+        <img src="./Logo Fundace-USP-FEARP-PRETO.png" alt="Fundace FEA-RP USP">
+      </div>
+
+      <h2>Entrar no painel admin</h2>
+      <p>Acesso restrito à equipe Fundace.</p>
+
+      <form id="admin-login-form" class="form-grid" novalidate>
+        <div class="field">
+          <label for="email">E-mail</label>
+          <input id="email" type="email" placeholder="admin@empresa.com" autocomplete="email" required>
+        </div>
+
+        <div class="field">
+          <label for="password">Senha</label>
+          <input id="password" type="password" placeholder="Sua senha de administrador" autocomplete="current-password" required>
+        </div>
+
+        <div class="row">
+          <a href="./esqueci-senha.html">Esqueci minha senha</a>
+          <a href="./login.html">Login do aluno</a>
+        </div>
+
+        <div class="msg-box" id="msg-box"></div>
+
+        <button type="submit" class="submit-btn" id="submit-btn">Entrar no painel</button>
+      </form>
+
+      <button type="button" class="ghost-btn" onclick="window.location.href='./captacao.html'">Voltar para a captação</button>
+
+      <div class="footer">
+        Problemas com o acesso? Entre em contato com o suporte interno.
+      </div>
+    </section>
+  </main>
+
+  <script src="./supabase/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const { createClient } = supabase;
+    const db = createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
+
+    const form = document.getElementById("admin-login-form");
+    const submitBtn = document.getElementById("submit-btn");
+    const msgBox = document.getElementById("msg-box");
+
+    function showMessage(type, text) {
+      msgBox.className = `msg-box ${type}`;
+      msgBox.textContent = text;
+    }
+
+    async function redirectIfAlreadyAdmin() {
+      const { data: { session } } = await db.auth.getSession();
+      if (!session) return;
+
+      const { data: isAdmin } = await db.rpc("is_admin");
+      if (isAdmin) {
+        window.location.href = "./admin.html";
+      }
+    }
+
+    redirectIfAlreadyAdmin();
+
+    form.addEventListener("submit", async event => {
+      event.preventDefault();
+      msgBox.className = "msg-box";
+      msgBox.textContent = "";
+
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      if (!email || !password) {
+        showMessage("error-msg", "Preencha e-mail e senha.");
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Entrando...";
+
+      const { error } = await db.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Entrar no painel";
+        showMessage("error-msg", "E-mail ou senha incorretos.");
+        return;
+      }
+
+      const { data: isAdmin, error: adminError } = await db.rpc("is_admin");
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Entrar no painel";
+
+      if (adminError || !isAdmin) {
+        await db.auth.signOut();
+        showMessage("error-msg", "Seu usuário existe, mas ainda não foi liberado como administrador.");
+        return;
+      }
+
+      showMessage("success", "Acesso liberado. Redirecionando para o painel...");
+      window.location.href = "./admin.html";
+    });
+  </script>
+</body>
+</html>

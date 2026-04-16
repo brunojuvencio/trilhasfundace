@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trilha Gratuita em Contabilidade em IFRS | Fundace FEA-RP/USP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --yellow: #feb737;
+      --yellow-dark: #d9970e;
+      --black: #080808;
+      --ink: #111111;
+      --cream: #f5f0e8;
+      --cream-dark: #ede7d8;
+      --white: #ffffff;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: "Inter", sans-serif; color: var(--ink); background: var(--black); overflow-x: hidden; }
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+
+    /* TOPBAR */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 48px; height: 58px;
+      background: rgba(8,8,8,0.96); backdrop-filter: blur(24px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .topbar-logo { height: 24px; width: auto; filter: brightness(0) invert(1); opacity: 0.9; }
+    .topbar-cta {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 18px; border-radius: 8px; border: none; cursor: pointer;
+      background: var(--yellow); color: var(--black);
+      font: inherit; font-size: 0.82rem; font-weight: 700;
+      letter-spacing: -0.01em;
+      transition: opacity 0.15s, transform 0.15s;
+      text-decoration: none;
+    }
+    .topbar-cta:hover { opacity: 0.88; transform: translateY(-1px); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding-top: 58px;
+      position: relative; overflow: hidden;
+    }
+    .hero-content {
+      display: flex; flex-direction: column; align-items: center;
+      text-align: center;
+      padding: 80px 32px;
+      width: 100%; max-width: 860px;
+      position: relative;
+    }
+    .hero-noise {
+      position: absolute; inset: 0; pointer-events: none; opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+    }
+    .hero-texture {
+      position: absolute; inset: 0; pointer-events: none;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px);
+      background-size: 32px 32px;
+      -webkit-mask-image: radial-gradient(ellipse 90% 85% at 50% 50%, black 20%, transparent 75%);
+      mask-image: radial-gradient(ellipse 90% 85% at 50% 50%, black 20%, transparent 75%);
+    }
+    .hero-glow {
+      position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(254,183,55,0.07) 0%, transparent 65%);
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-size: 0.67rem; font-weight: 700; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--yellow);
+      margin-bottom: 28px; width: fit-content;
+    }
+    .hero-eyebrow-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--yellow); flex-shrink: 0;
+      animation: pulseGlow 2.4s ease-in-out infinite;
+    }
+    .hero h1 {
+      font-size: clamp(2.8rem, 5.5vw, 5rem);
+      font-weight: 800; line-height: 1.0;
+      letter-spacing: -0.04em; color: var(--white);
+      max-width: 18ch; margin-bottom: 28px;
+    }
+    .hero h1 em { font-style: normal; color: var(--yellow); }
+    .hero-desc {
+      font-size: 1.05rem; line-height: 1.78;
+      color: rgba(255,255,255,0.5);
+      max-width: 50ch; margin-bottom: 52px;
+      font-weight: 300;
+    }
+    .hero-stats {
+      display: flex; gap: 0; margin-bottom: 56px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px; overflow: hidden;
+      width: fit-content;
+    }
+    .stat-block {
+      padding: 20px 32px;
+      border-right: 1px solid rgba(255,255,255,0.08);
+    }
+    .stat-block:last-child { border-right: none; }
+    .stat-num {
+      font-size: 2.2rem; font-weight: 800;
+      color: var(--white); line-height: 1;
+      letter-spacing: -0.04em; margin-bottom: 4px;
+    }
+    .stat-num em { font-style: normal; color: var(--yellow); font-size: 1.4rem; }
+    .stat-lbl { font-size: 0.72rem; color: rgba(255,255,255,0.36); font-weight: 500; letter-spacing: 0.02em; }
+    .hero-cta {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 17px 36px; border-radius: 12px; border: none; cursor: pointer;
+      background: var(--yellow); color: var(--black);
+      font: inherit; font-size: 0.95rem; font-weight: 700;
+      box-shadow: 0 12px 40px rgba(254,183,55,0.36);
+      transition: transform 0.2s, box-shadow 0.2s;
+      width: fit-content;
+    }
+    .hero-cta:hover { transform: translateY(-2px); box-shadow: 0 16px 48px rgba(254,183,55,0.52); }
+    .hero-cta svg { transition: transform 0.2s; }
+    .hero-cta:hover svg { transform: translateX(3px); }
+
+    /* TICKER */
+    .ticker {
+      background: var(--yellow); overflow: hidden;
+      padding: 14px 0; white-space: nowrap;
+      border-top: 2px solid rgba(0,0,0,0.08);
+      border-bottom: 2px solid rgba(0,0,0,0.08);
+    }
+    .ticker-track {
+      display: inline-flex;
+      animation: tickerScroll 28s linear infinite;
+    }
+    .ticker-item {
+      display: inline-flex; align-items: center; gap: 16px;
+      padding: 0 32px;
+      font-size: 0.72rem; font-weight: 800;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--black);
+    }
+    .ticker-sep {
+      width: 4px; height: 4px; border-radius: 50%;
+      background: rgba(0,0,0,0.3); flex-shrink: 0;
+    }
+    @keyframes tickerScroll {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    /* SECTIONS */
+    .section { padding: 100px 0; background: var(--cream); }
+    .section.dark { background: var(--black); }
+    .container { width: min(calc(100% - 48px), 1120px); margin: 0 auto; }
+
+    .section-eyebrow {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--yellow-dark);
+      margin-bottom: 16px;
+    }
+    .section-eyebrow::before { content: ""; width: 20px; height: 2px; background: var(--yellow); border-radius: 1px; }
+
+    /* SOBRE A TRILHA */
+    .sobre-layout {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start;
+    }
+    .sobre-title {
+      font-size: clamp(1.9rem, 3vw, 2.8rem); font-weight: 800;
+      letter-spacing: -0.04em; line-height: 1.05;
+      color: var(--white); margin: 12px 0 20px;
+    }
+    .sobre-desc {
+      font-size: 0.96rem; color: rgba(255,255,255,0.44);
+      line-height: 1.78; font-weight: 300; max-width: 44ch; margin-bottom: 32px;
+    }
+    .sobre-badge {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 10px 16px; border-radius: 10px;
+      background: rgba(254,183,55,0.08); border: 1px solid rgba(254,183,55,0.18);
+      font-size: 0.78rem; font-weight: 600; color: rgba(254,183,55,0.8);
+      letter-spacing: 0.02em;
+    }
+    .sobre-badge::before {
+      content: ""; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--yellow); flex-shrink: 0;
+    }
+    .audience-label {
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.14em;
+      text-transform: uppercase; color: rgba(255,255,255,0.28);
+      margin-bottom: 16px;
+    }
+    .audience-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .audience-card {
+      padding: 22px 20px; border-radius: 16px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+      transition: background 0.2s, border-color 0.2s;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .audience-card:hover {
+      background: rgba(254,183,55,0.06); border-color: rgba(254,183,55,0.18);
+    }
+    .audience-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: rgba(254,183,55,0.1); border: 1px solid rgba(254,183,55,0.16);
+      display: flex; align-items: center; justify-content: center; margin-bottom: 4px;
+    }
+    .audience-icon svg { color: var(--yellow); }
+    .audience-card strong {
+      font-size: 0.88rem; font-weight: 700; color: rgba(255,255,255,0.85);
+      letter-spacing: -0.01em; line-height: 1.3;
+    }
+    .audience-card span {
+      font-size: 0.8rem; color: rgba(255,255,255,0.36); line-height: 1.6; font-weight: 300;
+    }
+    .sobre-divider {
+      width: 100%; height: 1px; background: rgba(255,255,255,0.06); margin: 48px 0;
+    }
+    .sobre-highlights { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .highlight-item { display: flex; align-items: flex-start; gap: 14px; }
+    .highlight-check {
+      width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0;
+      background: rgba(254,183,55,0.12); border: 1px solid rgba(254,183,55,0.2);
+      display: flex; align-items: center; justify-content: center; margin-top: 1px;
+    }
+    .highlight-check svg { color: var(--yellow); }
+    .highlight-text { font-size: 0.86rem; color: rgba(255,255,255,0.46); line-height: 1.65; font-weight: 300; }
+    .highlight-text strong { color: rgba(255,255,255,0.78); font-weight: 600; display: block; margin-bottom: 2px; }
+
+    @media (max-width: 860px) {
+      .sobre-layout { grid-template-columns: 1fr; gap: 40px; }
+      .sobre-highlights { grid-template-columns: 1fr; gap: 16px; }
+    }
+    @media (max-width: 540px) {
+      .audience-grid { grid-template-columns: 1fr; }
+    }
+
+    /* THEMES */
+    .themes-header { margin-bottom: 64px; }
+    .themes-title {
+      font-size: clamp(2rem, 3.5vw, 3rem); font-weight: 800;
+      letter-spacing: -0.04em; line-height: 1.05;
+      color: var(--ink); max-width: 16ch;
+    }
+    .themes-sub {
+      font-size: 0.96rem; color: rgba(17,17,17,0.5);
+      line-height: 1.72; max-width: 48ch; margin-top: 14px;
+      font-weight: 400;
+    }
+    .themes-list { display: grid; gap: 0; border: 1.5px solid rgba(17,17,17,0.1); border-radius: 20px; overflow: hidden; }
+    .theme-row {
+      display: grid; grid-template-columns: 100px 1fr;
+      border-bottom: 1.5px solid rgba(17,17,17,0.1);
+      background: var(--white); transition: background 0.2s;
+    }
+    .theme-row:last-child { border-bottom: none; }
+    .theme-row:hover { background: #fff9ee; }
+    .theme-num-col {
+      display: flex; align-items: center; justify-content: center;
+      border-right: 1.5px solid rgba(17,17,17,0.08);
+      padding: 36px 20px;
+    }
+    .theme-big-num {
+      font-size: 2.8rem; font-weight: 900; letter-spacing: -0.06em;
+      color: rgba(254,183,55,0.22); line-height: 1;
+    }
+    .theme-body { padding: 36px; }
+    .theme-lessons {
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--yellow-dark); margin-bottom: 10px;
+    }
+    .theme-body h3 {
+      font-size: 1.08rem; font-weight: 700; letter-spacing: -0.02em;
+      color: var(--ink); margin-bottom: 16px; line-height: 1.3;
+    }
+    .theme-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .theme-tag {
+      font-size: 0.75rem; font-weight: 500; color: rgba(17,17,17,0.58);
+      padding: 4px 12px; border-radius: 6px;
+      background: rgba(17,17,17,0.05); border: 1px solid rgba(17,17,17,0.08);
+    }
+
+    /* HOW IT WORKS */
+    .how-header { margin-bottom: 64px; }
+    .how-title {
+      font-size: clamp(2rem, 3.5vw, 3rem); font-weight: 800;
+      letter-spacing: -0.04em; color: var(--white); line-height: 1.05;
+    }
+    .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+    .step-card {
+      padding: 44px 36px; background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      position: relative; overflow: hidden; transition: background 0.2s;
+    }
+    .step-card:first-child { border-radius: 20px 0 0 20px; }
+    .step-card:last-child  { border-radius: 0 20px 20px 0; }
+    .step-card:hover { background: rgba(255,255,255,0.05); }
+    .step-card::before {
+      content: ""; position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: transparent; transition: background 0.3s;
+    }
+    .step-card:hover::before { background: var(--yellow); }
+    .step-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: rgba(254,183,55,0.12); border: 1px solid rgba(254,183,55,0.2);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 24px;
+    }
+    .step-icon svg { color: var(--yellow); }
+    .step-index {
+      font-size: 0.63rem; font-weight: 800; letter-spacing: 0.12em;
+      text-transform: uppercase; color: rgba(254,183,55,0.6); margin-bottom: 12px;
+    }
+    .step-card h3 {
+      font-size: 1.05rem; font-weight: 700; color: var(--white);
+      letter-spacing: -0.02em; margin-bottom: 10px; line-height: 1.3;
+    }
+    .step-card p { font-size: 0.88rem; color: rgba(255,255,255,0.4); line-height: 1.72; font-weight: 300; }
+
+    /* FORM FOLD */
+    .form-fold {
+      min-height: 100vh; background: var(--black);
+      display: flex; align-items: center; justify-content: center;
+      padding: 100px 24px;
+      position: relative; overflow: hidden;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    .form-fold-bg {
+      position: absolute; inset: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 65% 55% at 100% 100%, rgba(254,183,55,0.06) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 40% at 0% 0%, rgba(254,183,55,0.04) 0%, transparent 50%);
+    }
+    .form-fold-noise {
+      position: absolute; inset: 0; pointer-events: none; opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+    }
+    .form-layout {
+      width: 100%; max-width: 1100px; position: relative; z-index: 1;
+      display: grid; grid-template-columns: 1fr 520px; gap: 80px; align-items: start;
+    }
+    .form-sidebar { position: sticky; top: 100px; }
+    .form-sidebar-eyebrow {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--yellow); margin-bottom: 20px;
+    }
+    .form-sidebar-dot {
+      width: 6px; height: 6px; border-radius: 50%; background: var(--yellow);
+      animation: pulseGlow 2.4s ease-in-out infinite;
+    }
+    .form-sidebar h2 {
+      font-size: clamp(1.8rem, 3vw, 2.6rem); font-weight: 800;
+      color: var(--white); letter-spacing: -0.04em; line-height: 1.05; margin-bottom: 20px;
+    }
+    .form-sidebar p {
+      font-size: 0.95rem; color: rgba(255,255,255,0.44);
+      line-height: 1.74; margin-bottom: 40px; font-weight: 300; max-width: 38ch;
+    }
+    .form-perks { display: grid; gap: 14px; }
+    .form-perk { display: flex; align-items: flex-start; gap: 12px; }
+    .perk-icon {
+      width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
+      background: rgba(254,183,55,0.12); border: 1px solid rgba(254,183,55,0.18);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .perk-icon svg { color: var(--yellow); }
+    .perk-text { font-size: 0.86rem; color: rgba(255,255,255,0.52); line-height: 1.6; }
+    .perk-text strong { color: rgba(255,255,255,0.82); font-weight: 600; display: block; font-size: 0.88rem; }
+
+    .form-card {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px; padding: 40px 36px; backdrop-filter: blur(24px);
+    }
+    .form-card-title {
+      font-size: 1.05rem; font-weight: 700; color: var(--white);
+      letter-spacing: -0.02em; margin-bottom: 4px;
+    }
+    .form-card-sub { font-size: 0.82rem; color: rgba(255,255,255,0.36); margin-bottom: 28px; line-height: 1.6; }
+
+    .form-grid { display: grid; gap: 12px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .radio-group { display: grid; gap: 8px; }
+    .radio-label-title {
+      font-size: 0.75rem; font-weight: 600;
+      color: rgba(255,255,255,0.55); letter-spacing: 0.02em;
+    }
+    .radio-label-title span { color: var(--yellow); }
+    .radio-options { display: flex; gap: 8px; flex-wrap: wrap; }
+    .radio-option {
+      flex: 1; display: flex; align-items: center; gap: 8px;
+      padding: 9px 13px; border-radius: 9px; cursor: pointer;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09);
+      font-size: 0.86rem; color: rgba(255,255,255,0.65); font-weight: 500;
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+      min-width: fit-content;
+    }
+    .radio-option input[type="radio"] { accent-color: var(--yellow); width: 14px; height: 14px; flex-shrink: 0; }
+    .radio-option:has(input:checked) {
+      border-color: rgba(254,183,55,0.5); background: rgba(254,183,55,0.1); color: var(--white);
+    }
+    .radio-options.col { flex-direction: column; }
+
+    .field { display: grid; gap: 6px; }
+    .field label { font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.52); letter-spacing: 0.02em; }
+    .field label span { color: var(--yellow); }
+    .field input, .field select {
+      width: 100%; padding: 11px 14px;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 9px; font: inherit; font-size: 0.88rem;
+      color: var(--white); transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+      -webkit-appearance: none; appearance: none;
+    }
+    .field input::placeholder { color: rgba(255,255,255,0.22); }
+    .field select {
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.35)' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px;
+    }
+    .field select option { background: #1a1a1a; color: var(--white); }
+    .field input:focus, .field select:focus {
+      outline: none; border-color: rgba(254,183,55,0.5);
+      background: rgba(255,255,255,0.08); box-shadow: 0 0 0 3px rgba(254,183,55,0.1);
+    }
+
+    .phone-row { display: grid; grid-template-columns: auto 1fr; gap: 8px; }
+    .phone-prefix {
+      display: flex; align-items: center; gap: 6px;
+      padding: 11px 13px; border-radius: 9px;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      font-size: 0.86rem; color: rgba(255,255,255,0.5); font-weight: 600; white-space: nowrap;
+    }
+
+    .form-consent {
+      font-size: 0.72rem; color: rgba(255,255,255,0.28); line-height: 1.65;
+      padding: 10px 13px; border-radius: 9px;
+      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .msg-box { padding: 11px 14px; border-radius: 9px; font-size: 0.84rem; font-weight: 600; display: none; }
+    .msg-box.success  { background: rgba(22,120,55,0.15); border: 1px solid rgba(22,120,55,0.3); color: #4ade80; display: block; }
+    .msg-box.error-msg { background: rgba(220,60,60,0.12); border: 1px solid rgba(220,60,60,0.28); color: #f87171; display: block; }
+
+    .submit-btn {
+      width: 100%; padding: 15px 20px; border: none; border-radius: 12px;
+      background: var(--yellow); color: var(--black);
+      font: inherit; font-size: 0.94rem; font-weight: 700; cursor: pointer;
+      box-shadow: 0 10px 32px rgba(254,183,55,0.3);
+      transition: transform 0.18s, box-shadow 0.18s, opacity 0.18s;
+    }
+    .submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 14px 44px rgba(254,183,55,0.46); }
+    .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .form-support {
+      margin-top: 14px; text-align: center;
+      font-size: 0.74rem; color: rgba(255,255,255,0.26); line-height: 1.8;
+    }
+    .form-support a { color: rgba(254,183,55,0.6); }
+    .form-support a:hover { color: var(--yellow); }
+
+    footer {
+      background: var(--black); border-top: 1px solid rgba(255,255,255,0.05);
+      padding: 32px 48px; display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 16px;
+    }
+    .footer-logo { height: 20px; width: auto; filter: brightness(0) invert(1); opacity: 0.35; }
+    .footer-text { font-size: 0.76rem; color: rgba(255,255,255,0.22); line-height: 1.6; }
+    .footer-text a { color: rgba(254,183,55,0.45); }
+    .footer-text a:hover { color: rgba(254,183,55,0.7); }
+
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(254,183,55,0); }
+      50% { box-shadow: 0 0 0 5px rgba(254,183,55,0.18); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .hero-eyebrow { animation: fadeUp 0.5s 0.1s  cubic-bezier(0.22,0.68,0,1.1) both; }
+    .hero h1      { animation: fadeUp 0.5s 0.18s cubic-bezier(0.22,0.68,0,1.1) both; }
+    .hero-desc    { animation: fadeUp 0.5s 0.24s cubic-bezier(0.22,0.68,0,1.1) both; }
+    .hero-stats   { animation: fadeUp 0.5s 0.3s  cubic-bezier(0.22,0.68,0,1.1) both; }
+    .hero-cta     { animation: fadeUp 0.5s 0.36s cubic-bezier(0.22,0.68,0,1.1) both; }
+    .form-card    { animation: fadeUp 0.5s 0.2s  cubic-bezier(0.22,0.68,0,1.1) both; }
+
+    @media (max-width: 1040px) {
+      .form-layout { grid-template-columns: 1fr; gap: 48px; max-width: 560px; }
+      .form-sidebar { position: static; }
+    }
+    @media (max-width: 860px) {
+      .steps-grid { grid-template-columns: 1fr; gap: 2px; }
+      .step-card:first-child { border-radius: 20px 20px 0 0; }
+      .step-card:last-child  { border-radius: 0 0 20px 20px; }
+      .hero-content { padding: 64px 24px; }
+      .hero-stats { flex-direction: row; justify-content: center; width: auto; }
+      .stat-block { padding: 16px 24px; }
+      .stat-block:last-child { border-right: none; }
+    }
+    @media (max-width: 640px) {
+      .topbar { padding: 0 20px; }
+      .hero-content { padding: 56px 24px 64px; }
+      .section { padding: 72px 0; }
+      .form-fold { padding: 72px 20px; }
+      .form-card { padding: 28px 22px; }
+      .form-row { grid-template-columns: 1fr; }
+      .theme-row { grid-template-columns: 64px 1fr; }
+      .theme-big-num { font-size: 1.8rem; }
+      .theme-body { padding: 28px 20px; }
+      footer { padding: 24px 20px; flex-direction: column; align-items: center; text-align: center; }
+      .footer-text { text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <img src="./Logo Fundace-USP-FEARP-PRETO.png" alt="Fundace FEA-RP USP" class="topbar-logo">
+    <a href="#form-fold" class="topbar-cta">Garantir acesso gratuito</a>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-texture"></div>
+    <div class="hero-content">
+      <div class="hero-noise"></div>
+      <div class="hero-glow"></div>
+      <div class="hero-eyebrow">
+        <div class="hero-eyebrow-dot"></div>
+        Trilha em Contabilidade em IFRS
+      </div>
+      <h1>Contabilidade e normas internacionais <em>na prática.</em></h1>
+      <p class="hero-desc">Conteúdos extraídos diretamente do MBA USP Contabilidade em IFRS. Compreenda como as informações contábeis e fiscais impactam a gestão e a tomada de decisão.</p>
+      <div class="hero-stats">
+        <div class="stat-block">
+          <div class="stat-num">8</div>
+          <div class="stat-lbl">Aulas gratuitas</div>
+        </div>
+        <div class="stat-block">
+          <div class="stat-num">4</div>
+          <div class="stat-lbl">Temas do MBA USP</div>
+        </div>
+        <div class="stat-block">
+          <div class="stat-num">100<em>%</em></div>
+          <div class="stat-lbl">Gratuito</div>
+        </div>
+      </div>
+      <a href="#form-fold" class="hero-cta">
+        Quero me inscrever
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- TICKER -->
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <span class="ticker-item">8 aulas gratuitas <span class="ticker-sep"></span></span>
+      <span class="ticker-item">MBA USP · FEA-RP <span class="ticker-sep"></span></span>
+      <span class="ticker-item">Contabilidade em IFRS <span class="ticker-sep"></span></span>
+      <span class="ticker-item">100% Online <span class="ticker-sep"></span></span>
+      <span class="ticker-item">Certificado Fundace <span class="ticker-sep"></span></span>
+      <span class="ticker-item">4 temas essenciais <span class="ticker-sep"></span></span>
+      <span class="ticker-item">Acesso imediato <span class="ticker-sep"></span></span>
+      <span class="ticker-item">8 aulas gratuitas <span class="ticker-sep"></span></span>
+      <span class="ticker-item">MBA USP · FEA-RP <span class="ticker-sep"></span></span>
+      <span class="ticker-item">Contabilidade em IFRS <span class="ticker-sep"></span></span>
+      <span class="ticker-item">100% Online <span class="ticker-sep"></span></span>
+      <span class="ticker-item">Certificado Fundace <span class="ticker-sep"></span></span>
+      <span class="ticker-item">4 temas essenciais <span class="ticker-sep"></span></span>
+      <span class="ticker-item">Acesso imediato <span class="ticker-sep"></span></span>
+    </div>
+  </div>
+
+  <!-- SOBRE A TRILHA -->
+  <section class="section dark" id="sobre">
+    <div class="container">
+      <div class="sobre-layout">
+
+        <!-- Coluna esquerda: texto -->
+        <div class="sobre-left">
+          <div class="section-eyebrow" style="color:rgba(254,183,55,0.7);">Sobre a trilha</div>
+          <h2 class="sobre-title">Feita para quem usa contabilidade para tomar decisões.</h2>
+          <p class="sobre-desc">A trilha reúne conteúdos extraídos diretamente do currículo do MBA USP Contabilidade em IFRS — abordando como as informações contábeis e fiscais influenciam a gestão e os resultados das organizações. Da teoria à aplicação prática, com a qualidade acadêmica da FEA-RP/USP.</p>
+          <div class="sobre-badge">Desenvolvida por professores da FEA-RP/USP</div>
+        </div>
+
+        <!-- Coluna direita: público-alvo -->
+        <div class="sobre-right">
+          <div class="audience-label">Para quem é</div>
+          <div class="audience-grid">
+            <div class="audience-card">
+              <div class="audience-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              </div>
+              <strong>Contadores e controllers</strong>
+              <span>Que precisam dominar as normas IFRS no dia a dia</span>
+            </div>
+            <div class="audience-card">
+              <div class="audience-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+              </div>
+              <strong>Gestores e empresários</strong>
+              <span>Que querem interpretar demonstrações financeiras com segurança</span>
+            </div>
+            <div class="audience-card">
+              <div class="audience-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              </div>
+              <strong>Profissionais de finanças</strong>
+              <span>Buscando proficiência em tributação e derivativos financeiros</span>
+            </div>
+            <div class="audience-card">
+              <div class="audience-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              </div>
+              <strong>Analistas tributários</strong>
+              <span>Que atuam com IRPJ, CSLL e planejamento fiscal estratégico</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="sobre-divider"></div>
+
+      <!-- Destaques da trilha -->
+      <div class="sobre-highlights">
+        <div class="highlight-item">
+          <div class="highlight-check">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="highlight-text">
+            <strong>Acesso imediato e vitalício</strong>
+            Assista às aulas gravadas quando quiser, quantas vezes precisar, sem prazo de expiração.
+          </div>
+        </div>
+        <div class="highlight-item">
+          <div class="highlight-check">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="highlight-text">
+            <strong>Currículo real do MBA USP</strong>
+            Conteúdo extraído do MBA em Contabilidade em IFRS da FEA-RP/USP — rigor acadêmico com aplicação prática.
+          </div>
+        </div>
+        <div class="highlight-item">
+          <div class="highlight-check">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="highlight-text">
+            <strong>Certificado reconhecido</strong>
+            Ao concluir a trilha, você recebe o certificado de participação emitido pela Fundace, reconhecido nacionalmente.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CONTEÚDO PROGRAMÁTICO -->
+  <section class="section">
+    <div class="container">
+      <div class="themes-header">
+        <div class="section-eyebrow">Conteúdo programático</div>
+        <h2 class="themes-title">4 temas. 8 aulas. Do fundamento à prática.</h2>
+        <p class="themes-sub">Cada tema é abordado em duas aulas sequenciais — fundamentos e aplicação real, extraídos do currículo do MBA USP.</p>
+      </div>
+      <div class="themes-list">
+        <div class="theme-row">
+          <div class="theme-num-col"><div class="theme-big-num">01</div></div>
+          <div class="theme-body">
+            <div class="theme-lessons">Aulas 1 e 2</div>
+            <h3>Contabilidade para Pequenas e Médias Empresas</h3>
+            <div class="theme-tags">
+              <span class="theme-tag">Fundamentos PMEs</span>
+              <span class="theme-tag">IFRS para PMEs</span>
+              <span class="theme-tag">Ativos e passivos</span>
+              <span class="theme-tag">Demonstrações financeiras</span>
+            </div>
+          </div>
+        </div>
+        <div class="theme-row">
+          <div class="theme-num-col"><div class="theme-big-num">02</div></div>
+          <div class="theme-body">
+            <div class="theme-lessons">Aulas 3 e 4</div>
+            <h3>Tributação Brasileira sobre o Lucro</h3>
+            <div class="theme-tags">
+              <span class="theme-tag">IRPJ e CSLL</span>
+              <span class="theme-tag">Lucro Real e Presumido</span>
+              <span class="theme-tag">Planejamento tributário</span>
+              <span class="theme-tag">Impacto nas demonstrações</span>
+            </div>
+          </div>
+        </div>
+        <div class="theme-row">
+          <div class="theme-num-col"><div class="theme-big-num">03</div></div>
+          <div class="theme-body">
+            <div class="theme-lessons">Aulas 5 e 6</div>
+            <h3>Instrumentos Financeiros Derivativos</h3>
+            <div class="theme-tags">
+              <span class="theme-tag">Swaps e opções</span>
+              <span class="theme-tag">Hedge accounting</span>
+              <span class="theme-tag">Valor justo (IFRS)</span>
+              <span class="theme-tag">Leitura nas demonstrações</span>
+            </div>
+          </div>
+        </div>
+        <div class="theme-row">
+          <div class="theme-num-col"><div class="theme-big-num">04</div></div>
+          <div class="theme-body">
+            <div class="theme-lessons">Aulas 7 e 8</div>
+            <h3>Receitas de Contratos de Clientes</h3>
+            <div class="theme-tags">
+              <span class="theme-tag">IFRS 15 / CPC 47</span>
+              <span class="theme-tag">5 passos de reconhecimento</span>
+              <span class="theme-tag">Obrigações de desempenho</span>
+              <span class="theme-tag">Divulgações exigidas</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMO FUNCIONA -->
+  <section class="section dark">
+    <div class="container">
+      <div class="how-header">
+        <div class="section-eyebrow" style="color:rgba(254,183,55,0.7);">Como funciona</div>
+        <h2 class="how-title">Simples. Sem burocracia.<br>Sem custo.</h2>
+      </div>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </div>
+          <div class="step-index">Passo 01</div>
+          <h3>Preencha o formulário</h3>
+          <p>Inscreva-se gratuitamente. Leva menos de 2 minutos e você garante seu acesso completo à trilha.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <div class="step-index">Passo 02</div>
+          <h3>Crie sua senha e acesse</h3>
+          <p>Com o login em mãos, acesse a plataforma e assista às aulas onde e quando quiser, no seu ritmo.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+          </div>
+          <div class="step-index">Passo 03</div>
+          <h3>Receba seu certificado</h3>
+          <p>Ao concluir todas as aulas, você recebe o certificado de participação emitido pela Fundace FEA-RP/USP.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FORM FOLD -->
+  <section class="form-fold" id="form-fold">
+    <div class="form-fold-bg"></div>
+    <div class="form-fold-noise"></div>
+    <div class="form-layout">
+
+      <div class="form-sidebar">
+        <div class="form-sidebar-eyebrow">
+          <div class="form-sidebar-dot"></div>
+          Vagas abertas
+        </div>
+        <h2>Garanta seu acesso à trilha agora.</h2>
+        <p>Preencha o formulário ao lado e você receberá as instruções para criar seu login e acessar as 8 aulas gratuitamente.</p>
+        <div class="form-perks">
+          <div class="form-perk">
+            <div class="perk-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="perk-text">
+              <strong>8 aulas em vídeo</strong>
+              Conteúdo do MBA USP disponível imediatamente após o cadastro
+            </div>
+          </div>
+          <div class="form-perk">
+            <div class="perk-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="perk-text">
+              <strong>Certificado de participação</strong>
+              Emitido pela Fundace FEA-RP/USP ao concluir a trilha
+            </div>
+          </div>
+          <div class="form-perk">
+            <div class="perk-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="perk-text">
+              <strong>100% gratuito</strong>
+              Sem cartão de crédito, sem compromisso
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <div class="form-card-title">Criar minha conta gratuita</div>
+        <div class="form-card-sub">Todos os campos marcados com * são obrigatórios.</div>
+
+        <form id="register-form" class="form-grid" novalidate>
+
+          <div class="radio-group">
+            <div class="radio-label-title">Possui formação superior? <span>*</span></div>
+            <div class="radio-options">
+              <label class="radio-option"><input type="radio" name="formacao_superior" value="sim" required> Sim</label>
+              <label class="radio-option"><input type="radio" name="formacao_superior" value="nao"> Não</label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="nome">Nome completo <span>*</span></label>
+            <input id="nome" type="text" placeholder="Digite seu nome completo" required>
+          </div>
+
+          <div class="field">
+            <label for="email">E-mail <span>*</span></label>
+            <input id="email" type="email" placeholder="seu@email.com" required>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label for="cidade">Cidade</label>
+              <input id="cidade" type="text" placeholder="Sua cidade">
+            </div>
+            <div class="field">
+              <label for="telefone">Telefone <span>*</span></label>
+              <div class="phone-row">
+                <div class="phone-prefix">🇧🇷 +55</div>
+                <input id="telefone" type="tel" placeholder="11 96123-4567" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="area_formacao">Área de formação <span>*</span></label>
+            <select id="area_formacao" required>
+              <option value="" disabled selected>Selecione sua área</option>
+              <option>Contabilidade</option>
+              <option>Administração</option>
+              <option>Economia</option>
+              <option>Finanças</option>
+              <option>Direito</option>
+              <option>Engenharia</option>
+              <option>Outra</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label for="empresa">Empresa <span>*</span></label>
+              <input id="empresa" type="text" placeholder="Nome da empresa" required>
+            </div>
+            <div class="field">
+              <label for="cargo">Cargo <span>*</span></label>
+              <input id="cargo" type="text" placeholder="Seu cargo atual" required>
+            </div>
+          </div>
+
+          <div class="radio-group">
+            <div class="radio-label-title">Pretende fazer uma pós-graduação ou MBA? <span>*</span></div>
+            <div class="radio-options col">
+              <label class="radio-option"><input type="radio" name="pretende_pos" value="sim_agora" required> Sim, imediatamente</label>
+              <label class="radio-option"><input type="radio" name="pretende_pos" value="sim_depois"> Sim, mas não agora</label>
+              <label class="radio-option"><input type="radio" name="pretende_pos" value="nao"> Não</label>
+            </div>
+          </div>
+
+          <p class="form-consent">Ao enviar este formulário, você concorda em receber comunicações sobre cursos, palestras e conteúdos da Fundace/USP. Você pode cancelar a inscrição a qualquer momento.</p>
+
+          <div class="msg-box" id="msg-box"></div>
+
+          <button type="submit" class="submit-btn" id="submit-btn">Garantir meu acesso gratuito</button>
+        </form>
+
+        <p class="form-support">
+          Dúvidas? <a href="mailto:comunicacao@fundace.org.br">comunicacao@fundace.org.br</a> &nbsp;·&nbsp;
+          Já tem conta? <a href="./login.html">Entrar</a>
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <footer>
+    <img src="./Logo Fundace-USP-FEARP-PRETO.png" alt="Fundace FEA-RP USP" class="footer-logo">
+    <p class="footer-text">
+      © 2025 Fundace — Fundação para Pesquisa e Desenvolvimento da Administração, Contabilidade e Economia · FEA-RP/USP<br>
+      Dúvidas? <a href="mailto:comunicacao@fundace.org.br">comunicacao@fundace.org.br</a>
+    </p>
+  </footer>
+
+  <script src="./supabase/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const { createClient } = supabase;
+    const db = createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
+
+    db.auth.getSession().then(({ data: { session } }) => {
+      if (session) window.location.href = "./Index.html";
+    });
+
+    const form      = document.getElementById("register-form");
+    const submitBtn = document.getElementById("submit-btn");
+    const msgBox    = document.getElementById("msg-box");
+
+    function normalizePhone(value) {
+      return value.replace(/\D/g, "");
+    }
+
+    form.addEventListener("submit", async e => {
+      e.preventDefault();
+      msgBox.className = "msg-box";
+      msgBox.textContent = "";
+
+      const nome          = document.getElementById("nome").value.trim();
+      const email         = document.getElementById("email").value.trim();
+      const cidade        = document.getElementById("cidade").value.trim();
+      const telefone      = document.getElementById("telefone").value.trim();
+      const area_formacao = document.getElementById("area_formacao").value;
+      const empresa       = document.getElementById("empresa").value.trim();
+      const cargo         = document.getElementById("cargo").value.trim();
+      const formacaoRadio = document.querySelector('input[name="formacao_superior"]:checked');
+      const posRadio      = document.querySelector('input[name="pretende_pos"]:checked');
+
+      if (!formacaoRadio || !nome || !email || !telefone || !area_formacao || !empresa || !cargo || !posRadio) {
+        msgBox.className = "msg-box error-msg";
+        msgBox.textContent = "Preencha todos os campos obrigatórios (*).";
+        return;
+      }
+      if (!email.includes("@")) {
+        msgBox.className = "msg-box error-msg";
+        msgBox.textContent = "Informe um e-mail válido.";
+        return;
+      }
+      if (normalizePhone(telefone).length < 10) {
+        msgBox.className = "msg-box error-msg";
+        msgBox.textContent = "Informe um telefone válido com DDD.";
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Enviando...";
+
+      const { error } = await db.rpc("capture_lead", {
+        p_nome: nome,
+        p_email: email.toLowerCase(),
+        p_cidade: cidade || null,
+        p_telefone: normalizePhone(telefone),
+        p_possui_formacao_superior: formacaoRadio.value === "sim",
+        p_area_formacao: area_formacao,
+        p_empresa: empresa,
+        p_cargo: cargo,
+        p_pretende_pos: posRadio.value
+      });
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Garantir meu acesso gratuito";
+
+      if (error) {
+        console.error("Erro ao capturar lead:", error);
+        msgBox.className = "msg-box error-msg";
+        msgBox.textContent = "Não foi possível enviar seu cadastro agora. Tente novamente em instantes.";
+        return;
+      }
+
+      window.location.href = `./cadastrar-senha.html?email=${encodeURIComponent(email)}&nome=${encodeURIComponent(nome)}`;
+    });
+  </script>
+</body>
+</html>
