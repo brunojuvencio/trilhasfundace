@@ -4,9 +4,24 @@
 
 - `vercel.json` com:
   - `/` abrindo `captacao.html`
+  - `/gestao` abrindo `captacao-gestao.html`
   - rotas amigáveis para login, trilha e admin
   - cache longo para assets
   - HTML com revalidação
+
+## Ordem segura para publicar a trilha de Gestão
+
+1. Rode `supabase/capture_lead.sql` no Supabase de produção.
+   - Esse script adiciona `nome_trilha` e atualiza a função `capture_lead`.
+   - O frontend novo já envia `p_nome_trilha`; se publicar o frontend antes do SQL, o cadastro pode falhar.
+2. Faça deploy das Edge Functions alteradas:
+   - `activecampaign-sync-lead`
+   - `ploomes-sync-lead`
+   - `qualified-lead-tracking`
+3. Configure os secrets novos da Edge Function de ActiveCampaign:
+   - `ACTIVECAMPAIGN_GESTAO_LIST_ID` ou uma lista com o nome de `ACTIVECAMPAIGN_GESTAO_LIST_NAME`
+   - `ACTIVECAMPAIGN_TRAIL_FIELD_ID`, se quiser gravar a trilha em um campo customizado do contato
+4. Depois disso, publique o frontend na Vercel.
 
 ## Como subir
 
@@ -29,6 +44,7 @@ vercel login
 
 - `/` -> landing de captação
 - `/captacao`
+- `/gestao`
 - `/login`
 - `/cadastrar-senha`
 - `/esqueci-senha`

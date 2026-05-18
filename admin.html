@@ -395,6 +395,13 @@
                 <input id="manual-email" type="email" required>
               </div>
               <div class="field">
+                <label for="manual-trilha">Trilha</label>
+                <select id="manual-trilha" required>
+                  <option value="Trilha CONTIFRS">Contabilidade em IFRS</option>
+                  <option value="Trilha de Gestão de Produção com IA">Gestão de Produção com IA</option>
+                </select>
+              </div>
+              <div class="field">
                 <label for="manual-cidade">Cidade</label>
                 <input id="manual-cidade">
               </div>
@@ -448,7 +455,7 @@
           <span class="mini" id="student-count">0 registros</span>
         </div>
         <div class="toolbar">
-          <input class="search" id="student-search" placeholder="Buscar por nome, e-mail, empresa...">
+          <input class="search" id="student-search" placeholder="Buscar por nome, e-mail, empresa ou trilha...">
         </div>
         <div class="table-wrap">
           <table>
@@ -704,7 +711,7 @@
     function renderStudents() {
       const term = studentSearch.value.trim().toLowerCase();
       const filtered = state.leads.filter(item => {
-        const haystack = [item.nome, item.email, item.cidade, item.empresa, item.cargo, item.area_formacao].join(" ").toLowerCase();
+        const haystack = [item.nome, item.email, item.cidade, item.empresa, item.cargo, item.area_formacao, item.nome_trilha].join(" ").toLowerCase();
         return haystack.includes(term);
       });
       studentCount.textContent = `${filtered.length} registro${filtered.length === 1 ? "" : "s"}`;
@@ -714,7 +721,7 @@
       }
       studentsBody.innerHTML = filtered.map(item => `
         <tr>
-          <td><strong>${escapeHtml(item.nome)}</strong><div class="mini">${escapeHtml(item.area_formacao || "-")}</div></td>
+          <td><strong>${escapeHtml(item.nome)}</strong><div class="mini">${escapeHtml(item.nome_trilha || "Trilha CONTIFRS")} · ${escapeHtml(item.area_formacao || "-")}</div></td>
           <td><div>${escapeHtml(item.email)}</div><div class="mini">${escapeHtml(item.telefone || "-")}</div></td>
           <td><div>${escapeHtml(item.empresa || "-")}</div><div class="mini">${escapeHtml(item.cargo || "-")}</div></td>
           <td>
@@ -845,6 +852,7 @@
       const payload = {
         p_nome: document.getElementById("manual-nome").value,
         p_email: document.getElementById("manual-email").value,
+        p_nome_trilha: document.getElementById("manual-trilha").value,
         p_cidade: document.getElementById("manual-cidade").value,
         p_telefone: document.getElementById("manual-telefone").value,
         p_possui_formacao_superior: document.getElementById("manual-formacao").value === "true",

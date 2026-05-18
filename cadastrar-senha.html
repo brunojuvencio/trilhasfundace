@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Crie sua senha | Trilha IFRS Fundace</title>
+  <title>Crie sua senha | Trilhas Fundace</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
@@ -334,7 +334,7 @@
     </form>
 
     <div class="card-footer">
-      <a href="./captacao.html">← Voltar ao início</a>
+      <a id="back-link" href="./captacao.html">← Voltar ao início</a>
     </div>
   </div>
 
@@ -351,8 +351,8 @@
           Enquanto criamos seu acesso
         </div>
         <h2 id="mba-modal-title">A trilha é o começo. O que vem depois pode mudar sua carreira.</h2>
-        <p>Profissionais que dominam IFRS de verdade costumam querer ir além de uma introdução. O MBA USP Contabilidade em IFRS é o programa completo — professores da FEA-RP/USP, certificado USP e aplicação real das normas internacionais.</p>
-        <div class="modal-copy-strong">
+        <p id="mba-modal-copy">Profissionais que dominam IFRS de verdade costumam querer ir além de uma introdução. O MBA USP Contabilidade em IFRS é o programa completo — professores da FEA-RP/USP, certificado USP e aplicação real das normas internacionais.</p>
+        <div class="modal-copy-strong" id="mba-modal-strong">
           O programa tem investimento médio de <strong>R$ 500 por mês</strong>. Se quiser entender a estrutura e o formato, nosso time explica — sem compromisso.
         </div>
         <div class="choice-grid">
@@ -380,9 +380,14 @@
     const params = new URLSearchParams(window.location.search);
     const emailParam = (params.get("email") || "").trim();
     const nomeParam = (params.get("nome") || "").trim();
+    const trilhaParam = (params.get("trilha") || "").trim().toLowerCase();
 
     const emailInput = document.getElementById("email");
     const cardSub = document.getElementById("card-sub");
+    const backLink = document.getElementById("back-link");
+    const modalTitle = document.getElementById("mba-modal-title");
+    const modalCopy = document.getElementById("mba-modal-copy");
+    const modalStrong = document.getElementById("mba-modal-strong");
     const pwdInput = document.getElementById("password");
     const strengthBar = document.getElementById("strength-bar");
     const strengthLbl = document.getElementById("strength-label");
@@ -402,13 +407,48 @@
       leadContext: null,
     };
 
+    function normalizeText(value) {
+      return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+    }
+
+    function isGestaoTrailName(value) {
+      const trailName = normalizeText(value);
+      return trailName.includes("gestao") && trailName.includes("producao");
+    }
+
+    function currentTrailSlug(context = offerState.leadContext) {
+      if (isGestaoTrailName(context?.nome_trilha) || trilhaParam === "gestao") return "gestao";
+      return "ifrs";
+    }
+
+    function updateTrailCopy(context = offerState.leadContext) {
+      const isGestao = currentTrailSlug(context) === "gestao";
+      document.title = isGestao ? "Crie sua senha | Trilha Gestão Fundace" : "Crie sua senha | Trilha IFRS Fundace";
+      backLink.href = isGestao ? "./captacao-gestao.html" : "./captacao.html";
+
+      if (isGestao) {
+        modalTitle.textContent = "Sua trilha começa na operação. O próximo passo pode ser estratégico.";
+        modalCopy.textContent = "Profissionais que conectam produção, dados e IA costumam crescer quando conseguem transformar rotina operacional em decisão. O MBA USP em Gestão de Produção com Aplicações em IA aprofunda esse caminho com professores da FEA-RP/USP e aplicação prática.";
+        modalStrong.innerHTML = "Se quiser entender a estrutura, o formato e o investimento do programa completo, nosso time explica — sem compromisso.";
+      } else {
+        modalTitle.textContent = "A trilha é o começo. O que vem depois pode mudar sua carreira.";
+        modalCopy.textContent = "Profissionais que dominam IFRS de verdade costumam querer ir além de uma introdução. O MBA USP Contabilidade em IFRS é o programa completo — professores da FEA-RP/USP, certificado USP e aplicação real das normas internacionais.";
+        modalStrong.innerHTML = "O programa tem investimento médio de <strong>R$ 500 por mês</strong>. Se quiser entender a estrutura e o formato, nosso time explica — sem compromisso.";
+      }
+    }
+
     emailInput.value = emailParam;
 
     if (nomeParam) {
       cardSub.innerHTML = `Olá, <strong>${nomeParam.split(" ")[0]}</strong>. Defina sua senha para entrar na trilha gratuita.`;
     }
 
-    if (!emailParam) window.location.href = "./captacao.html";
+    updateTrailCopy();
+
+    if (!emailParam) window.location.href = trilhaParam === "gestao" ? "./captacao-gestao.html" : "./captacao.html";
 
     function readCookie(name) {
       const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -565,6 +605,7 @@
       offerState.leadContext = context || null;
       offerState.needsPopup = shouldShowPopup(context);
       offerState.resolved = !offerState.needsPopup;
+      updateTrailCopy(context);
     }
 
     function openOfferModal() {
@@ -676,7 +717,7 @@
         if (error.message.includes("already registered")) {
           const { error: loginError } = await db.auth.signInWithPassword({ email: emailParam, password });
           if (!loginError) {
-            window.location.href = "./Index.html";
+            window.location.href = `./Index.html?trilha=${currentTrailSlug()}`;
             return;
           }
         }
@@ -686,7 +727,7 @@
       }
 
       if (data.session) {
-        window.location.href = "./Index.html";
+        window.location.href = `./Index.html?trilha=${currentTrailSlug()}`;
       } else {
         showMessage("success", "Cadastro realizado com sucesso. Faça login para acessar a trilha.");
       }

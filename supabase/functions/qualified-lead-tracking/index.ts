@@ -35,6 +35,7 @@ type LeadRow = {
   email: string;
   cidade: string | null;
   telefone: string;
+  nome_trilha: string | null;
   possui_formacao_superior: boolean;
   area_formacao: string;
   empresa: string;
@@ -51,6 +52,7 @@ const metaGraphApiVersion = (Deno.env.get("META_GRAPH_API_VERSION") ?? "v23.0").
 const metaTestEventCode = (Deno.env.get("META_TEST_EVENT_CODE") ?? "").trim();
 const ga4MeasurementId = (Deno.env.get("GA4_MEASUREMENT_ID") ?? "").trim();
 const ga4ApiSecret = (Deno.env.get("GA4_API_SECRET") ?? "").trim();
+const defaultTrailName = "Trilha CONTIFRS";
 
 if (!supabaseUrl || !serviceRoleKey) {
   throw new Error("SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY sao obrigatorios.");
@@ -80,6 +82,19 @@ function normalizePhone(value: string) {
 
 function cleanString(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
+}
+
+function getTrailName(lead: LeadRow) {
+  return cleanString(lead.nome_trilha) || defaultTrailName;
+}
+
+function slugifyTrailName(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "") || "trilha";
 }
 
 function extractErrorMessage(value: unknown) {
@@ -119,14 +134,14 @@ function buildFbc(fbclid: string) {
   return `fb.1.${Date.now()}.${fbclid}`;
 }
 
-function buildEventId(leadId: number) {
-  return `trilha_contifrs_qualified_${leadId}_${Date.now()}`;
+function buildEventId(lead: LeadRow) {
+  return `trilha_${slugifyTrailName(getTrailName(lead))}_qualified_${lead.id}_${Date.now()}`;
 }
 
 async function getLeadByEmail(email: string) {
   const { data, error } = await adminClient
     .from("leads")
-    .select("id,nome,email,cidade,telefone,possui_formacao_superior,area_formacao,empresa,cargo,pretende_pos,consultor_contact_opt_in")
+    .select("id,nome,email,cidade,telefone,nome_trilha,possui_formacao_superior,area_formacao,empresa,cargo,pretende_pos,consultor_contact_opt_in")
     .eq("email", email)
     .maybeSingle<LeadRow>();
 
@@ -159,6 +174,7 @@ async function postMetaLead(
   const fbc = cleanString(attribution.fbc) || buildFbc(fbclid);
   const clientIp = pickClientIp(request);
   const clientUserAgent = request.headers.get("user-agent") ?? "";
+  const trailName = getTrailName(lead);
 
   const body: Record<string, unknown> = {
     data: [
@@ -177,7 +193,7 @@ async function postMetaLead(
           ...(clientUserAgent ? { client_user_agent: clientUserAgent } : {}),
         },
         custom_data: {
-          content_name: "Trilha CONTIFRS",
+          content_name: trailName,
           content_category: "lead_qualificado",
           lead_origin: "popup_mais_informacoes",
         },
@@ -222,6 +238,8 @@ async function postGa4QualifiedLead(
 
   const clientId = cleanString(attribution.ga_client_id) || `${Date.now()}.${lead.id}`;
   const sessionId = Number(cleanString(attribution.ga_session_id) || Math.floor(Date.now() / 1000));
+  const trailName = getTrailName(lead);
+  const trailSlug = slugifyTrailName(trailName);
   const payload = {
     client_id: clientId,
     user_id: `lead_${lead.id}`,
@@ -232,9 +250,9 @@ async function postGa4QualifiedLead(
         params: {
           session_id: sessionId,
           engagement_time_msec: 1,
-          lead_source: "popup_preco_trilha_contifrs",
-          form_name: "popup_comercial_trilha_contifrs",
-          course_name: "Trilha CONTIFRS",
+          lead_source: `popup_preco_${trailSlug}`,
+          form_name: `popup_comercial_${trailSlug}`,
+          course_name: trailName,
           company_name: cleanString(lead.empresa),
           job_title: cleanString(lead.cargo),
           education_area: cleanString(lead.area_formacao),
@@ -306,7 +324,7 @@ Deno.serve(async request => {
     }
 
     const attribution = payload.attribution ?? {};
-    const eventId = buildEventId(lead.id);
+    const eventId = buildEventId(lead);
 
     const [metaResult, ga4Result] = await Promise.allSettled([
       postMetaLead(lead, request, attribution, eventId),

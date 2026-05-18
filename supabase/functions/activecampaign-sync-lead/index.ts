@@ -10,6 +10,7 @@ type Payload = {
   nome?: string;
   email?: string;
   telefone?: string;
+  nome_trilha?: string;
 };
 
 type LeadRow = {
@@ -17,6 +18,7 @@ type LeadRow = {
   nome: string;
   email: string;
   telefone: string;
+  nome_trilha: string | null;
   utm_source: string | null;
   utm_medium: string | null;
   utm_campaign: string | null;
@@ -34,6 +36,9 @@ const activeCampaignBaseUrl = (Deno.env.get("ACTIVECAMPAIGN_BASE_URL") ?? "").re
 const activeCampaignApiToken = Deno.env.get("ACTIVECAMPAIGN_API_TOKEN") ?? "";
 const activeCampaignListId = (Deno.env.get("ACTIVECAMPAIGN_LIST_ID") ?? "").trim();
 const activeCampaignListName = (Deno.env.get("ACTIVECAMPAIGN_LIST_NAME") ?? "Trilhaifrs").trim();
+const activeCampaignGestaoListId = (Deno.env.get("ACTIVECAMPAIGN_GESTAO_LIST_ID") ?? "").trim();
+const activeCampaignGestaoListName = (Deno.env.get("ACTIVECAMPAIGN_GESTAO_LIST_NAME") ?? "TrilhaGestaoProducaoIA").trim();
+const activeCampaignTrailFieldId = (Deno.env.get("ACTIVECAMPAIGN_TRAIL_FIELD_ID") ?? "").trim();
 
 if (!supabaseUrl || !serviceRoleKey) {
   throw new Error("SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY são obrigatórios.");
@@ -63,6 +68,22 @@ function normalizeEmail(value: string) {
 
 function normalizePhone(value: string) {
   return value.replace(/\D/g, "");
+}
+
+function cleanString(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function normalizeText(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function isGestaoTrail(lead: LeadRow) {
+  const trailName = normalizeText(cleanString(lead.nome_trilha));
+  return trailName.includes("gestao") && trailName.includes("producao");
 }
 
 function splitName(nome: string) {
@@ -105,28 +126,42 @@ async function activeCampaignFetch(path: string, init: RequestInit = {}) {
   return data;
 }
 
-async function resolveListId() {
-  if (activeCampaignListId) return activeCampaignListId;
+async function resolveListId(listConfig: { id: string; name: string }) {
+  if (listConfig.id) return listConfig.id;
 
   const data = await activeCampaignFetch("/api/3/lists");
   const lists = Array.isArray(data.lists) ? data.lists as Array<Record<string, unknown>> : [];
   const match = lists.find(item => {
     const name = String(item.name ?? "").trim().toLowerCase();
-    return name === activeCampaignListName.toLowerCase();
+    return name === listConfig.name.toLowerCase();
   });
 
   const listId = String(match?.id ?? "").trim();
   if (!listId) {
-    throw new Error(`Lista "${activeCampaignListName}" não encontrada no ActiveCampaign.`);
+    throw new Error(`Lista "${listConfig.name}" nao encontrada no ActiveCampaign.`);
   }
 
   return listId;
 }
 
+function getListConfigForLead(lead: LeadRow) {
+  if (isGestaoTrail(lead)) {
+    return {
+      id: activeCampaignGestaoListId,
+      name: activeCampaignGestaoListName,
+    };
+  }
+
+  return {
+    id: activeCampaignListId,
+    name: activeCampaignListName,
+  };
+}
+
 async function getLeadByEmail(email: string) {
   const { data, error } = await adminClient
     .from("leads")
-    .select("id,nome,email,telefone,utm_source,utm_medium,utm_campaign,utm_term,utm_content,gclid,fbclid,landing_page_url,referrer_url")
+    .select("id,nome,email,telefone,nome_trilha,utm_source,utm_medium,utm_campaign,utm_term,utm_content,gclid,fbclid,landing_page_url,referrer_url")
     .eq("email", email)
     .maybeSingle<LeadRow>();
 
@@ -141,7 +176,7 @@ async function getLeadByEmail(email: string) {
   return data;
 }
 
-async function syncContact(payload: Required<Payload>) {
+async function syncContact(payload: { nome: string; email: string; telefone: string }) {
   const { firstName, lastName } = splitName(payload.nome);
   const phone = normalizePhone(payload.telefone);
 
@@ -283,9 +318,12 @@ Deno.serve(async request => {
     await markLeadPending(email);
 
     const lead = await getLeadByEmail(email);
-    const listId = await resolveListId();
+    const listId = await resolveListId(getListConfigForLead(lead));
     const contactId = await syncContact({ nome, email, telefone });
     await upsertFieldValue(contactId, "22", lead.utm_source ?? "");
+    if (activeCampaignTrailFieldId) {
+      await upsertFieldValue(contactId, activeCampaignTrailFieldId, lead.nome_trilha ?? payload.nome_trilha ?? "");
+    }
     await ensureListSubscription(contactId, listId);
     await markLead(email, "synced", contactId, listId);
     console.info(`[activecampaign-sync-lead] Lead ${email} sincronizado com sucesso. contactId=${contactId}, listId=${listId}`);

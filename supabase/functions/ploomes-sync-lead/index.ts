@@ -16,6 +16,7 @@ type LeadRow = {
   email: string;
   cidade: string | null;
   telefone: string;
+  nome_trilha: string | null;
   possui_formacao_superior: boolean;
   area_formacao: string;
   empresa: string;
@@ -53,6 +54,7 @@ const ploomesUserKey = Deno.env.get("PLOOMES_API_KEY") ?? "";
 const ploomesBaseUrl = (Deno.env.get("PLOOMES_BASE_URL") ?? "https://public-api2.ploomes.com").replace(/\/+$/, "");
 const ploomesPipelineId = Number(Deno.env.get("PLOOMES_PIPELINE_ID") ?? "50001415");
 const ploomesStageId = Number(Deno.env.get("PLOOMES_STAGE_ID") ?? "50008137");
+const defaultTrailName = "Trilha CONTIFRS";
 
 if (!supabaseUrl || !serviceRoleKey) {
   throw new Error("SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY são obrigatórios.");
@@ -78,6 +80,14 @@ function json(body: Record<string, unknown>, status = 200) {
 
 function normalizeEmail(value: string) {
   return value.trim().toLowerCase();
+}
+
+function cleanString(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function getTrailName(lead: LeadRow) {
+  return cleanString(lead.nome_trilha) || defaultTrailName;
 }
 
 async function ploomesFetch(path: string, init: RequestInit = {}) {
@@ -123,7 +133,7 @@ function getPloomesEntity<T extends Record<string, unknown>>(data: Record<string
 async function getLeadByEmail(email: string) {
   const { data, error } = await adminClient
     .from("leads")
-    .select("id,nome,email,cidade,telefone,possui_formacao_superior,area_formacao,empresa,cargo,pretende_pos,utm_source,utm_medium,utm_campaign,utm_term,utm_content,gclid,fbclid,landing_page_url,referrer_url,consultor_contact_opt_in")
+    .select("id,nome,email,cidade,telefone,nome_trilha,possui_formacao_superior,area_formacao,empresa,cargo,pretende_pos,utm_source,utm_medium,utm_campaign,utm_term,utm_content,gclid,fbclid,landing_page_url,referrer_url,consultor_contact_opt_in")
     .eq("email", email)
     .maybeSingle<LeadRow>();
 
@@ -163,6 +173,7 @@ async function findContactByEmail(email: string) {
 
 function buildAttributionSummary(lead: LeadRow) {
   const lines = [
+    ["nome_trilha", getTrailName(lead)],
     ["utm_source", lead.utm_source],
     ["utm_medium", lead.utm_medium],
     ["utm_campaign", lead.utm_campaign],
@@ -258,7 +269,7 @@ function buildOtherProperties(lead: LeadRow) {
     },
     {
       FieldKey: "deal_C47CFF53-2019-4960-AA8C-C2E1BFA936A7",
-      StringValue: "Trilha CONTIFRS",
+      StringValue: getTrailName(lead),
     },
     {
       FieldKey: "deal_74219D35-6B80-48C4-BC22-29DD64B3EAE5",
@@ -268,7 +279,7 @@ function buildOtherProperties(lead: LeadRow) {
 }
 
 async function createDeal(contactId: number, lead: LeadRow) {
-  const title = "Trilha CONTIFRS";
+  const title = getTrailName(lead);
   const response = await ploomesFetch("/Deals", {
     method: "POST",
     body: JSON.stringify({

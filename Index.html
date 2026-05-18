@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trilha MBA Contabilidade em IFRS | Fundace</title>
+  <title>Trilhas Fundace</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet">
@@ -438,6 +438,35 @@
 
     .hidden { display: none !important; }
 
+    /* ── SELETOR DE CURSO ───────────────────────────────── */
+    .course-card {
+      text-align: left; background: rgba(255,255,255,0.9);
+      border: 1.5px solid rgba(0,0,0,0.08); border-radius: var(--radius-xl);
+      padding: 28px 28px 24px; cursor: pointer; font: inherit; color: var(--brand-ink);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s;
+      box-shadow: var(--shadow);
+    }
+    .course-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-strong); border-color: var(--brand-yellow); }
+    .course-card h3 { font-size: 1.3rem; margin-bottom: 10px; }
+    .course-card p { font-size: 0.92rem; color: var(--brand-ink-soft); line-height: 1.65; margin: 0 0 20px; }
+    .course-card-eyebrow {
+      font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--brand-yellow-dark); margin-bottom: 12px;
+    }
+    .course-card-cta {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.9rem; font-weight: 700; color: var(--brand-black);
+      background: var(--brand-yellow); padding: 10px 18px; border-radius: 999px;
+      box-shadow: 0 4px 14px rgba(254,183,55,0.3);
+    }
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      font: inherit; font-size: 0.82rem; font-weight: 600;
+      color: var(--brand-ink-soft); background: none; border: none;
+      cursor: pointer; padding: 8px 0; margin-top: 20px;
+    }
+    .back-btn:hover { color: var(--brand-ink); }
+
     /* ── RESPONSIVE ─────────────────────────────────────────── */
     @media (max-width: 1080px) {
       .portal-grid, .learning-grid { grid-template-columns: 1fr; }
@@ -472,7 +501,7 @@
           </div>
           <nav class="nav-links">
             <span id="user-name" style="font-size:0.82rem; font-weight:600; color:rgba(0,0,0,0.5);"></span>
-            <a href="https://www.fundace.org.br/lp/mba-ead-usp-contabilidade-em-ifrs" target="_blank" rel="noreferrer" class="primary-button gold">
+            <a id="topbar-cta" href="https://www.fundace.org.br/lp/mba-ead-usp-contabilidade-em-ifrs" target="_blank" rel="noreferrer" class="primary-button gold" style="display:none;">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
               Acessar o Curso
             </a>
@@ -480,22 +509,35 @@
           </nav>
         </header>
 
-        <section class="portal-header">
-          <div style="position: relative; z-index: 1; text-align: center;">
-            <div class="eyebrow" style="margin-left: auto; margin-right: auto;">Trilha gratuita · Acesso liberado</div>
-            <h1 style="max-width: 100%;">Contabilidade, tributação e normas internacionais na prática.</h1>
-            <p id="welcome-copy" style="max-width: 60ch; margin-left: auto; margin-right: auto;">
-              Conteúdos extraídos das aulas do MBA USP Contabilidade em IFRS. Assista na ordem, avance no seu ritmo e compreenda como as informações contábeis e fiscais impactam a gestão e a tomada de decisão.
-            </p>
-            <div class="usp-strip" style="margin-left: auto; margin-right: auto;">
-              Certificado Fundace · 100% gratuito
-            </div>
+        <!-- Seletor de Trilha -->
+        <section id="course-selector" style="display:none; padding: 48px 0;">
+          <div style="text-align: center; margin-bottom: 40px;">
+            <div class="eyebrow" style="margin: 0 auto 16px;">Trilhas gratuitas · Acesso liberado</div>
+            <h2 style="margin: 0 auto 14px; max-width: 22ch;">Escolha sua trilha.</h2>
+            <p style="margin: 0 auto; max-width: 44ch; color: var(--brand-ink-soft); line-height: 1.65;">Selecione o curso para continuar de onde parou.</p>
           </div>
-          <div class="portal-stats" style="justify-content: center; margin-top: 20px;">
-            <div class="pill" id="pill-progress">0% concluído</div>
-            <div class="pill">4 temas · 8 aulas</div>
-          </div>
+          <div id="course-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; max-width: 840px; margin: 0 auto;"></div>
         </section>
+
+        <!-- Portal da Trilha -->
+        <div id="portal-wrapper" style="display:none;">
+          <button id="back-to-courses" onclick="showCourseSelector()" class="back-btn">← Todas as trilhas</button>
+          <section class="portal-header">
+            <div style="position: relative; z-index: 1; text-align: center;">
+              <div class="eyebrow" style="margin-left: auto; margin-right: auto;">Trilha gratuita · Acesso liberado</div>
+              <h1 id="portal-heading" style="max-width: 100%;">Contabilidade, tributação e normas internacionais na prática.</h1>
+              <p id="welcome-copy" style="max-width: 60ch; margin-left: auto; margin-right: auto;">
+                Conteúdos extraídos das aulas do MBA USP Contabilidade em IFRS. Assista na ordem, avance no seu ritmo e compreenda como as informações contábeis e fiscais impactam a gestão e a tomada de decisão.
+              </p>
+              <div class="usp-strip" style="margin-left: auto; margin-right: auto;">
+                Certificado Fundace · 100% gratuito
+              </div>
+            </div>
+            <div class="portal-stats" style="justify-content: center; margin-top: 20px;">
+              <div class="pill" id="pill-progress">0% concluído</div>
+              <div class="pill" id="pill-summary">4 temas · 8 aulas</div>
+            </div>
+          </section>
 
         <section class="portal-grid">
           <aside class="sidebar">
@@ -545,7 +587,7 @@
             </article>
 
             <!-- CTA Banner de acesso ao curso -->
-            <div class="access-cta-banner">
+            <div class="access-cta-banner" id="access-cta-banner">
               <div class="access-cta-banner-text">
                 <span>Trilha em Contabilidade em IFRS · Fundace / FEA-RP · USP</span>
                 <h3>Quer aprofundar com método e sair com certificado?</h3>
@@ -580,7 +622,7 @@
               <div class="comment-list" id="comment-list"></div>
             </article>
 
-            <article class="community-panel">
+            <article class="community-panel" id="testimonial-panel">
               <div style="margin-bottom: 22px;">
                 <div class="eyebrow eyebrow-light">Quem já passou por aqui</div>
                 <h3 style="font-size: clamp(1.3rem, 2.6vw, 1.9rem);">Quem já fez o MBA conta o que mudou.</h3>
@@ -612,6 +654,7 @@
             </article>
           </div>
         </section>
+        </div><!-- /portal-wrapper -->
       </div>
     </main>
   </div>
@@ -623,19 +666,27 @@
   <script>
     const { createClient } = supabase;
     const db = createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
+    const initialTrailParam = (new URLSearchParams(window.location.search).get("trilha") || "").trim().toLowerCase();
     let currentUser = null;
     let lastTrackedLessonId = null;
 
-    // Proteção da página — redireciona para login se não autenticado
     (async () => {
       const { data: { session } } = await db.auth.getSession();
       if (!session) { window.location.href = "./login.html"; return; }
-      // Exibe nome do usuário no topbar
       const userName = session.user.user_metadata?.name || session.user.email;
       document.getElementById("user-name").textContent = userName;
     })();
 
-    const lessons = [
+    const courses = {
+      ifrs: {
+        id: "ifrs",
+        title: "MBA Contabilidade em IFRS",
+        subtitle: "Contabilidade, tributação e normas internacionais na prática.",
+        description: "Conteúdos extraídos das aulas do MBA USP Contabilidade em IFRS. Assista na ordem, avance no seu ritmo e compreenda como as informações contábeis e fiscais impactam a gestão e a tomada de decisão.",
+        pill: "4 temas · 8 aulas",
+        ctaUrl: "https://www.fundace.org.br/lp/mba-ead-usp-contabilidade-em-ifrs",
+        certificateSlug: "ifrs",
+        lessons: [
       {
         id: "lesson-1",
         title: "Contabilidade para Pequenas e Médias Empresas — Parte 1",
@@ -748,7 +799,113 @@
           "Divulgações exigidas pelo IFRS 15 e como interpretá-las nas demonstrações."
         ]
       }
-    ];
+        ]
+      },
+      gestao: {
+        id: "gestao",
+        title: "Trilha de Gestão de Produção com IA",
+        subtitle: "Empreendedorismo, S&OP e Big Data aplicados à operação.",
+        description: "Desenvolva visão estratégica, aprenda a integrar operação e demanda, e descubra como dados e IA impactam resultados reais na indústria.",
+        pill: "3 temas · 6 aulas",
+        ctaUrl: null,
+        certificateSlug: "gestao",
+        lessons: [
+          {
+            id: "gestao-1",
+            title: "Empreendedorismo e Liderança — Parte 1",
+            duration: "Parte 1",
+            level: "Empreendedorismo · Fundamentos",
+            teacher: "Lara Liboni",
+            videoUrl: "https://vimeo.com/982059141/f275d8b2b5",
+            eyebrow: "Aula 1 · liberada",
+            highlights: [
+              "Competências empreendedoras e liderança.",
+              "Avaliação de oportunidades de negócio.",
+              "Ferramentas como Canvas e Design Thinking.",
+              "Como estruturar ideias e transformar em plano."
+            ]
+          },
+          {
+            id: "gestao-2",
+            title: "Empreendedorismo e Liderança — Parte 2",
+            duration: "Parte 2",
+            level: "Empreendedorismo · Aprofundamento",
+            teacher: "Lara Liboni",
+            videoUrl: "https://vimeo.com/984477844/1ac99b599e",
+            eyebrow: "Aula 2 · disponível após a Parte 1",
+            highlights: [
+              "Competências empreendedoras e liderança.",
+              "Avaliação de oportunidades de negócio.",
+              "Ferramentas como Canvas e Design Thinking.",
+              "Como estruturar ideias e transformar em plano."
+            ]
+          },
+          {
+            id: "gestao-3",
+            title: "S&OP Compras — Parte 1",
+            duration: "Parte 1",
+            level: "S&OP · Fundamentos",
+            teacher: "Paulo Tavares",
+            videoUrl: "https://vimeo.com/1144537980/3f2b0b92f0",
+            eyebrow: "Aula 3",
+            highlights: [
+              "Planejamento de operações e vendas.",
+              "Gestão da demanda.",
+              "Compras estratégicas.",
+              "Relacionamento e risco com fornecedores."
+            ]
+          },
+          {
+            id: "gestao-4",
+            title: "S&OP Compras — Parte 2",
+            duration: "Parte 2",
+            level: "S&OP · Aplicação",
+            teacher: "Paulo Tavares",
+            videoUrl: "https://vimeo.com/1146621233/34dd3b3332",
+            eyebrow: "Aula 4",
+            highlights: [
+              "Planejamento de operações e vendas.",
+              "Gestão da demanda.",
+              "Compras estratégicas.",
+              "Relacionamento e risco com fornecedores."
+            ]
+          },
+          {
+            id: "gestao-5",
+            title: "Big Data e IA em Operações — Parte 1",
+            duration: "Parte 1",
+            level: "Big Data · Fundamentos",
+            teacher: "Eduardo Mendes",
+            videoUrl: "https://vimeo.com/1066619263/00b268b059",
+            eyebrow: "Aula 5",
+            highlights: [
+              "Big Data na indústria 4.0.",
+              "Redução de custos e aumento de eficiência.",
+              "Fundamentos de Inteligência Artificial.",
+              "Machine Learning aplicado à operação."
+            ]
+          },
+          {
+            id: "gestao-6",
+            title: "Big Data e IA em Operações — Parte 2",
+            duration: "Parte 2",
+            level: "Big Data · Aplicação",
+            teacher: "Eduardo Mendes",
+            videoUrl: "https://vimeo.com/1068919922/5fd633faad",
+            eyebrow: "Aula 6 · Encerramento da trilha",
+            highlights: [
+              "Big Data na indústria 4.0.",
+              "Redução de custos e aumento de eficiência.",
+              "Fundamentos de Inteligência Artificial.",
+              "Machine Learning aplicado à operação."
+            ]
+          }
+        ]
+      }
+    };
+
+    let lessons = [];
+    let currentCourse = null;
 
     const defaults = {
       notes: {},
@@ -779,7 +936,9 @@
     const videoShell       = document.getElementById("video-shell");
 
     function storageKey() {
-      return currentUser?.id ? `ifrsTrailState_v3:${currentUser.id}` : "ifrsTrailState_v3:guest";
+      const userId = currentUser?.id || "guest";
+      if (currentCourse?.id === "gestao") return `gestaoTrailState_v1:${userId}`;
+      return `ifrsTrailState_v3:${userId}`;
     }
 
     function loadState() {
@@ -899,7 +1058,8 @@
       const link = document.createElement("a");
       const safeName = name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "");
       link.href = url;
-      link.download = `certificado-ifrs-${safeName || "aluno"}.pdf`;
+      const courseSlug = currentCourse?.certificateSlug || "fundace";
+      link.download = `certificado-${courseSlug}-${safeName || "aluno"}.pdf`;
       link.click();
       URL.revokeObjectURL(url);
     }
@@ -922,9 +1082,12 @@
         return;
       }
 
-      state.completed = Array.isArray(data)
+      const allCompleted = Array.isArray(data)
         ? data.map(item => item.lesson_id).filter(Boolean)
         : [];
+
+      const currentIds = new Set(lessons.map(l => l.id));
+      state.completed = allCompleted.filter(id => currentIds.has(id));
 
       saveState();
     }
@@ -1042,6 +1205,7 @@
 
       lessonTitle.textContent   = lesson.title;
       lessonEyebrow.textContent = lesson.eyebrow;
+      lessonVideo.title = `Aula da ${currentCourse?.title || "trilha Fundace"}`;
       renderLessonMeta(lesson);
       renderHighlights(lesson);
       renderComments(lesson.id);
@@ -1152,6 +1316,69 @@
       }
     });
 
+    function showCourseSelector() {
+      document.getElementById("portal-wrapper").style.display = "none";
+      document.getElementById("course-selector").style.display = "";
+      currentCourse = null;
+      lessons = [];
+      currentLessonIndex = 0;
+      document.title = "Trilhas Fundace";
+    }
+
+    function renderCourseSelector() {
+      const grid = document.getElementById("course-grid");
+      grid.innerHTML = "";
+      Object.values(courses).forEach(course => {
+        const btn = document.createElement("button");
+        btn.className = "course-card";
+        btn.addEventListener("click", () => selectCourse(course.id));
+        btn.innerHTML = `
+          <div class="course-card-eyebrow">${course.pill}</div>
+          <h3>${course.title}</h3>
+          <p>${course.description}</p>
+          <div class="course-card-cta">Acessar trilha →</div>
+        `;
+        grid.appendChild(btn);
+      });
+    }
+
+    async function selectCourse(courseId) {
+      currentCourse = courses[courseId];
+      if (!currentCourse) return;
+
+      lessons = currentCourse.lessons;
+      currentLessonIndex = 0;
+      lastTrackedLessonId = null;
+
+      document.getElementById("portal-heading").textContent = currentCourse.subtitle;
+      document.getElementById("welcome-copy").textContent = currentCourse.description;
+      document.getElementById("pill-summary").textContent = currentCourse.pill;
+      document.title = `${currentCourse.title} | Fundace`;
+
+      const ctaBanner = document.getElementById("access-cta-banner");
+      const topbarCta = document.getElementById("topbar-cta");
+      const testimonialPanel = document.getElementById("testimonial-panel");
+      if (currentCourse.ctaUrl) {
+        ctaBanner.style.display = "";
+        topbarCta.href = currentCourse.ctaUrl;
+        topbarCta.style.display = "";
+      } else {
+        ctaBanner.style.display = "none";
+        topbarCta.style.display = "none";
+      }
+      testimonialPanel.style.display = currentCourse.id === "ifrs" ? "" : "none";
+
+      const persistedState = loadState();
+      state.completed = persistedState.completed;
+      state.user = { name: currentUser?.user_metadata?.name || currentUser?.email || "" };
+
+      document.getElementById("course-selector").style.display = "none";
+      document.getElementById("portal-wrapper").style.display = "";
+
+      await syncProgressFromSupabase();
+      renderPortal();
+    }
+
     (async () => {
       const { data: { session } } = await db.auth.getSession();
       if (!session) { window.location.href = "./login.html"; return; }
@@ -1160,12 +1387,15 @@
 
       const userName = session.user.user_metadata?.name || session.user.email;
       document.getElementById("user-name").textContent = userName;
-      const persistedState = loadState();
-      state.completed = persistedState.completed;
       state.user = { name: userName };
 
-      await syncProgressFromSupabase();
-      renderPortal();
+      renderCourseSelector();
+      const initialTrail = courses[initialTrailParam] ? initialTrailParam : "";
+      if (initialTrail) {
+        await selectCourse(initialTrail);
+      } else {
+        document.getElementById("course-selector").style.display = "";
+      }
     })();
 
     document.getElementById("logout-btn").addEventListener("click", async () => {

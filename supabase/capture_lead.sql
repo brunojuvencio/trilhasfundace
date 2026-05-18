@@ -14,6 +14,7 @@ alter table public.leads
   add column if not exists area_formacao text,
   add column if not exists empresa text,
   add column if not exists cargo text,
+  add column if not exists nome_trilha text,
   add column if not exists pretende_pos text,
   add column if not exists utm_source text,
   add column if not exists utm_medium text,
@@ -62,6 +63,11 @@ begin
   end if;
 end $$;
 
+update public.leads
+set nome_trilha = 'Trilha CONTIFRS'
+where nome_trilha is null
+   or btrim(nome_trilha) = '';
+
 alter table public.leads
   alter column nome set not null,
   alter column email set not null,
@@ -70,6 +76,8 @@ alter table public.leads
   alter column area_formacao set not null,
   alter column empresa set not null,
   alter column cargo set not null,
+  alter column nome_trilha set default 'Trilha CONTIFRS',
+  alter column nome_trilha set not null,
   alter column pretende_pos set not null,
   alter column activecampaign_sync_status set default 'pending',
   alter column activecampaign_sync_status set not null,
@@ -126,6 +134,8 @@ alter table public.leads enable row level security;
 
 revoke all on public.leads from anon, authenticated;
 
+drop function if exists public.capture_lead(text, text, text, text, boolean, text, text, text, text, text, text, text, text, text, text, text, text, text);
+
 create or replace function public.capture_lead(
   p_nome text,
   p_email text,
@@ -144,7 +154,8 @@ create or replace function public.capture_lead(
   p_gclid text default null,
   p_fbclid text default null,
   p_landing_page_url text default null,
-  p_referrer_url text default null
+  p_referrer_url text default null,
+  p_nome_trilha text default 'Trilha CONTIFRS'
 )
 returns public.leads
 language plpgsql
@@ -159,6 +170,7 @@ declare
   v_area_formacao text := trim(coalesce(p_area_formacao, ''));
   v_empresa text := trim(coalesce(p_empresa, ''));
   v_cargo text := trim(coalesce(p_cargo, ''));
+  v_nome_trilha text := coalesce(nullif(trim(coalesce(p_nome_trilha, '')), ''), 'Trilha CONTIFRS');
   v_pretende_pos text := trim(coalesce(p_pretende_pos, ''));
   v_utm_source text := nullif(trim(coalesce(p_utm_source, '')), '');
   v_utm_medium text := nullif(trim(coalesce(p_utm_medium, '')), '');
@@ -212,6 +224,7 @@ begin
     area_formacao,
     empresa,
     cargo,
+    nome_trilha,
     pretende_pos,
     utm_source,
     utm_medium,
@@ -232,6 +245,7 @@ begin
     v_area_formacao,
     v_empresa,
     v_cargo,
+    v_nome_trilha,
     v_pretende_pos,
     v_utm_source,
     v_utm_medium,
@@ -252,6 +266,7 @@ begin
     area_formacao = excluded.area_formacao,
     empresa = excluded.empresa,
     cargo = excluded.cargo,
+    nome_trilha = excluded.nome_trilha,
     pretende_pos = excluded.pretende_pos,
     utm_source = coalesce(excluded.utm_source, public.leads.utm_source),
     utm_medium = coalesce(excluded.utm_medium, public.leads.utm_medium),
@@ -268,8 +283,10 @@ begin
 end;
 $$;
 
-revoke all on function public.capture_lead(text, text, text, text, boolean, text, text, text, text, text, text, text, text, text, text, text, text, text) from public;
-grant execute on function public.capture_lead(text, text, text, text, boolean, text, text, text, text, text, text, text, text, text, text, text, text, text) to anon, authenticated;
+revoke all on function public.capture_lead(text, text, text, text, boolean, text, text, text, text, text, text, text, text, text, text, text, text, text, text) from public;
+grant execute on function public.capture_lead(text, text, text, text, boolean, text, text, text, text, text, text, text, text, text, text, text, text, text, text) to anon, authenticated;
+
+drop function if exists public.get_lead_offer_context(text);
 
 create or replace function public.get_lead_offer_context(
   p_email text
@@ -277,6 +294,7 @@ create or replace function public.get_lead_offer_context(
 returns table (
   email citext,
   nome text,
+  nome_trilha text,
   possui_formacao_superior boolean,
   pretende_pos text,
   mba_offer_shown_at timestamptz,
@@ -299,6 +317,7 @@ begin
   select
     l.email::citext,
     l.nome,
+    l.nome_trilha,
     l.possui_formacao_superior,
     l.pretende_pos,
     l.mba_offer_shown_at,

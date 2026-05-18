@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trilha Gratuita em Contabilidade em IFRS | Fundace FEA-RP/USP</title>
+  <title>Trilha Gratuita em Gestão de Produção com IA | Fundace FEA-RP/USP</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -85,36 +85,38 @@
       animation: pulseGlow 2.4s ease-in-out infinite;
     }
     .hero h1 {
-      font-size: clamp(2.8rem, 5.5vw, 5rem);
+      font-size: clamp(2.6rem, 5.5vw, 4.6rem);
       font-weight: 800; line-height: 1.0;
       letter-spacing: -0.04em; color: var(--white);
-      max-width: 18ch; margin-bottom: 28px;
+      max-width: 20ch; margin-bottom: 28px;
     }
     .hero h1 em { font-style: normal; color: var(--yellow); }
     .hero-desc {
       font-size: 1.05rem; line-height: 1.78;
       color: rgba(255,255,255,0.5);
-      max-width: 50ch; margin-bottom: 52px;
+      max-width: 52ch; margin-bottom: 52px;
       font-weight: 300;
     }
     .hero-stats {
       display: flex; gap: 0; margin-bottom: 56px;
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 16px; overflow: hidden;
-      width: fit-content;
+      max-width: 420px; width: 100%;
     }
     .stat-block {
-      padding: 20px 32px;
+      flex: 1;
+      padding: 14px 20px;
       border-right: 1px solid rgba(255,255,255,0.08);
+      text-align: center;
     }
     .stat-block:last-child { border-right: none; }
     .stat-num {
-      font-size: 2.2rem; font-weight: 800;
+      font-size: 1.5rem; font-weight: 800;
       color: var(--white); line-height: 1;
       letter-spacing: -0.04em; margin-bottom: 4px;
     }
-    .stat-num em { font-style: normal; color: var(--yellow); font-size: 1.4rem; }
-    .stat-lbl { font-size: 0.72rem; color: rgba(255,255,255,0.36); font-weight: 500; letter-spacing: 0.02em; }
+    .stat-num em { font-style: normal; color: var(--yellow); font-size: 1rem; }
+    .stat-lbl { font-size: 0.6rem; color: rgba(255,255,255,0.36); font-weight: 500; letter-spacing: 0.02em; white-space: nowrap; }
     .hero-cta {
       display: inline-flex; align-items: center; gap: 10px;
       padding: 17px 36px; border-radius: 12px; border: none; cursor: pointer;
@@ -137,7 +139,7 @@
     }
     .ticker-track {
       display: inline-flex;
-      animation: tickerScroll 28s linear infinite;
+      animation: tickerScroll 32s linear infinite;
     }
     .ticker-item {
       display: inline-flex; align-items: center; gap: 16px;
@@ -168,7 +170,7 @@
     }
     .section-eyebrow::before { content: ""; width: 20px; height: 2px; background: var(--yellow); border-radius: 1px; }
 
-    /* SOBRE A TRILHA */
+    /* PARA QUEM É */
     .sobre-layout {
       display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start;
     }
@@ -234,12 +236,44 @@
     .highlight-text { font-size: 0.86rem; color: rgba(255,255,255,0.46); line-height: 1.65; font-weight: 300; }
     .highlight-text strong { color: rgba(255,255,255,0.78); font-weight: 600; display: block; margin-bottom: 2px; }
 
-    @media (max-width: 860px) {
-      .sobre-layout { grid-template-columns: 1fr; gap: 40px; }
-      .sobre-highlights { grid-template-columns: 1fr; gap: 16px; }
+    /* PROBLEMA / SOLUÇÃO */
+    .problema-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start;
     }
-    @media (max-width: 540px) {
-      .audience-grid { grid-template-columns: 1fr; }
+    .problema-card {
+      padding: 40px 36px; border-radius: 20px;
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+    }
+    .problema-card.solucao {
+      background: rgba(254,183,55,0.05); border-color: rgba(254,183,55,0.14);
+    }
+    .problema-label {
+      font-size: 0.63rem; font-weight: 800; letter-spacing: 0.14em;
+      text-transform: uppercase; color: rgba(255,255,255,0.3);
+      margin-bottom: 20px;
+    }
+    .problema-card.solucao .problema-label { color: rgba(254,183,55,0.6); }
+    .problema-card h3 {
+      font-size: 1.2rem; font-weight: 800; color: var(--white);
+      letter-spacing: -0.03em; line-height: 1.2; margin-bottom: 20px;
+    }
+    .problema-card.solucao h3 { color: var(--yellow); }
+    .problema-list { list-style: none; display: grid; gap: 12px; }
+    .problema-list li {
+      display: flex; align-items: flex-start; gap: 12px;
+      font-size: 0.9rem; color: rgba(255,255,255,0.44);
+      line-height: 1.6; font-weight: 300;
+    }
+    .problema-list li::before {
+      content: ""; width: 6px; height: 6px; border-radius: 50%;
+      background: rgba(255,255,255,0.18); flex-shrink: 0; margin-top: 7px;
+    }
+    .problema-card.solucao .problema-list li::before { background: var(--yellow); }
+    .problema-card.solucao .problema-list li { color: rgba(255,255,255,0.62); }
+    .problema-resultado {
+      margin-top: 24px; padding: 14px 16px; border-radius: 10px;
+      background: rgba(220,60,60,0.08); border: 1px solid rgba(220,60,60,0.16);
+      font-size: 0.84rem; color: rgba(255,100,100,0.7); line-height: 1.6; font-weight: 400;
     }
 
     /* THEMES */
@@ -247,11 +281,11 @@
     .themes-title {
       font-size: clamp(2rem, 3.5vw, 3rem); font-weight: 800;
       letter-spacing: -0.04em; line-height: 1.05;
-      color: var(--ink); max-width: 16ch;
+      color: var(--ink); max-width: 18ch;
     }
     .themes-sub {
       font-size: 0.96rem; color: rgba(17,17,17,0.5);
-      line-height: 1.72; max-width: 48ch; margin-top: 14px;
+      line-height: 1.72; max-width: 52ch; margin-top: 14px;
       font-weight: 400;
     }
     .themes-list { display: grid; gap: 0; border: 1.5px solid rgba(17,17,17,0.1); border-radius: 20px; overflow: hidden; }
@@ -278,13 +312,37 @@
     }
     .theme-body h3 {
       font-size: 1.08rem; font-weight: 700; letter-spacing: -0.02em;
-      color: var(--ink); margin-bottom: 16px; line-height: 1.3;
+      color: var(--ink); margin-bottom: 10px; line-height: 1.3;
+    }
+    .theme-body p {
+      font-size: 0.86rem; color: rgba(17,17,17,0.5);
+      line-height: 1.65; margin-bottom: 16px; font-weight: 300;
     }
     .theme-tags { display: flex; flex-wrap: wrap; gap: 8px; }
     .theme-tag {
       font-size: 0.75rem; font-weight: 500; color: rgba(17,17,17,0.58);
       padding: 4px 12px; border-radius: 6px;
       background: rgba(17,17,17,0.05); border: 1px solid rgba(17,17,17,0.08);
+    }
+
+    /* OUTCOMES */
+    .outcomes-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;
+    }
+    .outcome-card {
+      padding: 26px 24px; border-radius: 16px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+      display: flex; align-items: flex-start; gap: 14px;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .outcome-card:hover { background: rgba(254,183,55,0.06); border-color: rgba(254,183,55,0.18); }
+    .outcome-num {
+      font-size: 1.1rem; font-weight: 900; color: rgba(254,183,55,0.3);
+      letter-spacing: -0.04em; line-height: 1; flex-shrink: 0; min-width: 24px;
+    }
+    .outcome-text {
+      font-size: 0.88rem; color: rgba(255,255,255,0.6);
+      line-height: 1.65; font-weight: 400;
     }
 
     /* HOW IT WORKS */
@@ -324,6 +382,74 @@
       letter-spacing: -0.02em; margin-bottom: 10px; line-height: 1.3;
     }
     .step-card p { font-size: 0.88rem; color: rgba(255,255,255,0.4); line-height: 1.72; font-weight: 300; }
+
+    /* SOBRE O MBA */
+    .mba-layout {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start;
+    }
+    .mba-title {
+      font-size: clamp(1.9rem, 3vw, 2.8rem); font-weight: 800;
+      letter-spacing: -0.04em; line-height: 1.05;
+      color: var(--white); margin: 12px 0 20px;
+    }
+    .mba-desc {
+      font-size: 0.96rem; color: rgba(255,255,255,0.44);
+      line-height: 1.78; font-weight: 300; margin-bottom: 12px;
+    }
+    .mba-cta {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 28px; border-radius: 10px; border: none; cursor: pointer;
+      background: var(--yellow); color: var(--black);
+      font: inherit; font-size: 0.9rem; font-weight: 700;
+      box-shadow: 0 8px 28px rgba(254,183,55,0.28);
+      transition: transform 0.18s, box-shadow 0.18s;
+      margin-top: 28px;
+    }
+    .mba-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(254,183,55,0.42); }
+    .mba-list { display: grid; gap: 14px; }
+    .mba-item {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 20px; border-radius: 14px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .mba-item:hover { background: rgba(254,183,55,0.06); border-color: rgba(254,183,55,0.16); }
+    .mba-check {
+      width: 26px; height: 26px; border-radius: 7px; flex-shrink: 0;
+      background: rgba(254,183,55,0.12); border: 1px solid rgba(254,183,55,0.2);
+      display: flex; align-items: center; justify-content: center; margin-top: 1px;
+    }
+    .mba-check svg { color: var(--yellow); }
+    .mba-item-text {
+      font-size: 0.88rem; color: rgba(255,255,255,0.56); line-height: 1.65; font-weight: 300;
+    }
+    .mba-item-text strong { color: rgba(255,255,255,0.82); font-weight: 600; display: block; margin-bottom: 2px; }
+
+    /* DIFERENCIAIS */
+    .dif-header { margin-bottom: 64px; }
+    .dif-title {
+      font-size: clamp(2rem, 3.5vw, 3rem); font-weight: 800;
+      letter-spacing: -0.04em; line-height: 1.05; color: var(--ink); max-width: 20ch;
+    }
+    .dif-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .dif-card {
+      padding: 30px 26px; border-radius: 18px;
+      background: var(--white); border: 1.5px solid rgba(17,17,17,0.08);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .dif-card:hover { border-color: var(--yellow); transform: translateY(-3px); }
+    .dif-icon {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: rgba(254,183,55,0.1); border: 1px solid rgba(254,183,55,0.2);
+      display: flex; align-items: center; justify-content: center; margin-bottom: 18px;
+    }
+    .dif-icon svg { color: var(--yellow-dark); }
+    .dif-card h4 {
+      font-size: 0.94rem; font-weight: 700; color: var(--ink);
+      letter-spacing: -0.02em; margin-bottom: 8px; line-height: 1.3;
+    }
+    .dif-card p { font-size: 0.82rem; color: rgba(17,17,17,0.5); line-height: 1.7; font-weight: 400; }
 
     /* FORM FOLD */
     .form-fold {
@@ -376,7 +502,6 @@
     .perk-icon svg { color: var(--yellow); }
     .perk-text { font-size: 0.86rem; color: rgba(255,255,255,0.52); line-height: 1.6; }
     .perk-text strong { color: rgba(255,255,255,0.82); font-weight: 600; display: block; font-size: 0.88rem; }
-
     .form-card {
       background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
       border-radius: 24px; padding: 40px 36px; backdrop-filter: blur(24px);
@@ -386,10 +511,8 @@
       letter-spacing: -0.02em; margin-bottom: 4px;
     }
     .form-card-sub { font-size: 0.82rem; color: rgba(255,255,255,0.36); margin-bottom: 28px; line-height: 1.6; }
-
     .form-grid { display: grid; gap: 12px; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
     .radio-group { display: grid; gap: 8px; }
     .radio-label-title {
       font-size: 0.75rem; font-weight: 600;
@@ -410,7 +533,6 @@
       border-color: rgba(254,183,55,0.5); background: rgba(254,183,55,0.1); color: var(--white);
     }
     .radio-options.col { flex-direction: column; }
-
     .field { display: grid; gap: 6px; }
     .field label { font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.52); letter-spacing: 0.02em; }
     .field label span { color: var(--yellow); }
@@ -432,7 +554,6 @@
       outline: none; border-color: rgba(254,183,55,0.5);
       background: rgba(255,255,255,0.08); box-shadow: 0 0 0 3px rgba(254,183,55,0.1);
     }
-
     .phone-row { display: grid; grid-template-columns: auto 1fr; gap: 8px; }
     .phone-prefix {
       display: flex; align-items: center; gap: 6px;
@@ -440,17 +561,14 @@
       background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
       font-size: 0.86rem; color: rgba(255,255,255,0.5); font-weight: 600; white-space: nowrap;
     }
-
     .form-consent {
       font-size: 0.72rem; color: rgba(255,255,255,0.28); line-height: 1.65;
       padding: 10px 13px; border-radius: 9px;
       background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);
     }
-
     .msg-box { padding: 11px 14px; border-radius: 9px; font-size: 0.84rem; font-weight: 600; display: none; }
     .msg-box.success  { background: rgba(22,120,55,0.15); border: 1px solid rgba(22,120,55,0.3); color: #4ade80; display: block; }
     .msg-box.error-msg { background: rgba(220,60,60,0.12); border: 1px solid rgba(220,60,60,0.28); color: #f87171; display: block; }
-
     .submit-btn {
       width: 100%; padding: 15px 20px; border: none; border-radius: 12px;
       background: var(--yellow); color: var(--black);
@@ -460,7 +578,6 @@
     }
     .submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 14px 44px rgba(254,183,55,0.46); }
     .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-
     .form-support {
       margin-top: 14px; text-align: center;
       font-size: 0.74rem; color: rgba(255,255,255,0.26); line-height: 1.8;
@@ -496,15 +613,17 @@
     @media (max-width: 1040px) {
       .form-layout { grid-template-columns: 1fr; gap: 48px; max-width: 560px; }
       .form-sidebar { position: static; }
+      .mba-layout { grid-template-columns: 1fr; gap: 48px; }
     }
     @media (max-width: 860px) {
       .steps-grid { grid-template-columns: 1fr; gap: 2px; }
       .step-card:first-child { border-radius: 20px 20px 0 0; }
       .step-card:last-child  { border-radius: 0 0 20px 20px; }
       .hero-content { padding: 64px 24px; }
-      .hero-stats { flex-direction: row; justify-content: center; width: auto; }
-      .stat-block { padding: 16px 24px; }
-      .stat-block:last-child { border-right: none; }
+      .sobre-layout { grid-template-columns: 1fr; gap: 40px; }
+      .sobre-highlights { grid-template-columns: 1fr; gap: 16px; }
+      .problema-grid { grid-template-columns: 1fr; gap: 24px; }
+      .dif-grid { grid-template-columns: repeat(2, 1fr); }
     }
     @media (max-width: 640px) {
       .topbar { padding: 0 20px; }
@@ -516,8 +635,11 @@
       .theme-row { grid-template-columns: 64px 1fr; }
       .theme-big-num { font-size: 1.8rem; }
       .theme-body { padding: 28px 20px; }
+      .dif-grid { grid-template-columns: 1fr; }
+      .outcomes-grid { grid-template-columns: 1fr; }
       footer { padding: 24px 20px; flex-direction: column; align-items: center; text-align: center; }
       .footer-text { text-align: center; }
+      .audience-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -536,17 +658,17 @@
       <div class="hero-glow"></div>
       <div class="hero-eyebrow">
         <div class="hero-eyebrow-dot"></div>
-        Trilha em Contabilidade em IFRS
+        Trilha de Gestão de Produção com IA
       </div>
-      <h1>Contabilidade e normas internacionais <em>na prática.</em></h1>
-      <p class="hero-desc">Conteúdos extraídos diretamente do MBA USP Contabilidade em IFRS. Compreenda como as informações contábeis e fiscais impactam a gestão e a tomada de decisão.</p>
+      <h1>Da operação à estratégia com IA: domine produção, dados e decisão <em>em 6 aulas gratuitas.</em></h1>
+      <p class="hero-desc">Uma trilha prática com aulas do MBA USP em Gestão de Produção e Operações com Aplicações em IA.</p>
       <div class="hero-stats">
         <div class="stat-block">
-          <div class="stat-num">8</div>
+          <div class="stat-num">6</div>
           <div class="stat-lbl">Aulas gratuitas</div>
         </div>
         <div class="stat-block">
-          <div class="stat-num">4</div>
+          <div class="stat-num">3</div>
           <div class="stat-lbl">Temas do MBA USP</div>
         </div>
         <div class="stat-block">
@@ -555,7 +677,7 @@
         </div>
       </div>
       <a href="#form-fold" class="hero-cta">
-        Quero me inscrever
+        Quero acessar a trilha gratuita
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
       </a>
     </div>
@@ -564,67 +686,65 @@
   <!-- TICKER -->
   <div class="ticker" aria-hidden="true">
     <div class="ticker-track">
-      <span class="ticker-item">8 aulas gratuitas <span class="ticker-sep"></span></span>
+      <span class="ticker-item">6 aulas gratuitas <span class="ticker-sep"></span></span>
       <span class="ticker-item">MBA USP · FEA-RP <span class="ticker-sep"></span></span>
-      <span class="ticker-item">Contabilidade em IFRS <span class="ticker-sep"></span></span>
+      <span class="ticker-item">Gestão de Produção com IA <span class="ticker-sep"></span></span>
       <span class="ticker-item">100% Online <span class="ticker-sep"></span></span>
       <span class="ticker-item">Certificado Fundace <span class="ticker-sep"></span></span>
-      <span class="ticker-item">4 temas essenciais <span class="ticker-sep"></span></span>
+      <span class="ticker-item">3 temas essenciais <span class="ticker-sep"></span></span>
       <span class="ticker-item">Acesso imediato <span class="ticker-sep"></span></span>
-      <span class="ticker-item">8 aulas gratuitas <span class="ticker-sep"></span></span>
+      <span class="ticker-item">6 aulas gratuitas <span class="ticker-sep"></span></span>
       <span class="ticker-item">MBA USP · FEA-RP <span class="ticker-sep"></span></span>
-      <span class="ticker-item">Contabilidade em IFRS <span class="ticker-sep"></span></span>
+      <span class="ticker-item">Gestão de Produção com IA <span class="ticker-sep"></span></span>
       <span class="ticker-item">100% Online <span class="ticker-sep"></span></span>
       <span class="ticker-item">Certificado Fundace <span class="ticker-sep"></span></span>
-      <span class="ticker-item">4 temas essenciais <span class="ticker-sep"></span></span>
+      <span class="ticker-item">3 temas essenciais <span class="ticker-sep"></span></span>
       <span class="ticker-item">Acesso imediato <span class="ticker-sep"></span></span>
     </div>
   </div>
 
-  <!-- SOBRE A TRILHA -->
+  <!-- PARA QUEM É -->
   <section class="section dark" id="sobre">
     <div class="container">
       <div class="sobre-layout">
 
-        <!-- Coluna esquerda: texto -->
         <div class="sobre-left">
-          <div class="section-eyebrow" style="color:rgba(254,183,55,0.7);">Sobre a trilha</div>
-          <h2 class="sobre-title">Feita para quem usa contabilidade para tomar decisões.</h2>
-          <p class="sobre-desc">A trilha reúne conteúdos extraídos diretamente do currículo do MBA USP Contabilidade em IFRS — abordando como as informações contábeis e fiscais influenciam a gestão e os resultados das organizações. Da teoria à aplicação prática, com a qualidade acadêmica da FEA-RP/USP.</p>
+          <div class="section-eyebrow" style="color:rgba(254,183,55,0.7);">Para quem é</div>
+          <h2 class="sobre-title">Feita para quem quer sair do operacional e pensar estrategicamente.</h2>
+          <p class="sobre-desc">Essa trilha foi pensada para profissionais que atuam na linha de frente das operações e querem dar um salto de visão — conectando dados, estratégia e inteligência artificial no dia a dia.</p>
           <div class="sobre-badge">Desenvolvida por professores da FEA-RP/USP</div>
         </div>
 
-        <!-- Coluna direita: público-alvo -->
         <div class="sobre-right">
-          <div class="audience-label">Para quem é</div>
+          <div class="audience-label">Essa trilha é para quem</div>
           <div class="audience-grid">
             <div class="audience-card">
               <div class="audience-icon">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
               </div>
-              <strong>Contadores e controllers</strong>
-              <span>Que precisam dominar as normas IFRS no dia a dia</span>
+              <strong>Produção, operações e supply chain</strong>
+              <span>Que querem tomar decisões melhores com base em dados</span>
             </div>
             <div class="audience-card">
               <div class="audience-icon">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
               </div>
-              <strong>Gestores e empresários</strong>
-              <span>Que querem interpretar demonstrações financeiras com segurança</span>
-            </div>
-            <div class="audience-card">
-              <div class="audience-icon">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-              </div>
-              <strong>Profissionais de finanças</strong>
-              <span>Buscando proficiência em tributação e derivativos financeiros</span>
+              <strong>Perfil técnico em busca de liderança</strong>
+              <span>Que querem evoluir para posições de gestão e estratégia</span>
             </div>
             <div class="audience-card">
               <div class="audience-icon">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
               </div>
-              <strong>Analistas tributários</strong>
-              <span>Que atuam com IRPJ, CSLL e planejamento fiscal estratégico</span>
+              <strong>Precisa planejar melhor a operação</strong>
+              <span>Alinhar demanda, compras e resultados no dia a dia</span>
+            </div>
+            <div class="audience-card">
+              <div class="audience-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+              </div>
+              <strong>Quer aplicar IA na prática</strong>
+              <span>Entender como dados e inteligência artificial impactam resultados reais</span>
             </div>
           </div>
         </div>
@@ -633,7 +753,6 @@
 
       <div class="sobre-divider"></div>
 
-      <!-- Destaques da trilha -->
       <div class="sobre-highlights">
         <div class="highlight-item">
           <div class="highlight-check">
@@ -650,7 +769,7 @@
           </div>
           <div class="highlight-text">
             <strong>Currículo real do MBA USP</strong>
-            Conteúdo extraído do MBA em Contabilidade em IFRS da FEA-RP/USP — rigor acadêmico com aplicação prática.
+            Conteúdo extraído do MBA em Gestão de Produção com Aplicações em IA da FEA-RP/USP.
           </div>
         </div>
         <div class="highlight-item">
@@ -659,11 +778,40 @@
           </div>
           <div class="highlight-text">
             <strong>Certificado reconhecido</strong>
-            Ao concluir a trilha, você recebe o certificado de participação emitido pela Fundace, reconhecido nacionalmente.
+            Ao concluir a trilha, você recebe o certificado de participação emitido pela Fundace.
           </div>
         </div>
       </div>
 
+    </div>
+  </section>
+
+  <!-- O PROBLEMA / A SOLUÇÃO -->
+  <section class="section dark" style="padding-top: 0;">
+    <div class="container">
+      <div class="problema-grid">
+        <div class="problema-card">
+          <div class="problema-label">O problema</div>
+          <h3>Hoje, a maioria dos profissionais ainda opera assim:</h3>
+          <ul class="problema-list">
+            <li>Toma decisões com base em experiência, não em dados</li>
+            <li>Tem dificuldade em conectar operação com estratégia</li>
+            <li>Não domina ferramentas modernas de gestão</li>
+            <li>Ouve falar de IA, mas não sabe como aplicar no dia a dia</li>
+          </ul>
+          <div class="problema-resultado">Resultado: crescimento mais lento e menor impacto nas decisões da empresa.</div>
+        </div>
+        <div class="problema-card solucao">
+          <div class="problema-label">A solução</div>
+          <h3>Essa trilha foi criada para mudar isso.</h3>
+          <ul class="problema-list">
+            <li>Pensar como um gestor estratégico</li>
+            <li>Estruturar operações com visão integrada</li>
+            <li>Aplicar dados e inteligência artificial para melhorar resultados</li>
+          </ul>
+          <p style="margin-top: 20px; font-size: 0.86rem; color: rgba(255,255,255,0.42); line-height: 1.7; font-weight: 300;">Tudo isso com conteúdo aplicado e direto ao ponto, extraído do currículo do MBA USP.</p>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -672,20 +820,21 @@
     <div class="container">
       <div class="themes-header">
         <div class="section-eyebrow">Conteúdo programático</div>
-        <h2 class="themes-title">4 temas. 8 aulas. Do fundamento à prática.</h2>
-        <p class="themes-sub">Cada tema é abordado em duas aulas sequenciais — fundamentos e aplicação real, extraídos do currículo do MBA USP.</p>
+        <h2 class="themes-title">3 temas. 6 aulas. Do fundamento à prática.</h2>
+        <p class="themes-sub">Cada tema é abordado em duas aulas sequenciais — fundamentos e aplicação real, extraídos do currículo do MBA USP em Gestão de Produção com IA.</p>
       </div>
       <div class="themes-list">
         <div class="theme-row">
           <div class="theme-num-col"><div class="theme-big-num">01</div></div>
           <div class="theme-body">
             <div class="theme-lessons">Aulas 1 e 2</div>
-            <h3>Contabilidade para Pequenas e Médias Empresas</h3>
+            <h3>Empreendedorismo e Liderança</h3>
+            <p>Desenvolva visão estratégica e capacidade de identificar oportunidades.</p>
             <div class="theme-tags">
-              <span class="theme-tag">Fundamentos PMEs</span>
-              <span class="theme-tag">IFRS para PMEs</span>
-              <span class="theme-tag">Ativos e passivos</span>
-              <span class="theme-tag">Demonstrações financeiras</span>
+              <span class="theme-tag">Competências de liderança</span>
+              <span class="theme-tag">Avaliação de oportunidades</span>
+              <span class="theme-tag">Canvas e Design Thinking</span>
+              <span class="theme-tag">Estruturação de ideias</span>
             </div>
           </div>
         </div>
@@ -693,12 +842,13 @@
           <div class="theme-num-col"><div class="theme-big-num">02</div></div>
           <div class="theme-body">
             <div class="theme-lessons">Aulas 3 e 4</div>
-            <h3>Tributação Brasileira sobre o Lucro</h3>
+            <h3>S&amp;OP — Sales and Operation Planning</h3>
+            <p>Aprenda a integrar operação, demanda e decisão.</p>
             <div class="theme-tags">
-              <span class="theme-tag">IRPJ e CSLL</span>
-              <span class="theme-tag">Lucro Real e Presumido</span>
-              <span class="theme-tag">Planejamento tributário</span>
-              <span class="theme-tag">Impacto nas demonstrações</span>
+              <span class="theme-tag">Planejamento de operações</span>
+              <span class="theme-tag">Gestão da demanda</span>
+              <span class="theme-tag">Compras estratégicas</span>
+              <span class="theme-tag">Risco com fornecedores</span>
             </div>
           </div>
         </div>
@@ -706,27 +856,142 @@
           <div class="theme-num-col"><div class="theme-big-num">03</div></div>
           <div class="theme-body">
             <div class="theme-lessons">Aulas 5 e 6</div>
-            <h3>Instrumentos Financeiros Derivativos</h3>
+            <h3>Big Data e IA em Operações</h3>
+            <p>Entenda como dados e IA impactam resultados reais.</p>
             <div class="theme-tags">
-              <span class="theme-tag">Swaps e opções</span>
-              <span class="theme-tag">Hedge accounting</span>
-              <span class="theme-tag">Valor justo (IFRS)</span>
-              <span class="theme-tag">Leitura nas demonstrações</span>
+              <span class="theme-tag">Big Data na indústria 4.0</span>
+              <span class="theme-tag">Redução de custos</span>
+              <span class="theme-tag">Fundamentos de IA</span>
+              <span class="theme-tag">Machine Learning aplicado</span>
             </div>
           </div>
         </div>
-        <div class="theme-row">
-          <div class="theme-num-col"><div class="theme-big-num">04</div></div>
-          <div class="theme-body">
-            <div class="theme-lessons">Aulas 7 e 8</div>
-            <h3>Receitas de Contratos de Clientes</h3>
-            <div class="theme-tags">
-              <span class="theme-tag">IFRS 15 / CPC 47</span>
-              <span class="theme-tag">5 passos de reconhecimento</span>
-              <span class="theme-tag">Obrigações de desempenho</span>
-              <span class="theme-tag">Divulgações exigidas</span>
-            </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AO FINAL DA TRILHA -->
+  <section class="section dark">
+    <div class="container">
+      <div style="margin-bottom: 56px;">
+        <div class="section-eyebrow" style="color:rgba(254,183,55,0.7);">Resultados</div>
+        <h2 style="font-size: clamp(2rem, 3.5vw, 3rem); font-weight: 800; letter-spacing: -0.04em; color: var(--white); line-height: 1.05; max-width: 22ch; margin-top: 12px;">Ao final da trilha, você será capaz de:</h2>
+      </div>
+      <div class="outcomes-grid">
+        <div class="outcome-card">
+          <div class="outcome-num">01</div>
+          <div class="outcome-text">Entender como sair do operacional e pensar estrategicamente</div>
+        </div>
+        <div class="outcome-card">
+          <div class="outcome-num">02</div>
+          <div class="outcome-text">Conectar dados, operação e decisão de forma integrada</div>
+        </div>
+        <div class="outcome-card">
+          <div class="outcome-num">03</div>
+          <div class="outcome-text">Identificar oportunidades de melhoria na sua área</div>
+        </div>
+        <div class="outcome-card">
+          <div class="outcome-num">04</div>
+          <div class="outcome-text">Compreender como IA pode ser aplicada no seu contexto</div>
+        </div>
+        <div class="outcome-card">
+          <div class="outcome-num">05</div>
+          <div class="outcome-text">Evoluir sua visão de negócio e liderança com mais segurança</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOBRE O MBA -->
+  <section class="section dark" style="padding-top: 0;">
+    <div class="container">
+      <div style="height: 1px; background: rgba(255,255,255,0.06); margin-bottom: 100px;"></div>
+      <div class="mba-layout">
+        <div>
+          <div class="section-eyebrow" style="color:rgba(254,183,55,0.7);">Quer ir além?</div>
+          <h2 class="mba-title">Essa trilha é uma amostra do MBA USP em Gestão de Produção com IA.</h2>
+          <p class="mba-desc">No MBA completo, você aprofunda esse conhecimento em uma jornada estruturada que integra estratégia, operação, dados e tecnologia de forma consistente.</p>
+          <p class="mba-desc">Se essa trilha já amplia sua visão, o MBA é o passo que consolida esse aprendizado e impulsiona sua evolução profissional.</p>
+          <a href="#form-fold" class="mba-cta">
+            Garantir meu acesso à trilha
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        </div>
+        <div class="mba-list">
+          <div class="mba-item">
+            <div class="mba-check"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="mba-item-text"><strong>Liderança com visão estratégica e integrada</strong>Lidere operações conectando pessoas, processos e resultados.</div>
           </div>
+          <div class="mba-item">
+            <div class="mba-check"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="mba-item-text"><strong>Decisões com base em dados e indicadores</strong>Tome decisões melhores com análises confiáveis e estruturadas.</div>
+          </div>
+          <div class="mba-item">
+            <div class="mba-check"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="mba-item-text"><strong>IA aplicada no contexto do negócio</strong>Use inteligência artificial de forma prática e orientada a resultados.</div>
+          </div>
+          <div class="mba-item">
+            <div class="mba-check"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="mba-item-text"><strong>Eficiência e vantagem competitiva</strong>Conecte diferentes áreas para gerar mais impacto na empresa.</div>
+          </div>
+          <div class="mba-item">
+            <div class="mba-check"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="mba-item-text"><strong>Protagonismo nas decisões</strong>Atue com mais segurança, influência e visão de negócio.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DIFERENCIAIS -->
+  <section class="section">
+    <div class="container">
+      <div class="dif-header">
+        <div class="section-eyebrow">Por que a Fundace</div>
+        <h2 class="dif-title">O que torna nosso MBA diferente.</h2>
+      </div>
+      <div class="dif-grid">
+        <div class="dif-card">
+          <div class="dif-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+          </div>
+          <h4>Certificado USP</h4>
+          <p>Reconhecimento imediato no currículo com a força de uma das melhores universidades do país.</p>
+        </div>
+        <div class="dif-card">
+          <div class="dif-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <h4>Metodologia estruturada</h4>
+          <p>Aprendizado em sequência lógica, do fundamento à aplicação real — sem saltos ou lacunas.</p>
+        </div>
+        <div class="dif-card">
+          <div class="dif-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <h4>Professores acadêmicos e de mercado</h4>
+          <p>Conteúdo que equilibra rigor teórico e aplicação prática com quem vive o tema.</p>
+        </div>
+        <div class="dif-card">
+          <div class="dif-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
+          <h4>Conteúdo aplicado desde a primeira aula</h4>
+          <p>Foco em uso real no dia a dia profissional, sem teoria excessiva ou conteúdo genérico.</p>
+        </div>
+        <div class="dif-card">
+          <div class="dif-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          </div>
+          <h4>Turmas reduzidas</h4>
+          <p>Mais interação, troca qualificada e networking com profissionais de diferentes áreas.</p>
+        </div>
+        <div class="dif-card">
+          <div class="dif-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <h4>Acompanhamento individualizado</h4>
+          <p>Suporte próximo ao longo da jornada, com tutores dedicados ao seu desenvolvimento.</p>
         </div>
       </div>
     </div>
@@ -777,17 +1042,17 @@
       <div class="form-sidebar">
         <div class="form-sidebar-eyebrow">
           <div class="form-sidebar-dot"></div>
-          Vagas abertas
+          Vagas limitadas
         </div>
-        <h2>Garanta seu acesso à trilha agora.</h2>
-        <p>Preencha o formulário ao lado e você receberá as instruções para criar seu login e acessar as 8 aulas gratuitamente.</p>
+        <h2>Garanta seu acesso gratuito à trilha agora.</h2>
+        <p>Preencha o formulário ao lado e você receberá as instruções para criar seu login e acessar as 6 aulas gratuitamente.</p>
         <div class="form-perks">
           <div class="form-perk">
             <div class="perk-icon">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
             <div class="perk-text">
-              <strong>8 aulas em vídeo</strong>
+              <strong>6 aulas em vídeo</strong>
               Conteúdo do MBA USP disponível imediatamente após o cadastro
             </div>
           </div>
@@ -854,12 +1119,12 @@
             <label for="area_formacao">Área de formação <span>*</span></label>
             <select id="area_formacao" required>
               <option value="" disabled selected>Selecione sua área</option>
-              <option>Contabilidade</option>
+              <option>Engenharia de Produção</option>
               <option>Administração</option>
+              <option>Logística e Supply Chain</option>
+              <option>Tecnologia da Informação</option>
               <option>Economia</option>
-              <option>Finanças</option>
-              <option>Direito</option>
-              <option>Engenharia</option>
+              <option>Contabilidade</option>
               <option>Outra</option>
             </select>
           </div>
@@ -921,7 +1186,7 @@
     const form      = document.getElementById("register-form");
     const submitBtn = document.getElementById("submit-btn");
     const msgBox    = document.getElementById("msg-box");
-    const TRILHA_NOME = "Trilha CONTIFRS";
+    const TRILHA_NOME = "Trilha de Gestão de Produção com IA";
     const ATTR_STORAGE_KEY = "fundace_trilha_attribution";
     const ATTR_STORAGE_EMAIL_PREFIX = "fundace_trilha_attribution:";
 
@@ -955,15 +1220,11 @@
       const gaCookie = readCookie("_ga");
       if (gaCookie) {
         const parts = gaCookie.split(".");
-        if (parts.length >= 4) {
-          return `${parts[2]}.${parts[3]}`;
-        }
+        if (parts.length >= 4) return `${parts[2]}.${parts[3]}`;
       }
-
       const storageKey = "fundace_ga_client_id";
       const existing = localStorage.getItem(storageKey);
       if (existing) return existing;
-
       const generated = generatePseudoClientId();
       localStorage.setItem(storageKey, generated);
       return generated;
@@ -973,7 +1234,6 @@
       const storageKey = "fundace_ga_session_id";
       const existing = sessionStorage.getItem(storageKey);
       if (existing) return existing;
-
       const generated = String(Math.floor(Date.now() / 1000));
       sessionStorage.setItem(storageKey, generated);
       return generated;
@@ -988,11 +1248,8 @@
       const url = new URL(window.location.href);
       const query = url.searchParams;
       const stored = (() => {
-        try {
-          return JSON.parse(localStorage.getItem(ATTR_STORAGE_KEY) || "{}");
-        } catch {
-          return {};
-        }
+        try { return JSON.parse(localStorage.getItem(ATTR_STORAGE_KEY) || "{}"); }
+        catch { return {}; }
       })();
 
       const fbclid = overrides.fbclid || query.get("fbclid") || stored.fbclid || "";
@@ -1009,9 +1266,7 @@
         utm_term: query.get("utm_term") || "",
         utm_content: query.get("utm_content") || "",
         gclid: query.get("gclid") || "",
-        fbclid,
-        fbp,
-        fbc,
+        fbclid, fbp, fbc,
         landing_page_url: stored.landing_page_url || window.location.href,
         page_url: window.location.href,
         referrer_url: document.referrer || stored.referrer_url || "",
@@ -1025,11 +1280,9 @@
     function persistAttribution(email = "") {
       const snapshot = buildAttributionSnapshot();
       localStorage.setItem(ATTR_STORAGE_KEY, JSON.stringify(snapshot));
-
       if (email) {
         localStorage.setItem(`${ATTR_STORAGE_EMAIL_PREFIX}${email.toLowerCase()}`, JSON.stringify(snapshot));
       }
-
       return snapshot;
     }
 
@@ -1046,7 +1299,6 @@
           },
           body: JSON.stringify(payload)
         });
-
         if (!response.ok) {
           const result = await response.json().catch(() => ({}));
           console.error("Erro ao sincronizar lead no ActiveCampaign:", result.error || response.statusText);
@@ -1132,7 +1384,7 @@
 
       persistAttribution(email);
 
-      window.location.href = `./cadastrar-senha.html?email=${encodeURIComponent(email)}&nome=${encodeURIComponent(nome)}&trilha=ifrs`;
+      window.location.href = `./cadastrar-senha.html?email=${encodeURIComponent(email)}&nome=${encodeURIComponent(nome)}&trilha=gestao`;
     });
   </script>
 </body>

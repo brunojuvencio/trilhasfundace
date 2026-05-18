@@ -11,7 +11,8 @@
     { "source": "/trilha", "destination": "/Index.html" },
     { "source": "/admin", "destination": "/admin-login.html" },
     { "source": "/admin-login", "destination": "/admin-login.html" },
-    { "source": "/painel-admin", "destination": "/admin.html" }
+    { "source": "/painel-admin", "destination": "/admin.html" },
+    { "source": "/gestao", "destination": "/captacao-gestao.html" }
   ],
   "headers": [
     {
