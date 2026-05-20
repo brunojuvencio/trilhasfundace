@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
 type AttributionPayload = {
@@ -132,6 +132,14 @@ async function sha256Hex(value: string) {
 function buildFbc(fbclid: string) {
   if (!fbclid) return "";
   return `fb.1.${Date.now()}.${fbclid}`;
+}
+
+function publicPixelId() {
+  return /^\d+$/.test(metaPixelId) ? metaPixelId : "";
+}
+
+function publicGa4MeasurementId() {
+  return /^G-[A-Z0-9]+$/i.test(ga4MeasurementId) ? ga4MeasurementId : "";
 }
 
 function buildEventId(lead: LeadRow) {
@@ -299,6 +307,13 @@ async function postGa4QualifiedLead(
 Deno.serve(async request => {
   if (request.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
+  }
+
+  if (request.method === "GET") {
+    return json({
+      metaPixelId: publicPixelId(),
+      ga4MeasurementId: publicGa4MeasurementId(),
+    });
   }
 
   if (request.method !== "POST") {
