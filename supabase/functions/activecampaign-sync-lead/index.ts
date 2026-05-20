@@ -81,6 +81,35 @@ function normalizeText(value: string) {
     .toLowerCase();
 }
 
+function normalizeListName(value: string) {
+  return normalizeText(value.replace(/([a-z0-9])([A-Z])/g, "$1 $2"))
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function compactListName(value: string) {
+  return normalizeListName(value).replace(/\s+/g, "");
+}
+
+function listNameTokens(value: string) {
+  const ignored = new Set(["trilha", "de", "da", "do", "das", "dos", "com", "e", "em"]);
+  return normalizeListName(value)
+    .split(/\s+/)
+    .filter(token => token && !ignored.has(token));
+}
+
+function listNameMatches(candidate: string, configured: string) {
+  const normalizedCandidate = normalizeListName(candidate);
+  const normalizedConfigured = normalizeListName(configured);
+  if (!normalizedCandidate || !normalizedConfigured) return false;
+  if (normalizedCandidate === normalizedConfigured) return true;
+  if (compactListName(candidate) === compactListName(configured)) return true;
+
+  const candidateTokens = new Set(listNameTokens(candidate));
+  const configuredTokens = listNameTokens(configured);
+  return configuredTokens.length > 0 && configuredTokens.every(token => candidateTokens.has(token));
+}
+
 function isGestaoTrail(lead: LeadRow) {
   const trailName = normalizeText(cleanString(lead.nome_trilha));
   return trailName.includes("gestao") && trailName.includes("producao");
@@ -129,11 +158,11 @@ async function activeCampaignFetch(path: string, init: RequestInit = {}) {
 async function resolveListId(listConfig: { id: string; name: string }) {
   if (listConfig.id) return listConfig.id;
 
-  const data = await activeCampaignFetch("/api/3/lists");
+  const data = await activeCampaignFetch("/api/3/lists?limit=100");
   const lists = Array.isArray(data.lists) ? data.lists as Array<Record<string, unknown>> : [];
   const match = lists.find(item => {
-    const name = String(item.name ?? "").trim().toLowerCase();
-    return name === listConfig.name.toLowerCase();
+    const name = String(item.name ?? "").trim();
+    return listNameMatches(name, listConfig.name);
   });
 
   const listId = String(match?.id ?? "").trim();
