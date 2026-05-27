@@ -274,6 +274,28 @@
     }
     .admin-row strong { display: block; margin-bottom: 3px; }
 
+    /* ── SLUG / URL PREVIEW ── */
+    .input-with-prefix { display: flex; align-items: center; border: 1.5px solid var(--line); border-radius: 13px; background: rgba(255,255,255,0.75); overflow: hidden; transition: border-color 0.16s, box-shadow 0.16s; }
+    .input-with-prefix:focus-within { border-color: rgba(212,122,31,0.65); box-shadow: 0 0 0 3px rgba(212,122,31,0.1); }
+    .input-prefix { padding: 0 10px; font-size: 0.82rem; color: var(--muted); white-space: nowrap; background: rgba(24,20,17,0.04); border-right: 1px solid var(--line); height: 46px; display: flex; align-items: center; }
+    .input-with-prefix input { border: none; border-radius: 0; background: transparent; box-shadow: none; flex: 1; padding-left: 10px; }
+    .input-with-prefix input:focus { border: none; box-shadow: none; }
+    .field-help { color: var(--muted); font-size: 0.8rem; }
+    .url-preview-box { display: flex; align-items: center; gap: 10px; background: rgba(24,20,17,0.04); border: 1px solid var(--line); border-radius: 13px; padding: 12px 15px; margin-top: 16px; }
+    .url-preview-box span { flex: 1; font-size: 0.85rem; color: var(--muted); word-break: break-all; font-family: monospace; }
+    .url-preview-box strong { color: var(--ink); }
+    .btn-copy { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; font-size: 0.8rem; font-weight: 700; cursor: pointer; white-space: nowrap; transition: background 0.14s; }
+    .btn-copy:hover { background: rgba(212,122,31,0.1); }
+
+    /* ── LINK BUTTON ── */
+    .link-btn { background: none; border: none; padding: 0; color: var(--accent); font-size: inherit; font-weight: 700; cursor: pointer; text-decoration: underline; }
+    .link-btn:hover { opacity: 0.75; }
+
+    /* ── COURSES MANAGEMENT ── */
+    .course-list { display: grid; gap: 10px; }
+    .course-row { border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,0.72); padding: 13px 16px; display: flex; justify-content: space-between; align-items: center; gap: 14px; }
+    .course-row strong { display: block; font-size: 0.95rem; }
+
     /* ── UTILS ── */
     .mini { color: var(--muted); font-size: 0.82rem; line-height: 1.5; }
     .helper { color: var(--muted); font-size: 0.84rem; line-height: 1.55; margin: 0; }
@@ -624,6 +646,39 @@
         </div>
       </section>
 
+      <!-- Gerenciar Cursos -->
+      <section class="trails-view trails-shell" id="courses-management-view">
+        <div class="card">
+          <div class="section-title">
+            <div>
+              <h2>Cursos</h2>
+              <p>Cursos disponíveis para vincular às trilhas.</p>
+            </div>
+            <button type="button" class="button-secondary" id="course-new-toggle-btn">+ Novo curso</button>
+          </div>
+          <div id="course-add-form-wrap" style="display:none; margin-bottom:16px;">
+            <div class="notice" id="course-form-feedback"></div>
+            <form id="course-add-form">
+              <div class="form-grid">
+                <div class="field">
+                  <label for="course-nome">Nome do curso</label>
+                  <input id="course-nome" required placeholder="Ex: Contabilidade em IFRS">
+                </div>
+                <div class="field">
+                  <label for="course-descricao">Descrição (opcional)</label>
+                  <input id="course-descricao" placeholder="Breve descrição do curso">
+                </div>
+              </div>
+              <div class="actions" style="margin-top:12px;">
+                <button type="submit" class="button-primary" id="course-add-submit">Salvar curso</button>
+                <button type="button" class="button-secondary" id="course-add-cancel">Cancelar</button>
+              </div>
+            </form>
+          </div>
+          <div class="course-list" id="courses-list"></div>
+        </div>
+      </section>
+
       <section class="trails-view trails-shell" id="trails-editor-view" hidden>
         <div class="editor-head">
           <div class="section-title" style="margin-bottom:0;">
@@ -652,6 +707,14 @@
                   <input id="trail-name" required>
                 </div>
                 <div class="field full">
+                  <label for="trail-slug">Slug (URL de acesso)</label>
+                  <div class="input-with-prefix">
+                    <span class="input-prefix">/trilha?trilha=</span>
+                    <input id="trail-slug" placeholder="ex: contabilidade-ifrs" pattern="[a-z0-9\-]+" title="Somente letras minúsculas, números e hífens">
+                  </div>
+                  <div class="field-help">Gerado automaticamente do nome. Você pode editar.</div>
+                </div>
+                <div class="field full">
                   <label for="trail-description">Descrição</label>
                   <textarea id="trail-description" maxlength="200"></textarea>
                   <div class="char-counter" id="trail-description-counter">0/200</div>
@@ -661,6 +724,7 @@
                   <select id="trail-course" required>
                     <option value="">Carregando cursos...</option>
                   </select>
+                  <div class="field-help">Não encontrou o curso? <button type="button" class="link-btn" id="jump-to-courses-btn">Cadastrar novo curso ↓</button></div>
                 </div>
                 <div class="field full">
                   <label>Status</label>
@@ -673,6 +737,12 @@
               </div>
               <div class="actions" style="margin-top:16px;">
                 <button type="submit" class="button-primary" id="trail-save-button">Salvar metadados</button>
+              </div>
+              <div id="trail-url-preview" style="display:none;">
+                <div class="url-preview-box">
+                  <span>URL da trilha: <strong id="trail-url-display"></strong></span>
+                  <button type="button" class="btn-copy" id="trail-url-copy">Copiar</button>
+                </div>
               </div>
             </form>
           </div>
@@ -850,12 +920,25 @@
     const trailCourse = document.getElementById("trail-course");
     const trailStatus = document.getElementById("trail-status");
     const trailStatusLabel = document.getElementById("trail-status-label");
+    const trailSlug = document.getElementById("trail-slug");
+    const trailUrlPreview = document.getElementById("trail-url-preview");
+    const trailUrlDisplay = document.getElementById("trail-url-display");
+    const trailUrlCopy = document.getElementById("trail-url-copy");
     const trailSaveButton = document.getElementById("trail-save-button");
     const trailSaveDraftButton = document.getElementById("trail-save-draft-button");
     const trailPublishButton = document.getElementById("trail-publish-button");
     const lessonAddButton = document.getElementById("lesson-add-button");
     const lessonsList = document.getElementById("lessons-list");
     const toastStack = document.getElementById("toast-stack");
+    const courseNewToggleBtn = document.getElementById("course-new-toggle-btn");
+    const courseAddFormWrap = document.getElementById("course-add-form-wrap");
+    const courseAddForm = document.getElementById("course-add-form");
+    const courseAddCancel = document.getElementById("course-add-cancel");
+    const courseFormFeedback = document.getElementById("course-form-feedback");
+    const courseNome = document.getElementById("course-nome");
+    const courseDescricao = document.getElementById("course-descricao");
+    const coursesList = document.getElementById("courses-list");
+    const jumpToCoursesBtn = document.getElementById("jump-to-courses-btn");
 
     function escapeHtml(value) {
       return String(value || "")
@@ -863,6 +946,132 @@
         .replaceAll(">", "&gt;").replaceAll('"', "&quot;")
         .replaceAll("'", "&#39;");
     }
+
+    function slugify(text) {
+      return String(text || "")
+        .normalize("NFD").replace(/[̀-ͯ]/g, "")
+        .toLowerCase().trim()
+        .replace(/[^a-z0-9\s-]/g, "")
+        .replace(/[\s]+/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-|-$/g, "");
+    }
+
+    let slugManuallyEdited = false;
+
+    function updateUrlPreview() {
+      const slug = trailSlug.value.trim();
+      if (slug) {
+        const url = `${window.location.origin}/trilha?trilha=${slug}`;
+        trailUrlDisplay.textContent = url;
+        trailUrlPreview.style.display = "";
+      } else {
+        trailUrlPreview.style.display = "none";
+      }
+    }
+
+    trailName.addEventListener("input", () => {
+      if (!slugManuallyEdited) {
+        trailSlug.value = slugify(trailName.value);
+        updateUrlPreview();
+      }
+    });
+
+    trailSlug.addEventListener("input", () => {
+      slugManuallyEdited = true;
+      trailSlug.value = slugify(trailSlug.value);
+      updateUrlPreview();
+    });
+
+    trailUrlCopy.addEventListener("click", () => {
+      const url = trailUrlDisplay.textContent;
+      if (!url) return;
+      navigator.clipboard.writeText(url).then(() => {
+        trailUrlCopy.textContent = "Copiado!";
+        setTimeout(() => { trailUrlCopy.textContent = "Copiar"; }, 2000);
+      });
+    });
+
+    function renderCoursesList() {
+      if (!state.courses.length) {
+        coursesList.innerHTML = `<div class="empty">Nenhum curso cadastrado ainda.</div>`;
+        return;
+      }
+      coursesList.innerHTML = state.courses.map(curso => `
+        <div class="course-row">
+          <div>
+            <strong>${escapeHtml(curso.nome)}</strong>
+            ${curso.descricao ? `<div class="mini">${escapeHtml(curso.descricao)}</div>` : ""}
+          </div>
+          <button type="button" class="button-danger" data-course-delete="${escapeHtml(curso.id)}">Excluir</button>
+        </div>
+      `).join("");
+    }
+
+    courseNewToggleBtn.addEventListener("click", () => {
+      const isOpen = courseAddFormWrap.style.display !== "none";
+      courseAddFormWrap.style.display = isOpen ? "none" : "";
+      courseNewToggleBtn.textContent = isOpen ? "+ Novo curso" : "Cancelar";
+      if (!isOpen) { courseAddForm.reset(); clearNotice(courseFormFeedback); }
+    });
+
+    courseAddCancel.addEventListener("click", () => {
+      courseAddFormWrap.style.display = "none";
+      courseNewToggleBtn.textContent = "+ Novo curso";
+      courseAddForm.reset();
+      clearNotice(courseFormFeedback);
+    });
+
+    if (jumpToCoursesBtn) {
+      jumpToCoursesBtn.addEventListener("click", () => {
+        showTrailList();
+        document.getElementById("courses-management-view")?.scrollIntoView({ behavior: "smooth" });
+        courseAddFormWrap.style.display = "";
+        courseNewToggleBtn.textContent = "Cancelar";
+      });
+    }
+
+    courseAddForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const nome = courseNome.value.trim();
+      const descricao = courseDescricao.value.trim();
+      if (!nome) return;
+      const btn = document.getElementById("course-add-submit");
+      btn.disabled = true;
+      btn.textContent = "Salvando...";
+      try {
+        const result = await apiFetch("/api/cursos", { method: "POST", body: JSON.stringify({ nome, descricao }) });
+        state.courses.push(result.curso);
+        renderCoursesList();
+        renderCourseOptions();
+        courseAddForm.reset();
+        courseAddFormWrap.style.display = "none";
+        courseNewToggleBtn.textContent = "+ Novo curso";
+        clearNotice(courseFormFeedback);
+        showToast("success", "Curso cadastrado.");
+      } catch (err) {
+        setNotice(courseFormFeedback, "error", err.message || "Não foi possível salvar o curso.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Salvar curso";
+      }
+    });
+
+    document.getElementById("courses-management-view").addEventListener("click", async (e) => {
+      const btn = e.target.closest("[data-course-delete]");
+      if (!btn) return;
+      const id = btn.dataset.courseDelete;
+      if (!confirm("Excluir este curso? Trilhas vinculadas a ele não poderão ser salvas sem um novo curso.")) return;
+      try {
+        await apiFetch(`/api/cursos/${id}`, { method: "DELETE" });
+        state.courses = state.courses.filter(c => c.id !== id);
+        renderCoursesList();
+        renderCourseOptions();
+        showToast("success", "Curso excluído.");
+      } catch (err) {
+        showToast("error", err.message || "Não foi possível excluir o curso.");
+      }
+    });
 
     function formatDate(value) {
       if (!value) return "-";
@@ -1015,6 +1224,7 @@
         state.courses = coursesResult.cursos || [];
         state.trails = trailsResult.trilhas || [];
         renderCourseOptions();
+        renderCoursesList();
         renderTrails();
         clearNotice(trailsFeedback);
       } catch (error) {
@@ -1041,9 +1251,11 @@
       state.trailEditor.currentId = null;
       state.trailEditor.lessons = [];
       state.trailEditor.dragKey = null;
+      slugManuallyEdited = false;
       trailMetaForm.reset();
       trailStatus.checked = false;
       trailEditorTitle.textContent = "Nova trilha";
+      trailUrlPreview.style.display = "none";
       updateTrailStatusLabel();
       updateDescriptionCounter();
       renderCourseOptions();
@@ -1053,11 +1265,14 @@
 
     function fillTrailEditor(trilha) {
       state.trailEditor.currentId = trilha.id;
+      slugManuallyEdited = !!trilha.slug;
       trailEditorTitle.textContent = trilha.nome || "Editar trilha";
       trailName.value = trilha.nome || "";
+      trailSlug.value = trilha.slug || slugify(trilha.nome || "");
       trailDescription.value = trilha.descricao || "";
       trailCourse.value = trilha.cursoId || "";
       trailStatus.checked = trilha.status === "publicada";
+      updateUrlPreview();
       state.trailEditor.lessons = (trilha.aulas || []).map(normalizeLesson);
       normalizeLessonOrder();
       updateTrailStatusLabel();
@@ -1083,17 +1298,19 @@
 
     function getTrailPayload(statusOverride) {
       const nome = trailName.value.trim();
+      const slug = trailSlug.value.trim() || slugify(nome);
       const cursoId = trailCourse.value;
       const descricao = trailDescription.value.trim().slice(0, 200);
       const status = statusOverride || (trailStatus.checked ? "publicada" : "rascunho");
 
       if (!nome) throw new Error("Nome da trilha é obrigatório.");
+      if (!slug) throw new Error("Slug da trilha é obrigatório.");
       if (!cursoId) throw new Error("Curso associado é obrigatório.");
       if (status === "publicada" && !hasSavedValidLessonReady()) {
         throw new Error("Para publicar, salve pelo menos uma aula com título e link do Vimeo.");
       }
 
-      return { nome, descricao, cursoId, status };
+      return { nome, slug, descricao, cursoId, status };
     }
 
     async function saveTrailMetadata(statusOverride, options = {}) {
@@ -1108,8 +1325,10 @@
         const trilha = result.trilha;
         state.trailEditor.currentId = trilha.id;
         trailEditorTitle.textContent = trilha.nome;
+        if (trilha.slug) { trailSlug.value = trilha.slug; slugManuallyEdited = true; }
         trailStatus.checked = trilha.status === "publicada";
         updateTrailStatusLabel();
+        updateUrlPreview();
         if (!options.quiet) {
           setNotice(trailEditorFeedback, "success", "Metadados salvos com sucesso.");
           showToast("success", "Metadados salvos.");

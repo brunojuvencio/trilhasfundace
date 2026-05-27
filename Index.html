@@ -447,6 +447,9 @@
       box-shadow: var(--shadow);
     }
     .course-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-strong); border-color: var(--brand-yellow); }
+    .course-card.locked-trail { opacity: 0.45; cursor: not-allowed; filter: grayscale(0.4); }
+    .course-card.locked-trail:hover { transform: none; box-shadow: var(--shadow); border-color: rgba(0,0,0,0.08); }
+    .course-card-locked-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; font-weight: 700; color: #888; margin-top: 4px; }
     .course-card h3 { font-size: 1.3rem; margin-bottom: 10px; }
     .course-card p { font-size: 0.92rem; color: var(--brand-ink-soft); line-height: 1.65; margin: 0 0 20px; }
     .course-card-eyebrow {
@@ -1328,15 +1331,21 @@
     function renderCourseSelector() {
       const grid = document.getElementById("course-grid");
       grid.innerHTML = "";
+      const allowedTrail = currentUser?.user_metadata?.trilha || "";
       Object.values(courses).forEach(course => {
+        const isBlocked = allowedTrail && course.id !== allowedTrail;
         const btn = document.createElement("button");
-        btn.className = "course-card";
-        btn.addEventListener("click", () => selectCourse(course.id));
+        btn.className = isBlocked ? "course-card locked-trail" : "course-card";
+        if (!isBlocked) {
+          btn.addEventListener("click", () => selectCourse(course.id));
+        }
         btn.innerHTML = `
           <div class="course-card-eyebrow">${course.pill}</div>
           <h3>${course.title}</h3>
           <p>${course.description}</p>
-          <div class="course-card-cta">Acessar trilha →</div>
+          ${isBlocked
+            ? `<div class="course-card-locked-badge">🔒 Acesso não disponível para esta trilha</div>`
+            : `<div class="course-card-cta">Acessar trilha →</div>`}
         `;
         grid.appendChild(btn);
       });
@@ -1389,10 +1398,13 @@
       document.getElementById("user-name").textContent = userName;
       state.user = { name: userName };
 
+      const metaTrail = session.user.user_metadata?.trilha || "";
+      const resolvedTrail = courses[initialTrailParam] ? initialTrailParam
+                          : courses[metaTrail]        ? metaTrail
+                          : "";
       renderCourseSelector();
-      const initialTrail = courses[initialTrailParam] ? initialTrailParam : "";
-      if (initialTrail) {
-        await selectCourse(initialTrail);
+      if (resolvedTrail) {
+        await selectCourse(resolvedTrail);
       } else {
         document.getElementById("course-selector").style.display = "";
       }

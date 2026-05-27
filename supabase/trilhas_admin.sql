@@ -101,6 +101,21 @@ begin
   end if;
 end $$;
 
+alter table public.trilhas add column if not exists slug text;
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'trilhas_slug_unique'
+      and conrelid = 'public.trilhas'::regclass
+  ) then
+    alter table public.trilhas add constraint trilhas_slug_unique unique (slug);
+  end if;
+end $$;
+
+create index if not exists trilhas_slug_idx on public.trilhas (slug);
+
 create index if not exists trilhas_curso_status_idx
   on public.trilhas (curso_id, status, criada_em desc);
 

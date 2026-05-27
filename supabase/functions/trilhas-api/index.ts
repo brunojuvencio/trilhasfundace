@@ -10,9 +10,15 @@ type TrilhaStatus = "rascunho" | "publicada";
 
 type TrilhaPayload = {
   nome?: string;
+  slug?: string;
   descricao?: string;
   cursoId?: string;
   status?: TrilhaStatus;
+};
+
+type CursoPayload = {
+  nome?: string;
+  descricao?: string;
 };
 
 type AulaPayload = {
@@ -46,6 +52,16 @@ function json(body: Record<string, unknown>, status = 200) {
       "Content-Type": "application/json",
     },
   });
+}
+
+function slugify(text: unknown) {
+  return String(text ?? "")
+    .normalize("NFD").replace(/[̀-ͯ]/g, "")
+    .toLowerCase().trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
 }
 
 function cleanText(value: unknown, maxLength?: number) {
@@ -101,6 +117,7 @@ function mapTrilha(row: Record<string, unknown>, numeroAulas = 0, aulas: unknown
   return {
     id: row.id,
     nome: row.nome,
+    slug: row.slug ?? "",
     descricao: row.descricao ?? "",
     cursoId: row.curso_id,
     curso,
@@ -174,6 +191,15 @@ function validateTrilhaPayload(payload: TrilhaPayload, allowPartial = false) {
     const nome = cleanText(payload.nome);
     if (!nome) throw new Error("Nome da trilha é obrigatório.");
     values.nome = nome;
+    if (!("slug" in payload)) {
+      values.slug = slugify(nome);
+    }
+  }
+
+  if (!allowPartial || "slug" in payload) {
+    const slug = slugify(payload.slug || (values.nome as string));
+    if (!slug) throw new Error("Slug da trilha é obrigatório.");
+    values.slug = slug;
   }
 
   if (!allowPartial || "descricao" in payload) {
@@ -230,6 +256,64 @@ async function listCursos() {
 
   if (error) return json({ error: error.message }, 400);
   return json({ cursos: (data || []).map(mapCurso) });
+}
+
+async function createCurso(request: Request) {
+  try {
+    const payload = await readPayload<CursoPayload>(request);
+    const nome = cleanText(payload.nome);
+    if (!nome) throw new Error("Nome do curso é obrigatório.");
+    const descricao = cleanText(payload.descricao, 300);
+
+    const { data, error } = await adminClient
+      .from("cursos")
+      .insert({ nome, descricao: descricao || null })
+      .select("id, nome, descricao")
+      .single();
+
+    if (error) return json({ error: error.message }, 400);
+    return json({ curso: mapCurso(data) }, 201);
+  } catch (error) {
+    return json({ error: error instanceof Error ? error.message : "Payload inválido." }, 400);
+  }
+}
+
+async function updateCurso(request: Request, cursoId: string) {
+  try {
+    const payload = await readPayload<CursoPayload>(request);
+    const values: Record<string, unknown> = {};
+    if ("nome" in payload) {
+      const nome = cleanText(payload.nome);
+      if (!nome) throw new Error("Nome do curso é obrigatório.");
+      values.nome = nome;
+    }
+    if ("descricao" in payload) values.descricao = cleanText(payload.descricao, 300) || null;
+
+    if (!Object.keys(values).length) return json({ error: "Nenhum campo para atualizar." }, 400);
+
+    const { data, error } = await adminClient
+      .from("cursos")
+      .update(values)
+      .eq("id", cursoId)
+      .select("id, nome, descricao")
+      .maybeSingle();
+
+    if (error) return json({ error: error.message }, 400);
+    if (!data) return json({ error: "Curso não encontrado." }, 404);
+    return json({ curso: mapCurso(data) });
+  } catch (error) {
+    return json({ error: error instanceof Error ? error.message : "Payload inválido." }, 400);
+  }
+}
+
+async function deleteCurso(cursoId: string) {
+  const { error } = await adminClient
+    .from("cursos")
+    .delete()
+    .eq("id", cursoId);
+
+  if (error) return json({ error: error.message }, 400);
+  return json({ ok: true });
 }
 
 async function listTrilhas() {
@@ -445,8 +529,11 @@ Deno.serve(async request => {
   const segments = pathSegments(request);
   const [resource, id, child] = segments;
 
-  if (request.method === "GET" && resource === "cursos" && !id) {
-    return listCursos();
+  if (resource === "cursos") {
+    if (request.method === "GET" && !id) return listCursos();
+    if (request.method === "POST" && !id) return createCurso(request);
+    if (request.method === "PUT" && id) return updateCurso(request, id);
+    if (request.method === "DELETE" && id) return deleteCurso(id);
   }
 
   if (resource === "trilhas") {

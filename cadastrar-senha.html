@@ -708,7 +708,7 @@
       const { data, error } = await db.auth.signUp({
         email: emailParam,
         password,
-        options: { data: { name: nomeParam } }
+        options: { data: { name: nomeParam, trilha: currentTrailSlug() } }
       });
 
       submitBtn.disabled = false;
