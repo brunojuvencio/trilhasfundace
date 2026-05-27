@@ -9,10 +9,15 @@
     { "source": "/esqueci-senha", "destination": "/esqueci-senha.html" },
     { "source": "/redefinir-senha", "destination": "/redefinir-senha.html" },
     { "source": "/trilha", "destination": "/Index.html" },
+    { "source": "/admin/trilhas", "destination": "/admin.html?tab=trilhas" },
     { "source": "/admin", "destination": "/admin-login.html" },
     { "source": "/admin-login", "destination": "/admin-login.html" },
     { "source": "/painel-admin", "destination": "/admin.html" },
-    { "source": "/gestao", "destination": "/captacao-gestao.html" }
+    { "source": "/gestao", "destination": "/captacao-gestao.html" },
+    { "source": "/api/cursos", "destination": "https://hasptpxcyavfdzxtwpws.supabase.co/functions/v1/trilhas-api/cursos" },
+    { "source": "/api/trilhas", "destination": "https://hasptpxcyavfdzxtwpws.supabase.co/functions/v1/trilhas-api/trilhas" },
+    { "source": "/api/trilhas/:path*", "destination": "https://hasptpxcyavfdzxtwpws.supabase.co/functions/v1/trilhas-api/trilhas/:path*" },
+    { "source": "/api/aulas/:path*", "destination": "https://hasptpxcyavfdzxtwpws.supabase.co/functions/v1/trilhas-api/aulas/:path*" }
   ],
   "headers": [
     {

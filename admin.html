@@ -303,10 +303,94 @@
     .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
     .actions-right { justify-content: flex-end; }
 
+    /* ── TRILHAS ── */
+    .trails-shell { display: grid; gap: 20px; }
+    .trails-view[hidden] { display: none; }
+    .editor-grid { display: grid; grid-template-columns: minmax(280px, 0.9fr) minmax(0, 1.45fr); gap: 20px; align-items: start; }
+    .editor-head { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
+    .char-counter { text-align: right; font-size: 0.76rem; color: var(--muted); font-weight: 800; }
+    .switch-field { display: flex; align-items: center; gap: 12px; min-height: 46px; }
+    .switch-field input { position: absolute; opacity: 0; pointer-events: none; }
+    .switch-track {
+      width: 48px; height: 28px; border-radius: 999px;
+      background: rgba(155,93,22,0.18); border: 1px solid rgba(155,93,22,0.2);
+      position: relative; transition: background 0.18s, border-color 0.18s;
+    }
+    .switch-track::after {
+      content: ""; position: absolute; top: 3px; left: 3px;
+      width: 20px; height: 20px; border-radius: 999px;
+      background: #fff; box-shadow: 0 2px 8px rgba(24,20,17,0.18);
+      transition: transform 0.18s;
+    }
+    .switch-field input:checked + .switch-track {
+      background: rgba(31,122,82,0.2); border-color: rgba(31,122,82,0.25);
+    }
+    .switch-field input:checked + .switch-track::after { transform: translateX(20px); }
+    .lesson-list { display: grid; gap: 12px; }
+    .lesson-row {
+      border: 1px solid var(--line); border-radius: 16px;
+      background: rgba(255,255,255,0.72); padding: 12px;
+      display: grid; grid-template-columns: 48px minmax(160px, 1.1fr) minmax(210px, 1.2fr) 120px 132px;
+      gap: 10px; align-items: center;
+    }
+    .lesson-row.dragging { opacity: 0.58; border-color: rgba(212,122,31,0.55); }
+    .lesson-order {
+      width: 38px; height: 38px; border-radius: 12px;
+      display: inline-flex; align-items: center; justify-content: center;
+      border: 1px solid var(--line); background: rgba(255,255,255,0.8);
+      font-weight: 800; color: var(--muted); cursor: grab; user-select: none;
+    }
+    .lesson-title-button {
+      width: 100%; padding: 10px 0; border-radius: 0;
+      background: transparent; color: var(--ink); text-align: left;
+      font-weight: 800; line-height: 1.35;
+    }
+    .lesson-title-button:hover { transform: none; color: var(--accent); }
+    .lesson-input { padding: 10px 12px; border-radius: 12px; }
+    .lesson-video { display: grid; grid-template-columns: minmax(0, 1fr) 86px; gap: 10px; align-items: center; }
+    .lesson-thumb {
+      width: 86px; aspect-ratio: 16 / 9; object-fit: cover;
+      border-radius: 10px; border: 1px solid var(--line); background: rgba(24,20,17,0.06);
+    }
+    .lesson-error {
+      grid-column: 2 / -1; color: var(--danger);
+      font-size: 0.78rem; font-weight: 700;
+    }
+    .confirm-inline {
+      display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: flex-end;
+      color: var(--danger); font-size: 0.78rem; font-weight: 800;
+    }
+    .icon-button {
+      width: 36px; height: 36px; padding: 0; border-radius: 12px;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .editor-footer {
+      position: sticky; bottom: 16px; z-index: 20;
+      display: flex; justify-content: flex-end; gap: 10px;
+      padding: 14px; border: 1px solid var(--line); border-radius: 18px;
+      background: rgba(255,252,248,0.94); backdrop-filter: blur(16px);
+      box-shadow: 0 18px 50px rgba(66,43,18,0.1);
+    }
+    .toast-stack {
+      position: fixed; right: 20px; bottom: 20px; z-index: 100;
+      display: grid; gap: 10px; width: min(360px, calc(100vw - 40px));
+    }
+    .toast {
+      padding: 13px 15px; border-radius: 14px; font-size: 0.88rem; line-height: 1.45;
+      border: 1px solid transparent; background: rgba(255,255,255,0.96);
+      box-shadow: 0 18px 50px rgba(66,43,18,0.14);
+    }
+    .toast.success { color: var(--ok); border-color: rgba(31,122,82,0.2); }
+    .toast.error { color: var(--danger); border-color: rgba(157,47,47,0.2); }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 1100px) {
       .metrics   { grid-template-columns: repeat(2, 1fr); }
       .two-col   { grid-template-columns: 1fr; }
+      .editor-grid { grid-template-columns: 1fr; }
+      .lesson-row { grid-template-columns: 42px 1fr; align-items: start; }
+      .lesson-video, .lesson-row > .lesson-input, .lesson-row > .actions { grid-column: 2 / -1; }
+      .confirm-inline { justify-content: flex-start; }
       .form-grid { grid-template-columns: 1fr; }
     }
     @media (max-width: 720px) {
@@ -349,6 +433,7 @@
       <span class="tab-badge" id="pending-badge" style="display:none">0</span>
     </button>
     <button class="tab-btn" data-tab="analytics">Aulas</button>
+    <button class="tab-btn" data-tab="trilhas">Trilhas</button>
     <button class="tab-btn" data-tab="access">Acessos</button>
   </nav>
 
@@ -368,6 +453,7 @@
           <div class="mini-chip">Alunos — cadastro manual e base completa</div>
           <div class="mini-chip">Comentários — moderação com aprovação</div>
           <div class="mini-chip">Aulas — ranking por visualizações</div>
+          <div class="mini-chip">Trilhas — cursos, aulas e publicação</div>
           <div class="mini-chip">Acessos — criar logins e gerenciar admins</div>
         </div>
       </div>
@@ -509,6 +595,107 @@
       </div>
     </div>
 
+    <!-- ABA: TRILHAS -->
+    <div class="tab-panel" id="tab-trilhas">
+      <section class="trails-view trails-shell" id="trails-list-view">
+        <div class="card">
+          <div class="section-title">
+            <div>
+              <h2>Trilhas</h2>
+              <p>Gerencie trilhas, cursos vinculados e publicação.</p>
+            </div>
+            <button type="button" class="button-primary" id="trail-new-button">Nova trilha</button>
+          </div>
+          <div class="notice" id="trails-feedback"></div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Trilha</th>
+                  <th>Curso vinculado</th>
+                  <th>Nº de aulas</th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="trails-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="trails-view trails-shell" id="trails-editor-view" hidden>
+        <div class="editor-head">
+          <div class="section-title" style="margin-bottom:0;">
+            <div>
+              <h2 id="trail-editor-title">Nova trilha</h2>
+              <p>Salve metadados e aulas separadamente.</p>
+            </div>
+          </div>
+          <button type="button" class="button-secondary" id="trail-back-button">Voltar para listagem</button>
+        </div>
+
+        <div class="notice" id="trail-editor-feedback"></div>
+
+        <div class="editor-grid">
+          <div class="card">
+            <div class="section-title">
+              <div>
+                <h2>Metadados da trilha</h2>
+                <p>Nome, descrição, curso e status.</p>
+              </div>
+            </div>
+            <form id="trail-meta-form">
+              <div class="form-grid">
+                <div class="field full">
+                  <label for="trail-name">Nome da trilha</label>
+                  <input id="trail-name" required>
+                </div>
+                <div class="field full">
+                  <label for="trail-description">Descrição</label>
+                  <textarea id="trail-description" maxlength="200"></textarea>
+                  <div class="char-counter" id="trail-description-counter">0/200</div>
+                </div>
+                <div class="field full">
+                  <label for="trail-course">Curso associado</label>
+                  <select id="trail-course" required>
+                    <option value="">Carregando cursos...</option>
+                  </select>
+                </div>
+                <div class="field full">
+                  <label>Status</label>
+                  <label class="switch-field" for="trail-status">
+                    <input id="trail-status" type="checkbox">
+                    <span class="switch-track" aria-hidden="true"></span>
+                    <strong id="trail-status-label">Rascunho</strong>
+                  </label>
+                </div>
+              </div>
+              <div class="actions" style="margin-top:16px;">
+                <button type="submit" class="button-primary" id="trail-save-button">Salvar metadados</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="card">
+            <div class="section-title">
+              <div>
+                <h2>Lista de aulas</h2>
+                <p>Edite títulos inline, cole links do Vimeo e reordene.</p>
+              </div>
+              <button type="button" class="button-secondary" id="lesson-add-button">+ Adicionar aula</button>
+            </div>
+            <div class="lesson-list" id="lessons-list"></div>
+          </div>
+        </div>
+
+        <div class="editor-footer">
+          <button type="button" class="button-secondary" id="trail-save-draft-button">Salvar rascunho</button>
+          <button type="button" class="button-primary" id="trail-publish-button">Publicar</button>
+        </div>
+      </section>
+    </div>
+
     <!-- ABA: ACESSOS -->
     <div class="tab-panel" id="tab-access">
       <div class="two-col">
@@ -562,6 +749,7 @@
     </div>
 
   </main>
+  <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="true"></div>
 
   <script src="./supabase/config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -570,15 +758,31 @@
     const tabBtns   = document.querySelectorAll(".tab-btn");
     const tabPanels = document.querySelectorAll(".tab-panel");
 
+    function activateTab(target) {
+      const button = document.querySelector(`.tab-btn[data-tab="${target}"]`);
+      const panel = document.getElementById(`tab-${target}`);
+      const nextButton = button || document.querySelector(`.tab-btn[data-tab="overview"]`);
+      const nextPanel = panel || document.getElementById("tab-overview");
+      tabBtns.forEach(b => b.classList.remove("active"));
+      tabPanels.forEach(p => p.classList.remove("active"));
+      nextButton?.classList.add("active");
+      nextPanel?.classList.add("active");
+    }
+
+    function getInitialTab() {
+      const params = new URLSearchParams(window.location.search);
+      const path = window.location.pathname.replace(/\/$/, "");
+      if (path === "/admin/trilhas") return "trilhas";
+      return params.get("tab") || "overview";
+    }
+
     tabBtns.forEach(btn => {
       btn.addEventListener("click", () => {
-        const target = btn.dataset.tab;
-        tabBtns.forEach(b => b.classList.remove("active"));
-        tabPanels.forEach(p => p.classList.remove("active"));
-        btn.classList.add("active");
-        document.getElementById(`tab-${target}`).classList.add("active");
+        activateTab(btn.dataset.tab);
       });
     });
+
+    activateTab(getInitialTab());
 
     /* ── SUPABASE ── */
     const { createClient } = supabase;
@@ -603,7 +807,13 @@
 
     const state = {
       leads: [], comments: [], analytics: [],
-      adminUsers: [], currentUser: null
+      adminUsers: [], currentUser: null,
+      courses: [], trails: [],
+      trailEditor: {
+        currentId: null,
+        lessons: [],
+        dragKey: null
+      }
     };
 
     const metrics        = document.getElementById("metrics");
@@ -625,6 +835,27 @@
     const refreshButton  = document.getElementById("refresh-button");
     const logoutButton   = document.getElementById("logout-button");
     const functionUrl    = `${window.SUPABASE_CONFIG.url}/functions/v1/admin-user-manager`;
+    const trailsBody     = document.getElementById("trails-body");
+    const trailsFeedback = document.getElementById("trails-feedback");
+    const trailsListView = document.getElementById("trails-list-view");
+    const trailsEditorView = document.getElementById("trails-editor-view");
+    const trailEditorTitle = document.getElementById("trail-editor-title");
+    const trailEditorFeedback = document.getElementById("trail-editor-feedback");
+    const trailNewButton = document.getElementById("trail-new-button");
+    const trailBackButton = document.getElementById("trail-back-button");
+    const trailMetaForm = document.getElementById("trail-meta-form");
+    const trailName = document.getElementById("trail-name");
+    const trailDescription = document.getElementById("trail-description");
+    const trailDescriptionCounter = document.getElementById("trail-description-counter");
+    const trailCourse = document.getElementById("trail-course");
+    const trailStatus = document.getElementById("trail-status");
+    const trailStatusLabel = document.getElementById("trail-status-label");
+    const trailSaveButton = document.getElementById("trail-save-button");
+    const trailSaveDraftButton = document.getElementById("trail-save-draft-button");
+    const trailPublishButton = document.getElementById("trail-publish-button");
+    const lessonAddButton = document.getElementById("lesson-add-button");
+    const lessonsList = document.getElementById("lessons-list");
+    const toastStack = document.getElementById("toast-stack");
 
     function escapeHtml(value) {
       return String(value || "")
@@ -646,6 +877,442 @@
     function clearNotice(element) {
       element.className = "notice";
       element.textContent = "";
+    }
+
+    function showToast(type, message) {
+      if (!toastStack) return;
+      const toast = document.createElement("div");
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      toastStack.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transform = "translateY(6px)";
+        setTimeout(() => toast.remove(), 180);
+      }, 3800);
+    }
+
+    async function apiFetch(path, options = {}) {
+      const { data: { session } } = await db.auth.getSession();
+      if (!session?.access_token) throw new Error("Sessão expirada. Faça login novamente.");
+      const response = await fetch(path, {
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+          ...(options.headers || {})
+        }
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || "Não foi possível executar a ação.");
+      return result;
+    }
+
+    function extractVimeoId(value) {
+      const raw = String(value || "").trim();
+      if (/^\d+$/.test(raw)) return raw;
+      const patterns = [
+        /^https?:\/\/(?:www\.)?vimeo\.com\/(\d+)(?:[/?#].*)?$/i,
+        /^https?:\/\/player\.vimeo\.com\/video\/(\d+)(?:[/?#].*)?$/i
+      ];
+      for (const pattern of patterns) {
+        const match = raw.match(pattern);
+        if (match?.[1]) return match[1];
+      }
+      return "";
+    }
+
+    function createDraftId() {
+      if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+      return `draft-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function normalizeLesson(aula = {}, index = 0) {
+      const vimeoId = aula.vimeoId || extractVimeoId(aula.vimeoUrl);
+      return {
+        id: aula.id || "",
+        clientId: aula.clientId || createDraftId(),
+        trilhaId: aula.trilhaId || state.trailEditor.currentId || "",
+        titulo: aula.titulo || "",
+        draftTitle: aula.titulo || "",
+        vimeoId,
+        vimeoInput: aula.vimeoInput || vimeoId || "",
+        duracao: aula.duracao || "",
+        ordem: Number(aula.ordem || index + 1),
+        editingTitle: !aula.id && !aula.titulo,
+        confirmRemove: false,
+        error: ""
+      };
+    }
+
+    function lessonKey(lesson) {
+      return lesson.id || lesson.clientId;
+    }
+
+    function findLesson(key) {
+      return state.trailEditor.lessons.find(lesson => lessonKey(lesson) === key);
+    }
+
+    function normalizeLessonOrder() {
+      state.trailEditor.lessons.forEach((lesson, index) => {
+        lesson.ordem = index + 1;
+      });
+    }
+
+    function updateTrailStatusLabel() {
+      trailStatusLabel.textContent = trailStatus.checked ? "Publicada" : "Rascunho";
+    }
+
+    function updateDescriptionCounter() {
+      trailDescriptionCounter.textContent = `${trailDescription.value.length}/200`;
+    }
+
+    function renderCourseOptions() {
+      if (!state.courses.length) {
+        trailCourse.innerHTML = `<option value="">Nenhum curso cadastrado</option>`;
+        return;
+      }
+      const current = trailCourse.value;
+      trailCourse.innerHTML = [
+        `<option value="">Selecione um curso</option>`,
+        ...state.courses.map(curso => `<option value="${escapeHtml(curso.id)}">${escapeHtml(curso.nome)}</option>`)
+      ].join("");
+      if (current) trailCourse.value = current;
+    }
+
+    function renderTrails() {
+      if (!state.trails.length) {
+        trailsBody.innerHTML = `<tr><td colspan="5"><div class="empty">Nenhuma trilha cadastrada ainda.</div></td></tr>`;
+        return;
+      }
+
+      trailsBody.innerHTML = state.trails.map(trilha => {
+        const statusClass = trilha.status === "publicada" ? "approved" : "pending";
+        const statusLabel = trilha.status === "publicada" ? "Publicada" : "Rascunho";
+        return `
+          <tr>
+            <td><strong>${escapeHtml(trilha.nome)}</strong><div class="mini">${escapeHtml(trilha.descricao || "Sem descrição")}</div></td>
+            <td>${escapeHtml(trilha.curso?.nome || "-")}</td>
+            <td>${escapeHtml(trilha.numeroAulas || 0)}</td>
+            <td><span class="status ${statusClass}">${statusLabel}</span></td>
+            <td>
+              <div class="actions">
+                <button type="button" class="button-ghost" data-trail-edit="${escapeHtml(trilha.id)}">Editar</button>
+                <button type="button" class="button-danger" data-trail-delete="${escapeHtml(trilha.id)}">Excluir</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    async function loadTrailCatalog(showErrors = true) {
+      try {
+        const [coursesResult, trailsResult] = await Promise.all([
+          apiFetch("/api/cursos"),
+          apiFetch("/api/trilhas")
+        ]);
+        state.courses = coursesResult.cursos || [];
+        state.trails = trailsResult.trilhas || [];
+        renderCourseOptions();
+        renderTrails();
+        clearNotice(trailsFeedback);
+      } catch (error) {
+        if (showErrors) {
+          setNotice(trailsFeedback, "error", error.message || "Não foi possível carregar as trilhas.");
+        }
+        throw error;
+      }
+    }
+
+    function showTrailList() {
+      trailsListView.hidden = false;
+      trailsEditorView.hidden = true;
+      clearNotice(trailEditorFeedback);
+    }
+
+    function showTrailEditor() {
+      trailsListView.hidden = true;
+      trailsEditorView.hidden = false;
+      clearNotice(trailsFeedback);
+    }
+
+    function resetTrailEditor() {
+      state.trailEditor.currentId = null;
+      state.trailEditor.lessons = [];
+      state.trailEditor.dragKey = null;
+      trailMetaForm.reset();
+      trailStatus.checked = false;
+      trailEditorTitle.textContent = "Nova trilha";
+      updateTrailStatusLabel();
+      updateDescriptionCounter();
+      renderCourseOptions();
+      renderLessons();
+      clearNotice(trailEditorFeedback);
+    }
+
+    function fillTrailEditor(trilha) {
+      state.trailEditor.currentId = trilha.id;
+      trailEditorTitle.textContent = trilha.nome || "Editar trilha";
+      trailName.value = trilha.nome || "";
+      trailDescription.value = trilha.descricao || "";
+      trailCourse.value = trilha.cursoId || "";
+      trailStatus.checked = trilha.status === "publicada";
+      state.trailEditor.lessons = (trilha.aulas || []).map(normalizeLesson);
+      normalizeLessonOrder();
+      updateTrailStatusLabel();
+      updateDescriptionCounter();
+      renderLessons();
+    }
+
+    function hasValidLessonReady() {
+      return state.trailEditor.lessons.some(lesson => {
+        const title = (lesson.draftTitle || lesson.titulo || "").trim();
+        const vimeoId = lesson.vimeoId || extractVimeoId(lesson.vimeoInput);
+        return title && vimeoId;
+      });
+    }
+
+    function hasSavedValidLessonReady() {
+      return state.trailEditor.lessons.some(lesson => {
+        const title = (lesson.draftTitle || lesson.titulo || "").trim();
+        const vimeoId = lesson.vimeoId || extractVimeoId(lesson.vimeoInput);
+        return lesson.id && title && vimeoId;
+      });
+    }
+
+    function getTrailPayload(statusOverride) {
+      const nome = trailName.value.trim();
+      const cursoId = trailCourse.value;
+      const descricao = trailDescription.value.trim().slice(0, 200);
+      const status = statusOverride || (trailStatus.checked ? "publicada" : "rascunho");
+
+      if (!nome) throw new Error("Nome da trilha é obrigatório.");
+      if (!cursoId) throw new Error("Curso associado é obrigatório.");
+      if (status === "publicada" && !hasSavedValidLessonReady()) {
+        throw new Error("Para publicar, salve pelo menos uma aula com título e link do Vimeo.");
+      }
+
+      return { nome, descricao, cursoId, status };
+    }
+
+    async function saveTrailMetadata(statusOverride, options = {}) {
+      const payload = getTrailPayload(statusOverride);
+      trailSaveButton.disabled = true;
+      trailSaveButton.textContent = "Salvando...";
+
+      try {
+        const path = state.trailEditor.currentId ? `/api/trilhas/${state.trailEditor.currentId}` : "/api/trilhas";
+        const method = state.trailEditor.currentId ? "PUT" : "POST";
+        const result = await apiFetch(path, { method, body: JSON.stringify(payload) });
+        const trilha = result.trilha;
+        state.trailEditor.currentId = trilha.id;
+        trailEditorTitle.textContent = trilha.nome;
+        trailStatus.checked = trilha.status === "publicada";
+        updateTrailStatusLabel();
+        if (!options.quiet) {
+          setNotice(trailEditorFeedback, "success", "Metadados salvos com sucesso.");
+          showToast("success", "Metadados salvos.");
+        }
+        await loadTrailCatalog(false);
+        return trilha;
+      } catch (error) {
+        setNotice(trailEditorFeedback, "error", error.message || "Não foi possível salvar a trilha.");
+        if (!options.quiet) showToast("error", error.message || "Não foi possível salvar a trilha.");
+        throw error;
+      } finally {
+        trailSaveButton.disabled = false;
+        trailSaveButton.textContent = "Salvar metadados";
+      }
+    }
+
+    function renderLessons() {
+      normalizeLessonOrder();
+
+      if (!state.trailEditor.lessons.length) {
+        lessonsList.innerHTML = `<div class="empty">Nenhuma aula adicionada. Use o botão acima para criar a primeira.</div>`;
+        return;
+      }
+
+      lessonsList.innerHTML = state.trailEditor.lessons.map((lesson, index) => {
+        const key = lessonKey(lesson);
+        const titleValue = escapeHtml(lesson.draftTitle ?? lesson.titulo);
+        const videoValue = escapeHtml(lesson.vimeoInput || lesson.vimeoId || "");
+        const thumb = lesson.vimeoId
+          ? `<img class="lesson-thumb" src="https://vumbnail.com/${escapeHtml(lesson.vimeoId)}.jpg" alt="Preview da aula">`
+          : `<div class="lesson-thumb" aria-hidden="true"></div>`;
+        const titleControl = lesson.editingTitle
+          ? `<input class="lesson-input" data-lesson-title-input data-lesson-key="${escapeHtml(key)}" value="${titleValue}" placeholder="Título da aula">`
+          : `<button type="button" class="lesson-title-button" data-lesson-title-edit="${escapeHtml(key)}">${escapeHtml(lesson.titulo || "Sem título")}</button>`;
+        const removeControl = lesson.confirmRemove
+          ? `<div class="confirm-inline">
+              <span>Remover?</span>
+              <button type="button" class="button-danger" data-lesson-delete-confirm="${escapeHtml(key)}">Sim</button>
+              <button type="button" class="button-ghost" data-lesson-delete-cancel="${escapeHtml(key)}">Cancelar</button>
+            </div>`
+          : `<div class="actions actions-right"><button type="button" class="button-danger icon-button" title="Remover aula" aria-label="Remover aula" data-lesson-delete="${escapeHtml(key)}">&#128465;</button></div>`;
+
+        return `
+          <article class="lesson-row${state.trailEditor.dragKey === key ? " dragging" : ""}" draggable="true" data-lesson-key="${escapeHtml(key)}">
+            <div class="lesson-order" title="Arraste para reordenar">${index + 1}</div>
+            ${titleControl}
+            <div class="lesson-video">
+              <input class="lesson-input" data-lesson-vimeo-input data-lesson-key="${escapeHtml(key)}" value="${videoValue}" placeholder="URL ou ID do Vimeo">
+              ${thumb}
+            </div>
+            <input class="lesson-input" data-lesson-duration-input data-lesson-key="${escapeHtml(key)}" value="${escapeHtml(lesson.duracao || "")}" placeholder="Duração">
+            ${removeControl}
+            ${lesson.error ? `<div class="lesson-error">${escapeHtml(lesson.error)}</div>` : ""}
+          </article>
+        `;
+      }).join("");
+    }
+
+    function focusLessonTitle(key) {
+      requestAnimationFrame(() => {
+        const input = Array.from(lessonsList.querySelectorAll("[data-lesson-title-input]"))
+          .find(item => item.dataset.lessonKey === key);
+        input?.focus();
+        input?.select();
+      });
+    }
+
+    async function persistLesson(lesson, options = {}) {
+      if (!state.trailEditor.currentId) return null;
+
+      const titulo = (lesson.draftTitle || lesson.titulo || "").trim();
+      const vimeoId = lesson.vimeoId || extractVimeoId(lesson.vimeoInput);
+      const hasAnyValue = titulo || lesson.vimeoInput || lesson.duracao;
+
+      if (!hasAnyValue) return null;
+      if (!titulo || !vimeoId) {
+        const message = "Preencha título e link do Vimeo para salvar a aula.";
+        lesson.error = message;
+        renderLessons();
+        if (options.strict) throw new Error(message);
+        return null;
+      }
+
+      const payload = {
+        titulo,
+        vimeoUrl: vimeoId,
+        duracao: lesson.duracao || "",
+        ordem: lesson.ordem
+      };
+
+      try {
+        const result = lesson.id
+          ? await apiFetch(`/api/aulas/${lesson.id}`, { method: "PATCH", body: JSON.stringify(payload) })
+          : await apiFetch(`/api/trilhas/${state.trailEditor.currentId}/aulas`, { method: "POST", body: JSON.stringify(payload) });
+        const clientId = lesson.clientId;
+        Object.assign(lesson, normalizeLesson(result.aula), { clientId, error: "", editingTitle: false });
+        if (!options.quiet) showToast("success", "Aula salva.");
+        renderLessons();
+        return lesson;
+      } catch (error) {
+        lesson.error = error.message || "Não foi possível salvar a aula.";
+        renderLessons();
+        if (!options.quiet) showToast("error", lesson.error);
+        throw error;
+      }
+    }
+
+    async function saveAllReadyLessons() {
+      for (const lesson of state.trailEditor.lessons) {
+        await persistLesson(lesson, { quiet: true, strict: true });
+      }
+      await saveLessonOrder();
+    }
+
+    async function saveLessonOrder() {
+      if (!state.trailEditor.currentId) return;
+      const aulas = state.trailEditor.lessons
+        .filter(lesson => lesson.id)
+        .map(lesson => ({ id: lesson.id, ordem: lesson.ordem }));
+      if (!aulas.length) return;
+      await apiFetch(`/api/trilhas/${state.trailEditor.currentId}/reordenar`, {
+        method: "PATCH",
+        body: JSON.stringify(aulas)
+      });
+    }
+
+    function reorderLessons(activeKey, overKey) {
+      if (!activeKey || !overKey || activeKey === overKey) return;
+      const oldIndex = state.trailEditor.lessons.findIndex(lesson => lessonKey(lesson) === activeKey);
+      const newIndex = state.trailEditor.lessons.findIndex(lesson => lessonKey(lesson) === overKey);
+      if (oldIndex < 0 || newIndex < 0 || oldIndex === newIndex) return;
+      const [lesson] = state.trailEditor.lessons.splice(oldIndex, 1);
+      state.trailEditor.lessons.splice(newIndex, 0, lesson);
+      normalizeLessonOrder();
+      renderLessons();
+    }
+
+    async function openTrailEditor(trilhaId) {
+      showTrailEditor();
+      clearNotice(trailEditorFeedback);
+      lessonsList.innerHTML = `<div class="empty">Carregando trilha...</div>`;
+      try {
+        const result = await apiFetch(`/api/trilhas/${trilhaId}`);
+        fillTrailEditor(result.trilha);
+      } catch (error) {
+        setNotice(trailEditorFeedback, "error", error.message || "Não foi possível abrir a trilha.");
+        showToast("error", error.message || "Não foi possível abrir a trilha.");
+      }
+    }
+
+    async function deleteTrail(trilhaId) {
+      if (!confirm("Excluir esta trilha e todas as suas aulas?")) return;
+      try {
+        await apiFetch(`/api/trilhas/${trilhaId}`, { method: "DELETE" });
+        showToast("success", "Trilha excluída.");
+        await loadTrailCatalog();
+      } catch (error) {
+        setNotice(trailsFeedback, "error", error.message || "Não foi possível excluir a trilha.");
+        showToast("error", error.message || "Não foi possível excluir a trilha.");
+      }
+    }
+
+    async function deleteLesson(key) {
+      const lesson = findLesson(key);
+      if (!lesson) return;
+      try {
+        if (lesson.id) {
+          await apiFetch(`/api/aulas/${lesson.id}`, { method: "DELETE" });
+        }
+        state.trailEditor.lessons = state.trailEditor.lessons.filter(item => lessonKey(item) !== key);
+        normalizeLessonOrder();
+        renderLessons();
+        await saveLessonOrder();
+        showToast("success", "Aula removida.");
+      } catch (error) {
+        lesson.error = error.message || "Não foi possível remover a aula.";
+        renderLessons();
+        showToast("error", lesson.error);
+      }
+    }
+
+    async function publishTrail() {
+      try {
+        if (!hasValidLessonReady()) {
+          throw new Error("Para publicar, informe pelo menos uma aula com título e link do Vimeo.");
+        }
+        trailPublishButton.disabled = true;
+        trailPublishButton.textContent = "Publicando...";
+        await saveTrailMetadata("rascunho", { quiet: true });
+        await saveAllReadyLessons();
+        trailStatus.checked = true;
+        updateTrailStatusLabel();
+        await saveTrailMetadata("publicada", { quiet: true });
+        setNotice(trailEditorFeedback, "success", "Trilha publicada com sucesso.");
+        showToast("success", "Trilha publicada.");
+        await loadTrailCatalog(false);
+      } catch (error) {
+        setNotice(trailEditorFeedback, "error", error.message || "Não foi possível publicar a trilha.");
+        showToast("error", error.message || "Não foi possível publicar a trilha.");
+      } finally {
+        trailPublishButton.disabled = false;
+        trailPublishButton.textContent = "Publicar";
+      }
     }
 
     function buildMetrics() {
@@ -818,6 +1485,11 @@
       renderStudents();
       renderComments();
       renderAnalytics();
+      try {
+        await loadTrailCatalog(false);
+      } catch (error) {
+        setNotice(trailsFeedback, "error", error.message || "Não foi possível carregar as trilhas.");
+      }
     }
 
     async function moderateComment(commentId, status) {
@@ -882,6 +1554,228 @@
     studentSearch.addEventListener("input", renderStudents);
     commentSearch.addEventListener("input", renderComments);
     commentFilter.addEventListener("change", renderComments);
+    trailDescription.addEventListener("input", updateDescriptionCounter);
+    trailStatus.addEventListener("change", updateTrailStatusLabel);
+
+    trailNewButton.addEventListener("click", () => {
+      resetTrailEditor();
+      showTrailEditor();
+    });
+
+    trailBackButton.addEventListener("click", async () => {
+      showTrailList();
+      try { await loadTrailCatalog(false); }
+      catch (error) { setNotice(trailsFeedback, "error", error.message || "Não foi possível atualizar a listagem."); }
+    });
+
+    trailMetaForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      try { await saveTrailMetadata(); }
+      catch (_) {}
+    });
+
+    trailSaveDraftButton.addEventListener("click", async () => {
+      trailStatus.checked = false;
+      updateTrailStatusLabel();
+      trailSaveDraftButton.disabled = true;
+      trailSaveDraftButton.textContent = "Salvando...";
+      try {
+        await saveTrailMetadata("rascunho", { quiet: true });
+        await saveAllReadyLessons();
+        setNotice(trailEditorFeedback, "success", "Rascunho salvo com sucesso.");
+        showToast("success", "Rascunho salvo.");
+        await loadTrailCatalog(false);
+      } catch (error) {
+        setNotice(trailEditorFeedback, "error", error.message || "Não foi possível salvar o rascunho.");
+        showToast("error", error.message || "Não foi possível salvar o rascunho.");
+      } finally {
+        trailSaveDraftButton.disabled = false;
+        trailSaveDraftButton.textContent = "Salvar rascunho";
+      }
+    });
+
+    trailPublishButton.addEventListener("click", publishTrail);
+
+    lessonAddButton.addEventListener("click", () => {
+      state.trailEditor.lessons.push(normalizeLesson({ ordem: state.trailEditor.lessons.length + 1 }));
+      renderLessons();
+      focusLessonTitle(lessonKey(state.trailEditor.lessons[state.trailEditor.lessons.length - 1]));
+    });
+
+    trailsBody.addEventListener("click", event => {
+      const editButton = event.target.closest("[data-trail-edit]");
+      const deleteButton = event.target.closest("[data-trail-delete]");
+      if (editButton) openTrailEditor(editButton.dataset.trailEdit);
+      if (deleteButton) deleteTrail(deleteButton.dataset.trailDelete);
+    });
+
+    lessonsList.addEventListener("click", event => {
+      const editTitle = event.target.closest("[data-lesson-title-edit]");
+      const deleteButton = event.target.closest("[data-lesson-delete]");
+      const confirmDelete = event.target.closest("[data-lesson-delete-confirm]");
+      const cancelDelete = event.target.closest("[data-lesson-delete-cancel]");
+
+      if (editTitle) {
+        const lesson = findLesson(editTitle.dataset.lessonTitleEdit);
+        if (!lesson) return;
+        lesson.editingTitle = true;
+        lesson.draftTitle = lesson.titulo;
+        renderLessons();
+        focusLessonTitle(lessonKey(lesson));
+      }
+
+      if (deleteButton) {
+        const lesson = findLesson(deleteButton.dataset.lessonDelete);
+        if (!lesson) return;
+        lesson.confirmRemove = true;
+        renderLessons();
+      }
+
+      if (cancelDelete) {
+        const lesson = findLesson(cancelDelete.dataset.lessonDeleteCancel);
+        if (!lesson) return;
+        lesson.confirmRemove = false;
+        renderLessons();
+      }
+
+      if (confirmDelete) {
+        deleteLesson(confirmDelete.dataset.lessonDeleteConfirm);
+      }
+    });
+
+    lessonsList.addEventListener("input", event => {
+      const target = event.target;
+      const key = target.dataset.lessonKey;
+      if (!key) return;
+      const lesson = findLesson(key);
+      if (!lesson) return;
+
+      if (target.matches("[data-lesson-title-input]")) lesson.draftTitle = target.value;
+      if (target.matches("[data-lesson-vimeo-input]")) lesson.vimeoInput = target.value;
+      if (target.matches("[data-lesson-duration-input]")) lesson.duracao = target.value;
+    });
+
+    lessonsList.addEventListener("keydown", event => {
+      const target = event.target;
+      const key = target.dataset.lessonKey;
+      if (!key) return;
+      const lesson = findLesson(key);
+      if (!lesson) return;
+
+      if (event.key === "Enter") {
+        event.preventDefault();
+        target.blur();
+      }
+
+      if (event.key === "Escape") {
+        event.preventDefault();
+        if (target.matches("[data-lesson-title-input]")) {
+          lesson.draftTitle = lesson.titulo;
+          lesson.editingTitle = false;
+        }
+        if (target.matches("[data-lesson-vimeo-input]")) {
+          lesson.vimeoInput = lesson.vimeoId || "";
+        }
+        if (target.matches("[data-lesson-duration-input]")) {
+          target.value = lesson.duracao || "";
+        }
+        lesson.error = "";
+        renderLessons();
+      }
+    });
+
+    lessonsList.addEventListener("blur", async event => {
+      const target = event.target;
+      const key = target.dataset.lessonKey;
+      if (!key) return;
+      const lesson = findLesson(key);
+      if (!lesson) return;
+
+      if (target.matches("[data-lesson-title-input]")) {
+        const title = target.value.trim();
+        if (!title) {
+          lesson.error = "Título da aula é obrigatório.";
+          lesson.editingTitle = true;
+          renderLessons();
+          return;
+        }
+        lesson.titulo = title;
+        lesson.draftTitle = title;
+        lesson.editingTitle = false;
+        lesson.error = "";
+        renderLessons();
+        try { await persistLesson(lesson); }
+        catch (_) {}
+      }
+
+      if (target.matches("[data-lesson-vimeo-input]")) {
+        const value = target.value.trim();
+        if (value) {
+          const vimeoId = extractVimeoId(value);
+          if (!vimeoId) {
+            lesson.error = "Use https://vimeo.com/ID, https://player.vimeo.com/video/ID ou apenas o ID numérico.";
+            renderLessons();
+            return;
+          }
+          lesson.vimeoId = vimeoId;
+          lesson.vimeoInput = vimeoId;
+        } else {
+          lesson.vimeoId = "";
+          lesson.vimeoInput = "";
+        }
+        lesson.error = "";
+        renderLessons();
+        try { await persistLesson(lesson); }
+        catch (_) {}
+      }
+
+      if (target.matches("[data-lesson-duration-input]")) {
+        lesson.duracao = target.value.trim();
+        try { await persistLesson(lesson); }
+        catch (_) {}
+      }
+    }, true);
+
+    lessonsList.addEventListener("dragstart", event => {
+      const row = event.target.closest("[data-lesson-key]");
+      if (!event.target.closest(".lesson-order")) {
+        event.preventDefault();
+        return;
+      }
+      if (!row) return;
+      state.trailEditor.dragKey = row.dataset.lessonKey;
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData("text/plain", state.trailEditor.dragKey);
+      row.classList.add("dragging");
+    });
+
+    lessonsList.addEventListener("dragover", event => {
+      const row = event.target.closest("[data-lesson-key]");
+      if (!row || !state.trailEditor.dragKey) return;
+      event.preventDefault();
+      reorderLessons(state.trailEditor.dragKey, row.dataset.lessonKey);
+    });
+
+    lessonsList.addEventListener("drop", async event => {
+      event.preventDefault();
+      try {
+        await saveLessonOrder();
+        showToast("success", "Ordem das aulas atualizada.");
+      } catch (error) {
+        showToast("error", error.message || "Não foi possível reordenar as aulas.");
+      } finally {
+        state.trailEditor.dragKey = null;
+        renderLessons();
+      }
+    });
+
+    lessonsList.addEventListener("dragend", async () => {
+      if (!state.trailEditor.dragKey) return;
+      state.trailEditor.dragKey = null;
+      renderLessons();
+      try { await saveLessonOrder(); }
+      catch (error) { showToast("error", error.message || "Não foi possível reordenar as aulas."); }
+    });
 
     commentsList.addEventListener("click", async event => {
       const target = event.target.closest("button[data-id]");

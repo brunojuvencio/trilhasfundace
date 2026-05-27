@@ -6,6 +6,8 @@
   - `/` abrindo `captacao.html`
   - `/gestao` abrindo `captacao-gestao.html`
   - rotas amigáveis para login, trilha e admin
+  - `/admin/trilhas` abrindo a aba Trilhas do painel admin
+  - `/api/cursos`, `/api/trilhas/*` e `/api/aulas/*` roteando para a Edge Function `trilhas-api`
   - cache longo para assets
   - HTML com revalidação
 
@@ -15,9 +17,10 @@
    - Esse script adiciona `nome_trilha` e atualiza a função `capture_lead`.
    - O frontend novo já envia `p_nome_trilha`; se publicar o frontend antes do SQL, o cadastro pode falhar.
 2. Faça deploy das Edge Functions alteradas:
-   - `activecampaign-sync-lead`
-   - `ploomes-sync-lead`
-   - `qualified-lead-tracking`
+  - `activecampaign-sync-lead`
+  - `ploomes-sync-lead`
+  - `qualified-lead-tracking`
+  - `trilhas-api`
 3. Configure os secrets novos da Edge Function de ActiveCampaign:
    - `ACTIVECAMPAIGN_GESTAO_LIST_ID` ou uma lista com o nome de `ACTIVECAMPAIGN_GESTAO_LIST_NAME`
    - `ACTIVECAMPAIGN_TRAIL_FIELD_ID`, se quiser gravar a trilha em um campo customizado do contato
@@ -51,6 +54,7 @@ vercel login
 - `/redefinir-senha`
 - `/trilha`
 - `/admin`
+- `/admin/trilhas`
 - `/painel-admin`
 
 ## Supabase Auth
@@ -75,10 +79,11 @@ No modelo atual, o frontend usa `supabase/config.js`, então:
 - `SUPABASE_URL` e `SUPABASE_ANON_KEY` já estão no código do cliente
 - `SUPABASE_SERVICE_ROLE_KEY` não deve ir para a Vercel para esse site estático
 
-Essa chave continua sendo usada no Supabase Edge Function `admin-user-manager`, não no frontend hospedado na Vercel.
+Essa chave continua sendo usada nas Edge Functions administrativas (`admin-user-manager` e `trilhas-api`), não no frontend hospedado na Vercel.
 
 ## Importante
 
 - Sempre que mudar `supabase/config.js`, faça novo commit e novo deploy
 - Sempre que mudar SQL no Supabase, rode a migration no painel antes de testar a interface
-- A edge function de admin continua sendo deployada pelo Supabase, não pela Vercel
+- Para a admin de trilhas, rode também `supabase/trilhas_admin.sql` antes de usar `/admin/trilhas`
+- As edge functions administrativas continuam sendo deployadas pelo Supabase, não pela Vercel
