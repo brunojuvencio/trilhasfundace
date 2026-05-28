@@ -171,6 +171,37 @@ async function findContactByEmail(email: string) {
   return list[0] ?? null;
 }
 
+function normalizePhone(value: string) {
+  return value.replace(/\D/g, "");
+}
+
+async function findContactByPhone(phone: string): Promise<PloomesContact | null> {
+  const digits = normalizePhone(phone);
+  if (!digits) return null;
+
+  // Build candidate numbers: with and without country code 55
+  const candidates = new Set<string>([digits]);
+  if (digits.startsWith("55") && digits.length > 11) {
+    candidates.add(digits.slice(2));
+  } else if (!digits.startsWith("55") && digits.length <= 11) {
+    candidates.add(`55${digits}`);
+  }
+
+  for (const num of candidates) {
+    try {
+      const filter = encodeURIComponent(`Phones/any(p: p/PhoneNumber eq '${num}')`);
+      const uri = `/Contacts?$top=1&$select=Id,Name,Email&$filter=${filter}`;
+      const response = await ploomesFetch(uri);
+      const list = Array.isArray(response.value) ? response.value as PloomesContact[] : [];
+      if (list[0]) return list[0];
+    } catch {
+      // filter not supported or no result — continue to next candidate
+    }
+  }
+
+  return null;
+}
+
 function buildAttributionSummary(lead: LeadRow) {
   const lines = [
     ["nome_trilha", getTrailName(lead)],
@@ -367,7 +398,15 @@ Deno.serve(async request => {
     await markLead(email, "pending");
 
     let contact = await findContactByEmail(email);
+    let foundBy = contact ? "email" : null;
+
+    if (!contact && lead.telefone) {
+      contact = await findContactByPhone(lead.telefone);
+      if (contact) foundBy = "phone";
+    }
+
     const contactAlreadyExisted = Boolean(contact);
+    console.info(`[ploomes-sync-lead] Contato ${contactAlreadyExisted ? `encontrado por ${foundBy} (id=${contact!.Id})` : "não encontrado — será criado"}.`);
 
     if (!contact) {
       contact = await createContact(lead);
@@ -394,6 +433,7 @@ Deno.serve(async request => {
       contactId: contact.Id,
       dealId,
       contactAlreadyExisted,
+      foundBy,
       historyDealsCount: existingDeals.length,
       pipelineId: ploomesPipelineId,
       stageId: ploomesStageId,
