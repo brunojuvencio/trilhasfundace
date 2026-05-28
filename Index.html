@@ -1046,17 +1046,37 @@
         color: rgb(0.15, 0.15, 0.15)
       });
 
-      const topicLines = wrapCertificateText(themesLabel, width > height ? 58 : 38).slice(0, 2);
-      topicLines.forEach((line, index) => {
-        const lineWidth = font.widthOfTextAtSize(line, topicsSize);
-        page.drawText(line, {
-          x: (width - lineWidth) / 2,
-          y: height * 0.485 - (index * (topicsSize + 5)),
-          size: topicsSize,
-          font,
-          color: rgb(0.22, 0.22, 0.22)
+      const isDynamicTrail = currentCourse?.id !== "ifrs" && currentCourse?.id !== "gestao";
+
+      if (isDynamicTrail && lessons.length > 0) {
+        const lessonListSize = width > height ? 7 : 5.5;
+        const maxChars = width > height ? 75 : 50;
+        const lessonTitles = lessons.map(l => l.title).join(", ");
+        const lessonText = `composto pelas seguintes aulas: ${lessonTitles}.`;
+        const lessonLines = wrapCertificateText(lessonText, maxChars).slice(0, 4);
+        lessonLines.forEach((line, index) => {
+          const lineWidth = font.widthOfTextAtSize(line, lessonListSize);
+          page.drawText(line, {
+            x: (width - lineWidth) / 2,
+            y: height * 0.485 - (index * (lessonListSize + 5)),
+            size: lessonListSize,
+            font,
+            color: rgb(0.22, 0.22, 0.22)
+          });
         });
-      });
+      } else {
+        const topicLines = wrapCertificateText(themesLabel, width > height ? 58 : 38).slice(0, 2);
+        topicLines.forEach((line, index) => {
+          const lineWidth = font.widthOfTextAtSize(line, topicsSize);
+          page.drawText(line, {
+            x: (width - lineWidth) / 2,
+            y: height * 0.485 - (index * (topicsSize + 5)),
+            size: topicsSize,
+            font,
+            color: rgb(0.22, 0.22, 0.22)
+          });
+        });
+      }
 
       const output = await pdfDoc.save();
       const blob = new Blob([output], { type: "application/pdf" });
