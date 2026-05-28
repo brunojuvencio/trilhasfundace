@@ -671,6 +671,7 @@
     const db = createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
     const initialTrailParam = (new URLSearchParams(window.location.search).get("trilha") || "").trim().toLowerCase();
     let currentUser = null;
+    let allowedTrail = "";
     let lastTrackedLessonId = null;
 
     (async () => {
@@ -941,7 +942,8 @@
     function storageKey() {
       const userId = currentUser?.id || "guest";
       if (currentCourse?.id === "gestao") return `gestaoTrailState_v1:${userId}`;
-      return `ifrsTrailState_v3:${userId}`;
+      if (currentCourse?.id === "ifrs") return `ifrsTrailState_v3:${userId}`;
+      return `${currentCourse?.id || "fundace"}TrailState_v1:${userId}`;
     }
 
     function loadState() {
@@ -972,6 +974,7 @@
     }
 
     function progressPercent() {
+      if (!lessons.length) return 0;
       return Math.round((state.completed.length / lessons.length) * 100);
     }
 
@@ -1198,6 +1201,19 @@
     }
 
     async function renderPortal() {
+      if (!lessons.length) {
+        document.getElementById("course-selector").style.display = "none";
+        document.getElementById("portal-wrapper").style.display = "";
+        lessonTitle.textContent = currentCourse?.title || "Trilha";
+        lessonEyebrow.textContent = "Em breve";
+        lessonVideo.src = "";
+        document.getElementById("lesson-menu").innerHTML = "";
+        document.getElementById("lesson-highlights").innerHTML =
+          `<p style="color:var(--brand-ink-soft);margin:0;">Esta trilha ainda não possui aulas publicadas. Volte em breve!</p>`;
+        pillProgress.textContent = "0% concluído";
+        progressFill.style.width = "0%";
+        return;
+      }
       const lesson   = lessons[currentLessonIndex];
       const unlocked = isUnlocked(currentLessonIndex);
       const percent  = progressPercent();
@@ -1328,11 +1344,118 @@
       document.title = "Trilhas Fundace";
     }
 
+    function normalizePlain(value) {
+      return String(value || "")
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function normalizeTrailSlug(value) {
+      const raw = String(value || "").trim().toLowerCase();
+      if (courses[raw]) return raw;
+      const normalized = normalizePlain(raw);
+      if (normalized.includes("gestao")) return "gestao";
+      if (normalized.includes("contifrs") || normalized.includes("ifrs") || normalized.includes("contabilidade")) return "ifrs";
+      const dynamicCourse = Object.values(courses).find(course => {
+        const candidates = [course.id, course.title, course.subtitle, course.nome, course.slug].map(normalizePlain);
+        return candidates.includes(normalized);
+      });
+      if (dynamicCourse) return dynamicCourse.id;
+      return "";
+    }
+
+    async function loadDynamicCourses() {
+      const { data, error } = await db
+        .from("trilhas")
+        .select("id, nome, slug, descricao, status, curso_id, cursos(nome, descricao), aulas(id, titulo, vimeo_id, duracao, ordem)")
+        .eq("status", "publicada");
+
+      if (error) {
+        console.error("Erro ao carregar trilhas publicadas:", error);
+        return;
+      }
+
+      (data || []).forEach(trilha => {
+        const slug = normalizePlain(trilha.slug).replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+        if (!slug || courses[slug]) return;
+
+        const curso = Array.isArray(trilha.cursos) ? trilha.cursos[0] : trilha.cursos;
+        const aulas = Array.isArray(trilha.aulas)
+          ? [...trilha.aulas].sort((a, b) => Number(a.ordem || 0) - Number(b.ordem || 0))
+          : [];
+
+        courses[slug] = {
+          id: slug,
+          slug,
+          nome: trilha.nome,
+          title: trilha.nome,
+          subtitle: trilha.nome,
+          description: trilha.descricao || curso?.descricao || "Trilha Fundace com aulas selecionadas.",
+          pill: `${aulas.length} aula${aulas.length === 1 ? "" : "s"}`,
+          ctaUrl: "",
+          certificateSlug: slug,
+          lessons: aulas.map((aula, index) => ({
+            id: aula.id,
+            title: aula.titulo || `Aula ${index + 1}`,
+            duration: aula.duracao || `Aula ${index + 1}`,
+            level: curso?.nome || "Trilha Fundace",
+            teacher: "Corpo docente Fundace",
+            videoUrl: aula.vimeo_id ? `https://vimeo.com/${aula.vimeo_id}` : "",
+            eyebrow: index === 0 ? "Aula 1 · liberada" : `Aula ${index + 1}`,
+            highlights: [
+              "Assista ao conteúdo da aula e avance na trilha.",
+              "Marque a aula como concluída para liberar o próximo conteúdo."
+            ]
+          }))
+        };
+      });
+    }
+
+    async function resolveAllowedTrail(session) {
+      const metadataTrail = normalizeTrailSlug(session.user.user_metadata?.trilha);
+      let leadTrail = "";
+
+      if (session.user.email) {
+        const { data, error } = await db.rpc("get_lead_offer_context", {
+          p_email: session.user.email
+        });
+
+        if (error) {
+          console.error("Erro ao carregar trilha permitida:", error);
+        } else {
+          const context = Array.isArray(data) ? data[0] : data;
+          leadTrail = normalizeTrailSlug(context?.nome_trilha);
+        }
+      }
+
+      const resolved = leadTrail || metadataTrail;
+
+      if (resolved && resolved !== metadataTrail) {
+        const nextMetadata = { ...(session.user.user_metadata || {}), trilha: resolved };
+        const { error } = await db.auth.updateUser({ data: nextMetadata });
+        if (error) {
+          console.error("Erro ao sincronizar trilha do usuário:", error);
+        } else {
+          currentUser.user_metadata = nextMetadata;
+        }
+      }
+
+      return resolved;
+    }
+
     function renderCourseSelector() {
       const grid = document.getElementById("course-grid");
       grid.innerHTML = "";
-      const allowedTrail = currentUser?.user_metadata?.trilha || "";
-      Object.values(courses).forEach(course => {
+      const sortedCourses = Object.values(courses).sort((a, b) => {
+        if (allowedTrail) {
+          if (a.id === allowedTrail) return -1;
+          if (b.id === allowedTrail) return 1;
+        }
+        return 0;
+      });
+      sortedCourses.forEach(course => {
         const isBlocked = allowedTrail && course.id !== allowedTrail;
         const btn = document.createElement("button");
         btn.className = isBlocked ? "course-card locked-trail" : "course-card";
@@ -1340,9 +1463,9 @@
           btn.addEventListener("click", () => selectCourse(course.id));
         }
         btn.innerHTML = `
-          <div class="course-card-eyebrow">${course.pill}</div>
-          <h3>${course.title}</h3>
-          <p>${course.description}</p>
+          <div class="course-card-eyebrow">${escapeHtml(course.pill)}</div>
+          <h3>${escapeHtml(course.title)}</h3>
+          <p>${escapeHtml(course.description)}</p>
           ${isBlocked
             ? `<div class="course-card-locked-badge">🔒 Acesso não disponível para esta trilha</div>`
             : `<div class="course-card-cta">Acessar trilha →</div>`}
@@ -1352,6 +1475,11 @@
     }
 
     async function selectCourse(courseId) {
+      if (allowedTrail && courseId !== allowedTrail) {
+        showCourseSelector();
+        return;
+      }
+
       currentCourse = courses[courseId];
       if (!currentCourse) return;
 
@@ -1398,13 +1526,22 @@
       document.getElementById("user-name").textContent = userName;
       state.user = { name: userName };
 
-      const metaTrail = session.user.user_metadata?.trilha || "";
-      const resolvedTrail = courses[initialTrailParam] ? initialTrailParam
-                          : courses[metaTrail]        ? metaTrail
-                          : "";
+      await loadDynamicCourses();
+      allowedTrail = await resolveAllowedTrail(session);
+
+      const requestedTrail = courses[initialTrailParam] ? initialTrailParam : "";
+      const resolvedTrail = allowedTrail || requestedTrail;
+
       renderCourseSelector();
+
       if (resolvedTrail) {
-        await selectCourse(resolvedTrail);
+        try {
+          await selectCourse(resolvedTrail);
+        } catch (err) {
+          console.error("Erro ao carregar trilha:", err);
+          document.getElementById("course-selector").style.display = "";
+          document.getElementById("portal-wrapper").style.display = "none";
+        }
       } else {
         document.getElementById("course-selector").style.display = "";
       }
