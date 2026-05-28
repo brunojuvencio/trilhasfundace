@@ -1049,10 +1049,14 @@
       const isDynamicTrail = currentCourse?.id !== "ifrs" && currentCourse?.id !== "gestao";
 
       if (isDynamicTrail && lessons.length > 0) {
-        const lessonListSize = width > height ? 7 : 5.5;
-        const maxChars = width > height ? 75 : 50;
-        const lessonTitles = lessons.map(l => l.title).join(", ");
-        const lessonText = `composto pelas seguintes aulas: ${lessonTitles}.`;
+        const lessonListSize = width > height ? 7.5 : 6;
+        const maxChars = width > height ? 72 : 48;
+        const cleanTitle = t => t
+          .replace(/^Aula\s+\d+\s*[:\-–]\s*/i, "")
+          .replace(/\s*[-–]\s*Parte\s+\d+\s*$/i, "")
+          .trim();
+        const uniqueTopics = [...new Set(lessons.map(l => cleanTitle(l.title)))];
+        const lessonText = `composto pelas seguintes aulas: ${uniqueTopics.join(", ")}.`;
         const lessonLines = wrapCertificateText(lessonText, maxChars).slice(0, 4);
         lessonLines.forEach((line, index) => {
           const lineWidth = font.widthOfTextAtSize(line, lessonListSize);
