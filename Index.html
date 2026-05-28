@@ -1042,18 +1042,18 @@
       };
 
       // "A FUNDACE certifica que"
-      drawCentered("A FUNDACE certifica que", height * 0.62, bodySize, font, inkSoft);
+      drawCentered("A FUNDACE certifica que", height * 0.65, bodySize, font, inkSoft);
 
       // Nome da pessoa
-      drawCentered(name, height * 0.545, nameSize, fontBold, ink);
+      drawCentered(name, height * 0.575, nameSize, fontBold, ink);
 
       // "cumpriu a grade do curso"
-      drawCentered("cumpriu a grade do curso", height * 0.48, bodySize, fontItalic, inkSoft);
+      drawCentered("cumpriu a grade do curso", height * 0.51, bodySize, fontItalic, inkSoft);
 
       // Nome da trilha
       const courseTitle = currentCourse?.title || "";
       if (courseTitle) {
-        drawCentered(courseTitle, height * 0.44, width > height ? 13 : 10, fontBold, ink);
+        drawCentered(courseTitle, height * 0.47, width > height ? 13 : 10, fontBold, ink);
       }
 
       // Lista de aulas ou temas concluídos
@@ -1068,7 +1068,7 @@
         const uniqueTopics = [...new Set(lessons.map(l => cleanTitle(l.title)))];
         const lessonText   = `composto pelas seguintes aulas: ${uniqueTopics.join(", ")}.`;
         const lessonLines  = wrapCertificateText(lessonText, maxChars).slice(0, 4);
-        const lessonStartY = height * 0.385;
+        const lessonStartY = height * 0.42;
         lessonLines.forEach((line, i) => {
           const lw = font.widthOfTextAtSize(line, lessonListSize);
           page.drawText(line, { x: (width - lw) / 2, y: lessonStartY - (i * lineGap), size: lessonListSize, font, color: inkSoft });
@@ -1078,7 +1078,7 @@
         const themesLabel = themes.length ? themes.join(" • ") : "Trilha completa";
         const topicsSize  = width > height ? 7 : 5.5;
         const topicLines  = wrapCertificateText(themesLabel, width > height ? 58 : 38).slice(0, 2);
-        const topicsStartY = height * 0.385;
+        const topicsStartY = height * 0.42;
         topicLines.forEach((line, i) => {
           const lw = font.widthOfTextAtSize(line, topicsSize);
           page.drawText(line, { x: (width - lw) / 2, y: topicsStartY - (i * lineGap), size: topicsSize, font, color: inkSoft });
@@ -1087,7 +1087,7 @@
 
       // Data de emissão
       const dateStr = new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
-      drawCentered(dateStr, height * 0.30, bodySize, font, inkSoft);
+      drawCentered(dateStr, height * 0.335, bodySize, font, inkSoft);
 
       const output = await pdfDoc.save();
       const blob = new Blob([output], { type: "application/pdf" });
