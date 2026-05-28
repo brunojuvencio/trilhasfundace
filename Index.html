@@ -1047,10 +1047,12 @@
       });
 
       const isDynamicTrail = currentCourse?.id !== "ifrs" && currentCourse?.id !== "gestao";
+      const lineGap = width > height ? 13 : 10;
+      let lastDrawnY;
 
       if (isDynamicTrail && lessons.length > 0) {
         const lessonListSize = width > height ? 7.5 : 6;
-        const maxChars = width > height ? 72 : 48;
+        const maxChars = width > height ? 68 : 46;
         const cleanTitle = t => t
           .replace(/^Aula\s+\d+\s*[:\-–]\s*/i, "")
           .replace(/\s*[-–]\s*Parte\s+\d+\s*$/i, "")
@@ -1058,29 +1060,46 @@
         const uniqueTopics = [...new Set(lessons.map(l => cleanTitle(l.title)))];
         const lessonText = `composto pelas seguintes aulas: ${uniqueTopics.join(", ")}.`;
         const lessonLines = wrapCertificateText(lessonText, maxChars).slice(0, 4);
+        const lessonStartY = height * 0.415;
         lessonLines.forEach((line, index) => {
           const lineWidth = font.widthOfTextAtSize(line, lessonListSize);
           page.drawText(line, {
             x: (width - lineWidth) / 2,
-            y: height * 0.485 - (index * (lessonListSize + 5)),
+            y: lessonStartY - (index * lineGap),
             size: lessonListSize,
             font,
             color: rgb(0.22, 0.22, 0.22)
           });
         });
+        lastDrawnY = lessonStartY - ((lessonLines.length - 1) * lineGap);
       } else {
         const topicLines = wrapCertificateText(themesLabel, width > height ? 58 : 38).slice(0, 2);
+        const topicsStartY = height * 0.485;
         topicLines.forEach((line, index) => {
           const lineWidth = font.widthOfTextAtSize(line, topicsSize);
           page.drawText(line, {
             x: (width - lineWidth) / 2,
-            y: height * 0.485 - (index * (topicsSize + 5)),
+            y: topicsStartY - (index * lineGap),
             size: topicsSize,
             font,
             color: rgb(0.22, 0.22, 0.22)
           });
         });
+        lastDrawnY = topicsStartY - ((topicLines.length - 1) * lineGap);
       }
+
+      // Data de emissão
+      const today = new Date();
+      const dateStr = today.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+      const dateSize = width > height ? 9 : 7.5;
+      const dateWidth = font.widthOfTextAtSize(dateStr, dateSize);
+      page.drawText(dateStr, {
+        x: (width - dateWidth) / 2,
+        y: lastDrawnY - 24,
+        size: dateSize,
+        font,
+        color: rgb(0.22, 0.22, 0.22)
+      });
 
       const output = await pdfDoc.save();
       const blob = new Blob([output], { type: "application/pdf" });
