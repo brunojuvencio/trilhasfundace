@@ -14,6 +14,7 @@
     { "source": "/admin-login", "destination": "/admin-login.html" },
     { "source": "/painel-admin", "destination": "/admin.html" },
     { "source": "/gestao", "destination": "/captacao-gestao.html" },
+    { "source": "/marketing", "destination": "/captacao-marketing.html" },
     { "source": "/api/cursos", "destination": "https://hasptpxcyavfdzxtwpws.supabase.co/functions/v1/trilhas-api/cursos" },
     { "source": "/api/cursos/:path*", "destination": "https://hasptpxcyavfdzxtwpws.supabase.co/functions/v1/trilhas-api/cursos/:path*" },
     { "source": "/api/trilhas", "destination": "https://hasptpxcyavfdzxtwpws.supabase.co/functions/v1/trilhas-api/trilhas" },

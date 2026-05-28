@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trilha Gratuita em Marketing Estratégico | Fundace FEA-RP/USP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --yellow: #feb737;
+      --yellow-dark: #d9970e;
+      --black: #080808;
+      --ink: #111111;
+      --cream: #f5f0e8;
+      --cream-dark: #ede7d8;
+      --white: #ffffff;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: "Inter", sans-serif; color: var(--ink); background: var(--black); overflow-x: hidden; }
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+
+    /* TOPBAR */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 48px; height: 58px;
+      background: rgba(8,8,8,0.96); backdrop-filter: blur(24px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .topbar-logo { height: 24px; width: auto; filter: brightness(0) invert(1); opacity: 0.9; }
+    .topbar-cta {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 18px; border-radius: 8px; border: none; cursor: pointer;
+      background: var(--yellow); color: var(--black);
+      font: inherit; font-size: 0.82rem; font-weight: 700;
+      letter-spacing: -0.01em;
+      transition: opacity 0.15s, transform 0.15s;
+      text-decoration: none;
+    }
+    .topbar-cta:hover { opacity: 0.88; transform: translateY(-1px); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding-top: 58px;
+      position: relative; overflow: hidden;
+    }
+    .hero-content {
+      display: flex; flex-direction: column; align-items: center;
+      text-align: center;
+      padding: 80px 32px;
+      width: 100%; max-width: 860px;
+      position: relative;
+    }
+    .hero-noise {
+      position: absolute; inset: 0; pointer-events: none; opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+    }
+    .hero-texture {
+      position: absolute; inset: 0; pointer-events: none;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px);
+      background-size: 32px 32px;
+      -webkit-mask-image: radial-gradient(ellipse 90% 85% at 50% 50%, black 20%, transparent 75%);
+      mask-image: radial-gradient(ellipse 90% 85% at 50% 50%, black 20%, transparent 75%);
+    }
+    .hero-glow {
+      position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(254,183,55,0.07) 0%, transparent 65%);
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-size: 0.67rem; font-weight: 700; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--yellow);
+      margin-bottom: 28px; width: fit-content;
+    }
+    .hero-eyebrow-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--yellow); flex-shrink: 0;
+      animation: pulseGlow 2.4s ease-in-out infinite;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 7px 14px; border-radius: 100px;
+      background: rgba(254,183,55,0.1); border: 1px solid rgba(254,183,55,0.22);
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--yellow);
+      margin-bottom: 24px;
+    }
+    .hero-badge svg { flex-shrink: 0; }
+    .hero h1 {
+      font-size: clamp(2.6rem, 5.5vw, 4.6rem);
+      font-weight: 800; line-height: 1.0;
+      letter-spacing: -0.04em; color: var(--white);
+      max-width: 22ch; margin-bottom: 20px;
+    }
+    .hero h1 em { font-style: normal; color: var(--yellow); }
+    .hero-desc {
+      font-size: 1.05rem; line-height: 1.78;
+      color: rgba(255,255,255,0.5);
+      max-width: 52ch; margin-bottom: 52px;
+      font-weight: 300;
+    }
+    .hero-desc em { font-style: normal; color: rgba(254,183,55,0.85); font-weight: 500; }
+    .hero-stats {
+      display: flex; gap: 0; margin-bottom: 56px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px; overflow: hidden;
+      max-width: 420px; width: 100%;
+    }
+    .stat-block {
+      flex: 1;
+      padding: 14px 20px;
+      border-right: 1px solid rgba(255,255,255,0.08);
+      text-align: center;
+    }
+    .stat-block:last-child { border-right: none; }
+    .stat-num {
+      font-size: 1.5rem; font-weight: 800;
+      color: var(--white); line-height: 1;
+      letter-spacing: -0.04em; margin-bottom: 4px;
+    }
+    .stat-num em { font-style: normal; color: var(--yellow); font-size: 1rem; }
+    .stat-lbl { font-size: 0.6rem; color: rgba(255,255,255,0.36); font-weight: 500; letter-spacing: 0.02em; white-space: nowrap; }
+    .hero-cta {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 17px 36px; border-radius: 12px; border: none; cursor: pointer;
+      background: var(--yellow); color: var(--black);
+      font: inherit; font-size: 0.95rem; font-weight: 700;
+      box-shadow: 0 12px 40px rgba(254,183,55,0.36);
+      transition: transform 0.2s, box-shadow 0.2s;
+      width: fit-content;
+    }
+    .hero-cta:hover { transform: translateY(-2px); box-shadow: 0 16px 48px rgba(254,183,55,0.52); }
+    .hero-cta svg { transition: transform 0.2s; }
+    .hero-cta:hover svg { transform: translateX(3px); }
+
+    /* TICKER */
+    .ticker {
+      background: var(--yellow); overflow: hidden;
+      padding: 14px 0; white-space: nowrap;
+      border-top: 2px solid rgba(0,0,0,0.08);
+      border-bottom: 2px solid rgba(0,0,0,0.08);
+    }
+    .ticker-track {
+      display: inline-flex;
+      animation: tickerScroll 32s linear infinite;
+    }
+    .ticker-item {
+      display: inline-flex; align-items: center; gap: 16px;
+      padding: 0 32px;
+      font-size: 0.72rem; font-weight: 800;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--black);
+    }
+    .ticker-sep {
+      width: 4px; height: 4px; border-radius: 50%;
+      background: rgba(0,0,0,0.3); flex-shrink: 0;
+    }
+    @keyframes tickerScroll {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    /* SECTIONS */
+    .section { padding: 100px 0; background: var(--cream); }
+    .section.dark { background: var(--black); }
+    .container { width: min(calc(100% - 48px), 1120px); margin: 0 auto; }
+
+    .section-eyebrow {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--yellow-dark);
+      margin-bottom: 16px;
+    }
+    .section-eyebrow::before { content: ""; width: 20px; height: 2px; background: var(--yellow); border-radius: 1px; }
+
+    /* CONTENT BLOCKS (3 cards) */
+    .content-blocks-header { margin-bottom: 64px; text-align: center; }
+    .content-blocks-title {
+      font-size: clamp(2rem, 3.5vw, 3rem); font-weight: 800;
+      letter-spacing: -0.04em; line-height: 1.05;
+      color: var(--ink); max-width: 22ch; margin: 0 auto;
+    }
+    .content-blocks-title em { font-style: normal; color: var(--yellow-dark); }
+    .content-blocks-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .content-block-card {
+      padding: 32px 28px; border-radius: 20px;
+      background: var(--white); border: 1.5px solid rgba(17,17,17,0.08);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      transition: border-color 0.2s, transform 0.2s;
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .content-block-card:hover { border-color: var(--yellow); transform: translateY(-3px); }
+    .content-block-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: rgba(254,183,55,0.1); border: 1px solid rgba(254,183,55,0.2);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .content-block-icon svg { color: var(--yellow-dark); }
+    .content-block-label {
+      font-size: 0.65rem; font-weight: 800; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--yellow-dark);
+    }
+    .content-block-card h3 {
+      font-size: 1.05rem; font-weight: 700; color: var(--ink);
+      letter-spacing: -0.02em; line-height: 1.3;
+    }
+    .content-block-card p {
+      font-size: 0.88rem; color: rgba(17,17,17,0.54); line-height: 1.7; font-weight: 400;
+    }
+    .content-block-card p strong { color: rgba(17,17,17,0.78); font-weight: 600; }
+
+    /* HOW IT WORKS (2 steps) */
+    .how-header { margin-bottom: 64px; }
+    .how-title {
+      font-size: clamp(2rem, 3.5vw, 3rem); font-weight: 800;
+      letter-spacing: -0.04em; color: var(--white); line-height: 1.05;
+    }
+    .steps-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px; max-width: 860px; }
+    .step-card {
+      padding: 44px 36px; background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      position: relative; overflow: hidden; transition: background 0.2s;
+    }
+    .step-card:first-child { border-radius: 20px 0 0 20px; }
+    .step-card:last-child  { border-radius: 0 20px 20px 0; }
+    .step-card:hover { background: rgba(255,255,255,0.05); }
+    .step-card::before {
+      content: ""; position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: transparent; transition: background 0.3s;
+    }
+    .step-card:hover::before { background: var(--yellow); }
+    .step-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: rgba(254,183,55,0.12); border: 1px solid rgba(254,183,55,0.2);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 24px;
+    }
+    .step-icon svg { color: var(--yellow); }
+    .step-index {
+      font-size: 0.63rem; font-weight: 800; letter-spacing: 0.12em;
+      text-transform: uppercase; color: rgba(254,183,55,0.6); margin-bottom: 12px;
+    }
+    .step-card h3 {
+      font-size: 1.05rem; font-weight: 700; color: var(--white);
+      letter-spacing: -0.02em; margin-bottom: 10px; line-height: 1.3;
+    }
+    .step-card p { font-size: 0.88rem; color: rgba(255,255,255,0.4); line-height: 1.72; font-weight: 300; }
+
+    /* THREE COLUMNS */
+    .tres-colunas-header { margin-bottom: 64px; text-align: center; }
+    .tres-colunas-title {
+      font-size: clamp(2rem, 3.5vw, 3rem); font-weight: 800;
+      letter-spacing: -0.04em; line-height: 1.05;
+      color: var(--ink); max-width: 24ch; margin: 0 auto;
+    }
+    .tres-colunas-title em { font-style: normal; color: var(--yellow-dark); }
+    .tres-colunas-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .tres-col-card {
+      padding: 36px 28px; border-radius: 20px; text-align: center;
+      background: var(--white); border: 1.5px solid rgba(17,17,17,0.08);
+      border-top: 2px solid rgba(254,183,55,0.4);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      transition: border-color 0.2s, transform 0.2s;
+      display: flex; flex-direction: column; align-items: center; gap: 0;
+    }
+    .tres-col-card:hover { border-top-color: var(--yellow); transform: translateY(-3px); }
+    .tres-col-icon {
+      width: 56px; height: 56px; border-radius: 16px;
+      background: rgba(254,183,55,0.1); border: 1px solid rgba(254,183,55,0.2);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px;
+    }
+    .tres-col-icon svg { color: var(--yellow-dark); }
+    .tres-col-card h3 {
+      font-size: 1.02rem; font-weight: 700; color: var(--ink);
+      letter-spacing: -0.02em; margin-bottom: 14px; line-height: 1.3;
+    }
+    .tres-col-card p {
+      font-size: 0.86rem; color: rgba(17,17,17,0.52); line-height: 1.72; font-weight: 400;
+    }
+
+    /* SOBRE O MBA */
+    .mba-layout {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start;
+    }
+    .mba-title {
+      font-size: clamp(1.9rem, 3vw, 2.8rem); font-weight: 800;
+      letter-spacing: -0.04em; line-height: 1.05;
+      color: var(--white); margin: 12px 0 20px;
+    }
+    .mba-title em { font-style: normal; color: var(--yellow); }
+    .mba-desc {
+      font-size: 0.96rem; color: rgba(255,255,255,0.44);
+      line-height: 1.78; font-weight: 300; margin-bottom: 12px;
+    }
+    .mba-desc strong { color: rgba(255,255,255,0.78); font-weight: 600; }
+    .mba-cta {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 28px; border-radius: 10px; border: none; cursor: pointer;
+      background: var(--yellow); color: var(--black);
+      font: inherit; font-size: 0.9rem; font-weight: 700;
+      box-shadow: 0 8px 28px rgba(254,183,55,0.28);
+      transition: transform 0.18s, box-shadow 0.18s;
+      margin-top: 28px;
+    }
+    .mba-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(254,183,55,0.42); }
+    .mba-visual {
+      display: flex; flex-direction: column; align-items: flex-start; gap: 24px;
+    }
+    .mba-logo { height: 36px; width: auto; filter: brightness(0) invert(1); opacity: 0.6; }
+    .mba-divider { width: 100%; height: 1px; background: rgba(255,255,255,0.1); }
+    .mba-subtitle {
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: rgba(255,255,255,0.3);
+    }
+
+    /* FORM FOLD */
+    .form-fold {
+      min-height: 100vh; background: var(--black);
+      display: flex; align-items: center; justify-content: center;
+      padding: 100px 24px;
+      position: relative; overflow: hidden;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    .form-fold-bg {
+      position: absolute; inset: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 65% 55% at 100% 100%, rgba(254,183,55,0.06) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 40% at 0% 0%, rgba(254,183,55,0.04) 0%, transparent 50%);
+    }
+    .form-fold-noise {
+      position: absolute; inset: 0; pointer-events: none; opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+    }
+    .form-layout {
+      width: 100%; max-width: 1100px; position: relative; z-index: 1;
+      display: grid; grid-template-columns: 1fr 520px; gap: 80px; align-items: start;
+    }
+    .form-sidebar { position: sticky; top: 100px; }
+    .form-sidebar-eyebrow {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--yellow); margin-bottom: 20px;
+    }
+    .form-sidebar-dot {
+      width: 6px; height: 6px; border-radius: 50%; background: var(--yellow);
+      animation: pulseGlow 2.4s ease-in-out infinite;
+    }
+    .form-sidebar h2 {
+      font-size: clamp(1.8rem, 3vw, 2.6rem); font-weight: 800;
+      color: var(--white); letter-spacing: -0.04em; line-height: 1.05; margin-bottom: 20px;
+    }
+    .form-sidebar p {
+      font-size: 0.95rem; color: rgba(255,255,255,0.44);
+      line-height: 1.74; margin-bottom: 40px; font-weight: 300; max-width: 38ch;
+    }
+    .form-perks { display: grid; gap: 14px; }
+    .form-perk { display: flex; align-items: flex-start; gap: 12px; }
+    .perk-icon {
+      width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
+      background: rgba(254,183,55,0.12); border: 1px solid rgba(254,183,55,0.18);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .perk-icon svg { color: var(--yellow); }
+    .perk-text { font-size: 0.86rem; color: rgba(255,255,255,0.52); line-height: 1.6; }
+    .perk-text strong { color: rgba(255,255,255,0.82); font-weight: 600; display: block; font-size: 0.88rem; }
+    .form-card {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px; padding: 40px 36px; backdrop-filter: blur(24px);
+    }
+    .form-card-title {
+      font-size: 1.05rem; font-weight: 700; color: var(--white);
+      letter-spacing: -0.02em; margin-bottom: 4px;
+    }
+    .form-card-sub { font-size: 0.82rem; color: rgba(255,255,255,0.36); margin-bottom: 28px; line-height: 1.6; }
+    .form-grid { display: grid; gap: 12px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .radio-group { display: grid; gap: 8px; }
+    .radio-label-title {
+      font-size: 0.75rem; font-weight: 600;
+      color: rgba(255,255,255,0.55); letter-spacing: 0.02em;
+    }
+    .radio-label-title span { color: var(--yellow); }
+    .radio-options { display: flex; gap: 8px; flex-wrap: wrap; }
+    .radio-option {
+      flex: 1; display: flex; align-items: center; gap: 8px;
+      padding: 9px 13px; border-radius: 9px; cursor: pointer;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09);
+      font-size: 0.86rem; color: rgba(255,255,255,0.65); font-weight: 500;
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+      min-width: fit-content;
+    }
+    .radio-option input[type="radio"] { accent-color: var(--yellow); width: 14px; height: 14px; flex-shrink: 0; }
+    .radio-option:has(input:checked) {
+      border-color: rgba(254,183,55,0.5); background: rgba(254,183,55,0.1); color: var(--white);
+    }
+    .radio-options.col { flex-direction: column; }
+    .field { display: grid; gap: 6px; }
+    .field label { font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.52); letter-spacing: 0.02em; }
+    .field label span { color: var(--yellow); }
+    .field input, .field select {
+      width: 100%; padding: 11px 14px;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 9px; font: inherit; font-size: 0.88rem;
+      color: var(--white); transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+      -webkit-appearance: none; appearance: none;
+    }
+    .field input::placeholder { color: rgba(255,255,255,0.22); }
+    .field input:focus, .field select:focus {
+      outline: none; border-color: rgba(254,183,55,0.5);
+      background: rgba(255,255,255,0.08); box-shadow: 0 0 0 3px rgba(254,183,55,0.1);
+    }
+    .phone-row { display: grid; grid-template-columns: auto 1fr; gap: 8px; }
+    .phone-prefix {
+      display: flex; align-items: center; gap: 6px;
+      padding: 11px 13px; border-radius: 9px;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      font-size: 0.86rem; color: rgba(255,255,255,0.5); font-weight: 600; white-space: nowrap;
+    }
+    .form-consent {
+      font-size: 0.72rem; color: rgba(255,255,255,0.28); line-height: 1.65;
+      padding: 10px 13px; border-radius: 9px;
+      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);
+    }
+    .msg-box { padding: 11px 14px; border-radius: 9px; font-size: 0.84rem; font-weight: 600; display: none; }
+    .msg-box.success  { background: rgba(22,120,55,0.15); border: 1px solid rgba(22,120,55,0.3); color: #4ade80; display: block; }
+    .msg-box.error-msg { background: rgba(220,60,60,0.12); border: 1px solid rgba(220,60,60,0.28); color: #f87171; display: block; }
+    .submit-btn {
+      width: 100%; padding: 15px 20px; border: none; border-radius: 12px;
+      background: var(--yellow); color: var(--black);
+      font: inherit; font-size: 0.94rem; font-weight: 700; cursor: pointer;
+      box-shadow: 0 10px 32px rgba(254,183,55,0.3);
+      transition: transform 0.18s, box-shadow 0.18s, opacity 0.18s;
+    }
+    .submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 14px 44px rgba(254,183,55,0.46); }
+    .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .form-support {
+      margin-top: 14px; text-align: center;
+      font-size: 0.74rem; color: rgba(255,255,255,0.26); line-height: 1.8;
+    }
+    .form-support a { color: rgba(254,183,55,0.6); }
+    .form-support a:hover { color: var(--yellow); }
+
+    footer {
+      background: var(--black); border-top: 1px solid rgba(255,255,255,0.05);
+      padding: 32px 48px; display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 16px;
+    }
+    .footer-logo { height: 20px; width: auto; filter: brightness(0) invert(1); opacity: 0.35; }
+    .footer-text { font-size: 0.76rem; color: rgba(255,255,255,0.22); line-height: 1.6; }
+    .footer-text a { color: rgba(254,183,55,0.45); }
+    .footer-text a:hover { color: rgba(254,183,55,0.7); }
+
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(254,183,55,0); }
+      50% { box-shadow: 0 0 0 5px rgba(254,183,55,0.18); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .hero-badge   { animation: fadeUp 0.5s 0.08s  cubic-bezier(0.22,0.68,0,1.1) both; }
+    .hero-eyebrow { animation: fadeUp 0.5s 0.14s  cubic-bezier(0.22,0.68,0,1.1) both; }
+    .hero h1      { animation: fadeUp 0.5s 0.20s cubic-bezier(0.22,0.68,0,1.1) both; }
+    .hero-desc    { animation: fadeUp 0.5s 0.26s cubic-bezier(0.22,0.68,0,1.1) both; }
+    .hero-stats   { animation: fadeUp 0.5s 0.32s  cubic-bezier(0.22,0.68,0,1.1) both; }
+    .hero-cta     { animation: fadeUp 0.5s 0.38s cubic-bezier(0.22,0.68,0,1.1) both; }
+    .form-card    { animation: fadeUp 0.5s 0.2s  cubic-bezier(0.22,0.68,0,1.1) both; }
+
+    @media (max-width: 1040px) {
+      .form-layout { grid-template-columns: 1fr; gap: 48px; max-width: 560px; }
+      .form-sidebar { position: static; }
+      .mba-layout { grid-template-columns: 1fr; gap: 48px; }
+    }
+    @media (max-width: 860px) {
+      .steps-grid { grid-template-columns: 1fr; gap: 2px; }
+      .step-card:first-child { border-radius: 20px 20px 0 0; }
+      .step-card:last-child  { border-radius: 0 0 20px 20px; }
+      .hero-content { padding: 64px 24px; }
+      .content-blocks-grid { grid-template-columns: 1fr; }
+      .tres-colunas-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .topbar { padding: 0 20px; }
+      .hero-content { padding: 56px 24px 64px; }
+      .section { padding: 72px 0; }
+      .form-fold { padding: 72px 20px; }
+      .form-card { padding: 28px 22px; }
+      .form-row { grid-template-columns: 1fr; }
+      footer { padding: 24px 20px; flex-direction: column; align-items: center; text-align: center; }
+      .footer-text { text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <img src="./Logo Fundace-USP-FEARP-PRETO.png" alt="Fundace FEA-RP USP" class="topbar-logo">
+    <a href="#form-fold" class="topbar-cta">Garantir acesso gratuito</a>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-texture"></div>
+    <div class="hero-content">
+      <div class="hero-noise"></div>
+      <div class="hero-glow"></div>
+
+      <div class="hero-badge">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+        Curso Gratuito com Certificado
+      </div>
+
+      <div class="hero-eyebrow">
+        <div class="hero-eyebrow-dot"></div>
+        Trilha de Marketing Estratégico
+      </div>
+
+      <h1>Estratégia, posicionamento e geração de leads para fortalecer resultados de <em>marketing.</em></h1>
+
+      <p class="hero-desc">
+        Uma trilha gratuita com aulas do MBA USP em Gestão de Marketing Estratégico —
+        <em>análise de mercado, definição de públicos e mídias sociais</em> do fundamento à prática.
+      </p>
+
+      <div class="hero-stats">
+        <div class="stat-block">
+          <div class="stat-num">100<em>%</em></div>
+          <div class="stat-lbl">Gratuito</div>
+        </div>
+        <div class="stat-block">
+          <div class="stat-num">MBA</div>
+          <div class="stat-lbl">USP · FEA-RP</div>
+        </div>
+        <div class="stat-block">
+          <div class="stat-num">✓</div>
+          <div class="stat-lbl">Certificado FUNDACE</div>
+        </div>
+      </div>
+
+      <a href="#form-fold" class="hero-cta">
+        Quero me inscrever gratuitamente
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- TICKER -->
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <span class="ticker-item">Aulas gratuitas <span class="ticker-sep"></span></span>
+      <span class="ticker-item">MBA USP · FEA-RP <span class="ticker-sep"></span></span>
+      <span class="ticker-item">Marketing Estratégico <span class="ticker-sep"></span></span>
+      <span class="ticker-item">100% Online <span class="ticker-sep"></span></span>
+      <span class="ticker-item">Certificado Fundace <span class="ticker-sep"></span></span>
+      <span class="ticker-item">Acesso imediato <span class="ticker-sep"></span></span>
+      <span class="ticker-item">Geração de leads <span class="ticker-sep"></span></span>
+      <span class="ticker-item">Posicionamento estratégico <span class="ticker-sep"></span></span>
+      <span class="ticker-item">Aulas gratuitas <span class="ticker-sep"></span></span>
+      <span class="ticker-item">MBA USP · FEA-RP <span class="ticker-sep"></span></span>
+      <span class="ticker-item">Marketing Estratégico <span class="ticker-sep"></span></span>
+      <span class="ticker-item">100% Online <span class="ticker-sep"></span></span>
+      <span class="ticker-item">Certificado Fundace <span class="ticker-sep"></span></span>
+      <span class="ticker-item">Acesso imediato <span class="ticker-sep"></span></span>
+      <span class="ticker-item">Geração de leads <span class="ticker-sep"></span></span>
+      <span class="ticker-item">Posicionamento estratégico <span class="ticker-sep"></span></span>
+    </div>
+  </div>
+
+  <!-- CONTEÚDO: 3 blocos -->
+  <section class="section">
+    <div class="container">
+      <div class="content-blocks-header">
+        <div class="section-eyebrow" style="justify-content:center;">Conteúdo da trilha</div>
+        <h2 class="content-blocks-title">Construa uma visão estratégica completa de <em>marketing</em></h2>
+      </div>
+      <div class="content-blocks-grid">
+
+        <div class="content-block-card">
+          <div class="content-block-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          </div>
+          <div class="content-block-label">Fundamentos</div>
+          <p>A trilha apresenta os principais fundamentos que orientam decisões de marketing nas organizações, desde conceitos essenciais até estratégias de <strong>segmentação e geração de leads</strong> nas mídias sociais.</p>
+        </div>
+
+        <div class="content-block-card">
+          <div class="content-block-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <div class="content-block-label">Visão Estratégica</div>
+          <p>Ao longo das aulas, você desenvolve uma visão clara de como o marketing contribui para a <strong>geração de valor, definição de públicos estratégicos</strong> e posicionamento no mercado, usando as mídias sociais de forma estratégica.</p>
+        </div>
+
+        <div class="content-block-card">
+          <div class="content-block-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          </div>
+          <div class="content-block-label">Resultado</div>
+          <p>Ao final, você terá uma compreensão clara de como o <strong>marketing estratégico integra análise de mercado</strong>, definição de público, posicionamento, geração de valor e tomada de decisão.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- COMO FUNCIONA -->
+  <section class="section dark">
+    <div class="container">
+      <div class="how-header">
+        <div class="section-eyebrow" style="color:rgba(254,183,55,0.7);">Como funciona</div>
+        <h2 class="how-title">Simples. Sem burocracia.<br>Sem custo.</h2>
+      </div>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+          </div>
+          <div class="step-index">Passo 01</div>
+          <h3>Acesso imediato</h3>
+          <p>Ao se inscrever, você terá acesso imediato à plataforma com as aulas gravadas — assista quando quiser, no seu ritmo, quantas vezes precisar.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+          </div>
+          <div class="step-index">Passo 02</div>
+          <h3>Certificado FUNDACE</h3>
+          <p>Ao concluir todas as aulas, você poderá baixar seu certificado FUNDACE diretamente na plataforma — de forma simples, rápida e prática.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRÊS COLUNAS -->
+  <section class="section">
+    <div class="container">
+      <div class="tres-colunas-header">
+        <div class="section-eyebrow" style="justify-content:center;">Por que participar</div>
+        <h2 class="tres-colunas-title">Uma trilha pensada para aplicação prática e <em>visão estratégica</em></h2>
+      </div>
+      <div class="tres-colunas-grid">
+
+        <div class="tres-col-card">
+          <div class="tres-col-icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+          </div>
+          <h3>Para quem é?</h3>
+          <p>Indicada para profissionais que desejam compreender o papel estratégico do marketing nas organizações — gestores, empreendedores e profissionais envolvidos em decisões de mercado, clientes e posicionamento.</p>
+        </div>
+
+        <div class="tres-col-card">
+          <div class="tres-col-icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg>
+          </div>
+          <h3>Por que participar?</h3>
+          <p>Desenvolva uma visão mais estratégica do marketing — aprenda a analisar mercados, definir públicos e usar mídias sociais para gerar oportunidades e fortalecer o posicionamento da sua empresa.</p>
+        </div>
+
+        <div class="tres-col-card">
+          <div class="tres-col-icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+          </div>
+          <h3>FUNDACE</h3>
+          <p>Oferecida pela FUNDACE Ribeirão Preto, unindo qualidade acadêmica e aplicação prática. Conteúdo direto, ministrado por professores experientes que conectam teoria e mercado.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- SOBRE O MBA -->
+  <section class="section dark">
+    <div class="container">
+      <div class="mba-layout">
+        <div class="mba-visual">
+          <img src="./Logo Fundace-USP-FEARP-PRETO.png" alt="Fundace FEA-RP USP" class="mba-logo">
+          <div class="mba-divider"></div>
+          <div class="mba-subtitle">MBA USP · Gestão de Marketing Estratégico</div>
+        </div>
+        <div>
+          <div class="section-eyebrow" style="color:rgba(254,183,55,0.7);">Quer ir além?</div>
+          <h2 class="mba-title">Sobre o MBA USP Gestão de <em>Marketing Estratégico</em></h2>
+          <p class="mba-desc">
+            O MBA USP Gestão de Marketing Estratégico prepara profissionais para <strong>crescer na carreira, assumir posições de liderança</strong> e atuar com visão estratégica de mercado.
+          </p>
+          <p class="mba-desc">
+            Desenvolva competências para identificar oportunidades, antecipar tendências e gerar <strong>diferencial competitivo</strong> nos negócios — com o respaldo acadêmico da FEA-RP/USP.
+          </p>
+          <a href="https://www.fundace.org.br/curso/mba-ead-usp-gestao-de-marketing-estrategico?utm_source=Trilha&utm_campaign=trilha_marketing&utm_content=captacao_marketing" target="_blank" rel="noopener noreferrer" class="mba-cta">
+            Quero saber mais sobre o MBA
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FORM FOLD -->
+  <section class="form-fold" id="form-fold">
+    <div class="form-fold-bg"></div>
+    <div class="form-fold-noise"></div>
+    <div class="form-layout">
+
+      <div class="form-sidebar">
+        <div class="form-sidebar-eyebrow">
+          <div class="form-sidebar-dot"></div>
+          Vagas limitadas
+        </div>
+        <h2>Garanta seu acesso gratuito à trilha agora.</h2>
+        <p>Preencha o formulário ao lado e você receberá as instruções para criar seu login e acessar as aulas gratuitamente.</p>
+        <div class="form-perks">
+          <div class="form-perk">
+            <div class="perk-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="perk-text">
+              <strong>Aulas em vídeo</strong>
+              Conteúdo do MBA USP disponível imediatamente após o cadastro
+            </div>
+          </div>
+          <div class="form-perk">
+            <div class="perk-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="perk-text">
+              <strong>Certificado de participação</strong>
+              Emitido pela Fundace FEA-RP/USP ao concluir a trilha
+            </div>
+          </div>
+          <div class="form-perk">
+            <div class="perk-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="perk-text">
+              <strong>100% gratuito</strong>
+              Sem cartão de crédito, sem compromisso
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <div class="form-card-title">Criar minha conta gratuita</div>
+        <div class="form-card-sub">Todos os campos marcados com * são obrigatórios.</div>
+
+        <form id="register-form" class="form-grid" novalidate>
+
+          <div class="radio-group">
+            <div class="radio-label-title">Possui formação superior? <span>*</span></div>
+            <div class="radio-options">
+              <label class="radio-option"><input type="radio" name="formacao_superior" value="sim" required> Sim</label>
+              <label class="radio-option"><input type="radio" name="formacao_superior" value="nao"> Não</label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="nome">Nome completo <span>*</span></label>
+            <input id="nome" type="text" placeholder="Digite seu nome completo" required>
+          </div>
+
+          <div class="field">
+            <label for="email">E-mail <span>*</span></label>
+            <input id="email" type="email" placeholder="seu@email.com" required>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label for="cidade">Cidade</label>
+              <input id="cidade" type="text" placeholder="Sua cidade">
+            </div>
+            <div class="field">
+              <label for="telefone">Telefone <span>*</span></label>
+              <div class="phone-row">
+                <div class="phone-prefix">🇧🇷 +55</div>
+                <input id="telefone" type="tel" placeholder="11 96123-4567" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="area_formacao">Área de formação <span>*</span></label>
+            <input id="area_formacao" type="text" placeholder="Sua área de formação" required>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label for="empresa">Empresa <span>*</span></label>
+              <input id="empresa" type="text" placeholder="Nome da empresa" required>
+            </div>
+            <div class="field">
+              <label for="cargo">Cargo <span>*</span></label>
+              <input id="cargo" type="text" placeholder="Seu cargo atual" required>
+            </div>
+          </div>
+
+          <div class="radio-group">
+            <div class="radio-label-title">Pretende fazer uma pós-graduação ou MBA em Marketing? <span>*</span></div>
+            <div class="radio-options col">
+              <label class="radio-option"><input type="radio" name="pretende_pos" value="sim_agora" required> Sim, imediatamente</label>
+              <label class="radio-option"><input type="radio" name="pretende_pos" value="sim_depois"> Sim, mas não agora</label>
+              <label class="radio-option"><input type="radio" name="pretende_pos" value="nao"> Não pretendo</label>
+            </div>
+          </div>
+
+          <p class="form-consent">Ao enviar este formulário, você concorda em receber comunicações sobre cursos, palestras e conteúdos da Fundace/USP. Você pode cancelar a inscrição a qualquer momento.</p>
+
+          <div class="msg-box" id="msg-box"></div>
+
+          <button type="submit" class="submit-btn" id="submit-btn">Garantir meu acesso gratuito</button>
+        </form>
+
+        <p class="form-support">
+          Dúvidas? <a href="mailto:comunicacao@fundace.org.br">comunicacao@fundace.org.br</a> &nbsp;·&nbsp;
+          Já tem conta? <a href="./login.html">Entrar</a>
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <footer>
+    <img src="./Logo Fundace-USP-FEARP-PRETO.png" alt="Fundace FEA-RP USP" class="footer-logo">
+    <p class="footer-text">
+      © 2025 Fundace — Fundação para Pesquisa e Desenvolvimento da Administração, Contabilidade e Economia · FEA-RP/USP<br>
+      Dúvidas? <a href="mailto:comunicacao@fundace.org.br">comunicacao@fundace.org.br</a>
+    </p>
+  </footer>
+
+  <script src="./supabase/config.js"></script>
+  <script src="./supabase/tracking.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const { createClient } = supabase;
+    const db = createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
+
+    db.auth.getSession().then(({ data: { session } }) => {
+      if (session) window.location.href = "./Index.html";
+    });
+
+    const form      = document.getElementById("register-form");
+    const submitBtn = document.getElementById("submit-btn");
+    const msgBox    = document.getElementById("msg-box");
+    const TRILHA_NOME = "Trilha de Marketing Estratégico";
+    const ATTR_STORAGE_KEY = "fundace_trilha_attribution";
+    const ATTR_STORAGE_EMAIL_PREFIX = "fundace_trilha_attribution:";
+
+    function normalizePhone(value) {
+      return value.replace(/\D/g, "");
+    }
+
+    function readCookie(name) {
+      const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const match = document.cookie.match(new RegExp(`(?:^|; )${escapedName}=([^;]*)`));
+      return match ? decodeURIComponent(match[1]) : "";
+    }
+
+    function mergeAttribution(base, overlay) {
+      const merged = { ...(base || {}) };
+      Object.entries(overlay || {}).forEach(([key, value]) => {
+        if (value !== null && value !== undefined && value !== "") {
+          merged[key] = value;
+        }
+      });
+      return merged;
+    }
+
+    function generatePseudoClientId() {
+      const now = Date.now();
+      const random = Math.floor(Math.random() * 1e9);
+      return `${now}.${random}`;
+    }
+
+    function getOrCreateGaClientId() {
+      const gaCookie = readCookie("_ga");
+      if (gaCookie) {
+        const parts = gaCookie.split(".");
+        if (parts.length >= 4) return `${parts[2]}.${parts[3]}`;
+      }
+      const storageKey = "fundace_ga_client_id";
+      const existing = localStorage.getItem(storageKey);
+      if (existing) return existing;
+      const generated = generatePseudoClientId();
+      localStorage.setItem(storageKey, generated);
+      return generated;
+    }
+
+    function getOrCreateGaSessionId() {
+      const storageKey = "fundace_ga_session_id";
+      const existing = sessionStorage.getItem(storageKey);
+      if (existing) return existing;
+      const generated = String(Math.floor(Date.now() / 1000));
+      sessionStorage.setItem(storageKey, generated);
+      return generated;
+    }
+
+    function buildDerivedFbc(fbclid) {
+      if (!fbclid) return "";
+      return `fb.1.${Date.now()}.${fbclid}`;
+    }
+
+    function buildAttributionSnapshot(overrides = {}) {
+      const url = new URL(window.location.href);
+      const query = url.searchParams;
+      const stored = (() => {
+        try { return JSON.parse(localStorage.getItem(ATTR_STORAGE_KEY) || "{}"); }
+        catch { return {}; }
+      })();
+
+      const fbclid = overrides.fbclid || query.get("fbclid") || stored.fbclid || "";
+      const fbp = readCookie("_fbp") || stored.fbp || "";
+      const fbc = readCookie("_fbc") || stored.fbc || buildDerivedFbc(fbclid);
+
+      if (fbp) localStorage.setItem("fundace_fbp", fbp);
+      if (fbc) localStorage.setItem("fundace_fbc", fbc);
+
+      return mergeAttribution(stored, {
+        utm_source: query.get("utm_source") || "",
+        utm_medium: query.get("utm_medium") || "",
+        utm_campaign: query.get("utm_campaign") || "",
+        utm_term: query.get("utm_term") || "",
+        utm_content: query.get("utm_content") || "",
+        gclid: query.get("gclid") || "",
+        fbclid, fbp, fbc,
+        landing_page_url: stored.landing_page_url || window.location.href,
+        page_url: window.location.href,
+        referrer_url: document.referrer || stored.referrer_url || "",
+        ga_client_id: getOrCreateGaClientId(),
+        ga_session_id: getOrCreateGaSessionId(),
+        captured_at: new Date().toISOString(),
+        ...overrides,
+      });
+    }
+
+    function persistAttribution(email = "") {
+      const snapshot = buildAttributionSnapshot();
+      localStorage.setItem(ATTR_STORAGE_KEY, JSON.stringify(snapshot));
+      if (email) {
+        localStorage.setItem(`${ATTR_STORAGE_EMAIL_PREFIX}${email.toLowerCase()}`, JSON.stringify(snapshot));
+      }
+      return snapshot;
+    }
+
+    persistAttribution();
+
+    async function syncLeadToActiveCampaign(payload) {
+      try {
+        const response = await fetch(`${window.SUPABASE_CONFIG.url}/functions/v1/activecampaign-sync-lead`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: window.SUPABASE_CONFIG.anonKey,
+            Authorization: `Bearer ${window.SUPABASE_CONFIG.anonKey}`
+          },
+          body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+          const result = await response.json().catch(() => ({}));
+          console.error("Erro ao sincronizar lead no ActiveCampaign:", result.error || response.statusText);
+        }
+      } catch (error) {
+        console.error("Falha ao chamar integração com ActiveCampaign:", error);
+      }
+    }
+
+    form.addEventListener("submit", async e => {
+      e.preventDefault();
+      msgBox.className = "msg-box";
+      msgBox.textContent = "";
+
+      const nome          = document.getElementById("nome").value.trim();
+      const email         = document.getElementById("email").value.trim();
+      const cidade        = document.getElementById("cidade").value.trim();
+      const telefone      = document.getElementById("telefone").value.trim();
+      const area_formacao = document.getElementById("area_formacao").value.trim();
+      const empresa       = document.getElementById("empresa").value.trim();
+      const cargo         = document.getElementById("cargo").value.trim();
+      const formacaoRadio = document.querySelector('input[name="formacao_superior"]:checked');
+      const posRadio      = document.querySelector('input[name="pretende_pos"]:checked');
+
+      if (!formacaoRadio || !nome || !email || !telefone || !area_formacao || !empresa || !cargo || !posRadio) {
+        msgBox.className = "msg-box error-msg";
+        msgBox.textContent = "Preencha todos os campos obrigatórios (*).";
+        return;
+      }
+      if (!email.includes("@")) {
+        msgBox.className = "msg-box error-msg";
+        msgBox.textContent = "Informe um e-mail válido.";
+        return;
+      }
+      if (normalizePhone(telefone).length < 10) {
+        msgBox.className = "msg-box error-msg";
+        msgBox.textContent = "Informe um telefone válido com DDD.";
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Enviando...";
+      const attribution = buildAttributionSnapshot();
+
+      const { error } = await db.rpc("capture_lead", {
+        p_nome: nome,
+        p_email: email.toLowerCase(),
+        p_cidade: cidade || null,
+        p_telefone: normalizePhone(telefone),
+        p_possui_formacao_superior: formacaoRadio.value === "sim",
+        p_area_formacao: area_formacao,
+        p_empresa: empresa,
+        p_cargo: cargo,
+        p_pretende_pos: posRadio.value,
+        p_nome_trilha: TRILHA_NOME,
+        p_utm_source: attribution.utm_source || null,
+        p_utm_medium: attribution.utm_medium || null,
+        p_utm_campaign: attribution.utm_campaign || null,
+        p_utm_term: attribution.utm_term || null,
+        p_utm_content: attribution.utm_content || null,
+        p_gclid: attribution.gclid || null,
+        p_fbclid: attribution.fbclid || null,
+        p_landing_page_url: attribution.landing_page_url || null,
+        p_referrer_url: attribution.referrer_url || null
+      });
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Garantir meu acesso gratuito";
+
+      if (error) {
+        console.error("Erro ao capturar lead:", error);
+        msgBox.className = "msg-box error-msg";
+        msgBox.textContent = "Não foi possível enviar seu cadastro agora. Tente novamente em instantes.";
+        return;
+      }
+
+      await syncLeadToActiveCampaign({
+        nome,
+        email,
+        telefone: normalizePhone(telefone),
+        nome_trilha: TRILHA_NOME
+      });
+
+      persistAttribution(email);
+
+      window.location.href = `./cadastrar-senha.html?email=${encodeURIComponent(email)}&nome=${encodeURIComponent(nome)}&trilha=marketing`;
+    });
+  </script>
+</body>
+</html>
