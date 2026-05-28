@@ -1102,6 +1102,9 @@
         return;
       }
 
+      if (window.fbq) fbq("track", "Lead");
+      if (window.gtag) gtag("event", "generate_lead");
+
       await syncLeadToActiveCampaign({
         nome,
         email,
