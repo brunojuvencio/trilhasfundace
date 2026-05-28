@@ -1060,7 +1060,7 @@
         const uniqueTopics = [...new Set(lessons.map(l => cleanTitle(l.title)))];
         const lessonText = `composto pelas seguintes aulas: ${uniqueTopics.join(", ")}.`;
         const lessonLines = wrapCertificateText(lessonText, maxChars).slice(0, 4);
-        const lessonStartY = height * 0.415;
+        const lessonStartY = height * 0.43;
         lessonLines.forEach((line, index) => {
           const lineWidth = font.widthOfTextAtSize(line, lessonListSize);
           page.drawText(line, {
@@ -1071,7 +1071,6 @@
             color: rgb(0.22, 0.22, 0.22)
           });
         });
-        lastDrawnY = lessonStartY - ((lessonLines.length - 1) * lineGap);
       } else {
         const topicLines = wrapCertificateText(themesLabel, width > height ? 58 : 38).slice(0, 2);
         const topicsStartY = height * 0.485;
@@ -1085,17 +1084,16 @@
             color: rgb(0.22, 0.22, 0.22)
           });
         });
-        lastDrawnY = topicsStartY - ((topicLines.length - 1) * lineGap);
       }
 
-      // Data de emissão
+      // Data de emissão (posição fixa abaixo do bloco de aulas)
       const today = new Date();
       const dateStr = today.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
       const dateSize = width > height ? 9 : 7.5;
       const dateWidth = font.widthOfTextAtSize(dateStr, dateSize);
       page.drawText(dateStr, {
         x: (width - dateWidth) / 2,
-        y: lastDrawnY - 24,
+        y: height * 0.30,
         size: dateSize,
         font,
         color: rgb(0.22, 0.22, 0.22)
