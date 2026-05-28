@@ -1025,79 +1025,69 @@
       const page = pdfDoc.getPages()[0];
       const width = page.getWidth();
       const height = page.getHeight();
-      const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-      const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+      const fontBold   = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+      const font       = await pdfDoc.embedFont(StandardFonts.Helvetica);
+      const fontItalic = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
 
-      const name = certificateName();
-      const themes = completedThemes();
-      const themesLabel = themes.length
-        ? themes.join(" • ")
-        : "Trilha completa";
-
+      const name     = certificateName();
       const nameSize = width > height ? 24 : 19;
-      const topicsSize = width > height ? 7 : 5.5;
-      const titleWidth = fontBold.widthOfTextAtSize(name, nameSize);
+      const bodySize = width > height ? 9  : 7.5;
+      const lineGap  = width > height ? 13 : 10;
+      const ink      = rgb(0.15, 0.15, 0.15);
+      const inkSoft  = rgb(0.22, 0.22, 0.22);
 
-      page.drawText(name, {
-        x: (width - titleWidth) / 2,
-        y: height * 0.545,
-        size: nameSize,
-        font: fontBold,
-        color: rgb(0.15, 0.15, 0.15)
-      });
+      const drawCentered = (text, y, sz, fnt, color) => {
+        const tw = fnt.widthOfTextAtSize(text, sz);
+        page.drawText(text, { x: (width - tw) / 2, y, size: sz, font: fnt, color });
+      };
 
+      // "A FUNDACE certifica que"
+      drawCentered("A FUNDACE certifica que", height * 0.62, bodySize, font, inkSoft);
+
+      // Nome da pessoa
+      drawCentered(name, height * 0.545, nameSize, fontBold, ink);
+
+      // "cumpriu a grade do curso"
+      drawCentered("cumpriu a grade do curso", height * 0.48, bodySize, fontItalic, inkSoft);
+
+      // Nome da trilha
+      const courseTitle = currentCourse?.title || "";
+      if (courseTitle) {
+        drawCentered(courseTitle, height * 0.44, width > height ? 13 : 10, fontBold, ink);
+      }
+
+      // Lista de aulas ou temas concluídos
       const isDynamicTrail = currentCourse?.id !== "ifrs" && currentCourse?.id !== "gestao";
-      const lineGap = width > height ? 13 : 10;
-      let lastDrawnY;
-
       if (isDynamicTrail && lessons.length > 0) {
         const lessonListSize = width > height ? 7.5 : 6;
-        const maxChars = width > height ? 68 : 46;
+        const maxChars       = width > height ? 68   : 46;
         const cleanTitle = t => t
           .replace(/^Aula\s+\d+\s*[:\-–]\s*/i, "")
           .replace(/\s*[-–]\s*Parte\s+\d+\s*$/i, "")
           .trim();
         const uniqueTopics = [...new Set(lessons.map(l => cleanTitle(l.title)))];
-        const lessonText = `composto pelas seguintes aulas: ${uniqueTopics.join(", ")}.`;
-        const lessonLines = wrapCertificateText(lessonText, maxChars).slice(0, 4);
-        const lessonStartY = height * 0.43;
-        lessonLines.forEach((line, index) => {
-          const lineWidth = font.widthOfTextAtSize(line, lessonListSize);
-          page.drawText(line, {
-            x: (width - lineWidth) / 2,
-            y: lessonStartY - (index * lineGap),
-            size: lessonListSize,
-            font,
-            color: rgb(0.22, 0.22, 0.22)
-          });
+        const lessonText   = `composto pelas seguintes aulas: ${uniqueTopics.join(", ")}.`;
+        const lessonLines  = wrapCertificateText(lessonText, maxChars).slice(0, 4);
+        const lessonStartY = height * 0.385;
+        lessonLines.forEach((line, i) => {
+          const lw = font.widthOfTextAtSize(line, lessonListSize);
+          page.drawText(line, { x: (width - lw) / 2, y: lessonStartY - (i * lineGap), size: lessonListSize, font, color: inkSoft });
         });
       } else {
-        const topicLines = wrapCertificateText(themesLabel, width > height ? 58 : 38).slice(0, 2);
-        const topicsStartY = height * 0.485;
-        topicLines.forEach((line, index) => {
-          const lineWidth = font.widthOfTextAtSize(line, topicsSize);
-          page.drawText(line, {
-            x: (width - lineWidth) / 2,
-            y: topicsStartY - (index * lineGap),
-            size: topicsSize,
-            font,
-            color: rgb(0.22, 0.22, 0.22)
-          });
+        const themes      = completedThemes();
+        const themesLabel = themes.length ? themes.join(" • ") : "Trilha completa";
+        const topicsSize  = width > height ? 7 : 5.5;
+        const topicLines  = wrapCertificateText(themesLabel, width > height ? 58 : 38).slice(0, 2);
+        const topicsStartY = height * 0.385;
+        topicLines.forEach((line, i) => {
+          const lw = font.widthOfTextAtSize(line, topicsSize);
+          page.drawText(line, { x: (width - lw) / 2, y: topicsStartY - (i * lineGap), size: topicsSize, font, color: inkSoft });
         });
       }
 
-      // Data de emissão (posição fixa abaixo do bloco de aulas)
-      const today = new Date();
-      const dateStr = today.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
-      const dateSize = width > height ? 9 : 7.5;
-      const dateWidth = font.widthOfTextAtSize(dateStr, dateSize);
-      page.drawText(dateStr, {
-        x: (width - dateWidth) / 2,
-        y: height * 0.30,
-        size: dateSize,
-        font,
-        color: rgb(0.22, 0.22, 0.22)
-      });
+      // Data de emissão
+      const dateStr = new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+      drawCentered(dateStr, height * 0.30, bodySize, font, inkSoft);
 
       const output = await pdfDoc.save();
       const blob = new Blob([output], { type: "application/pdf" });
