@@ -180,6 +180,53 @@
     }
     .section-eyebrow::before { content: ""; width: 20px; height: 2px; background: var(--yellow); border-radius: 1px; }
 
+    /* CONTEÚDO PROGRAMÁTICO */
+    .themes-header { margin-bottom: 64px; }
+    .themes-title {
+      font-size: clamp(2rem, 3.5vw, 3rem); font-weight: 800;
+      letter-spacing: -0.04em; line-height: 1.05;
+      color: var(--ink); max-width: 18ch;
+    }
+    .themes-sub {
+      font-size: 0.96rem; color: rgba(17,17,17,0.5);
+      line-height: 1.72; max-width: 52ch; margin-top: 14px; font-weight: 400;
+    }
+    .themes-list { display: grid; gap: 0; border: 1.5px solid rgba(17,17,17,0.1); border-radius: 20px; overflow: hidden; }
+    .theme-row {
+      display: grid; grid-template-columns: 100px 1fr;
+      border-bottom: 1.5px solid rgba(17,17,17,0.1);
+      background: var(--white); transition: background 0.2s;
+    }
+    .theme-row:last-child { border-bottom: none; }
+    .theme-row:hover { background: #fff9ee; }
+    .theme-num-col {
+      display: flex; align-items: center; justify-content: center;
+      border-right: 1.5px solid rgba(17,17,17,0.08); padding: 36px 20px;
+    }
+    .theme-big-num {
+      font-size: 2.8rem; font-weight: 900; letter-spacing: -0.06em;
+      color: rgba(254,183,55,0.22); line-height: 1;
+    }
+    .theme-body { padding: 36px; }
+    .theme-lessons {
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--yellow-dark); margin-bottom: 10px;
+    }
+    .theme-body h3 {
+      font-size: 1.08rem; font-weight: 700; letter-spacing: -0.02em;
+      color: var(--ink); margin-bottom: 10px; line-height: 1.3;
+    }
+    .theme-body p {
+      font-size: 0.86rem; color: rgba(17,17,17,0.5);
+      line-height: 1.65; margin-bottom: 16px; font-weight: 300;
+    }
+    .theme-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .theme-tag {
+      font-size: 0.75rem; font-weight: 500; color: rgba(17,17,17,0.58);
+      padding: 4px 12px; border-radius: 6px;
+      background: rgba(17,17,17,0.05); border: 1px solid rgba(17,17,17,0.08);
+    }
+
     /* CONTENT BLOCKS (3 cards) */
     .content-blocks-header { margin-bottom: 64px; text-align: center; }
     .content-blocks-title {
@@ -486,6 +533,9 @@
       .step-card:first-child { border-radius: 20px 20px 0 0; }
       .step-card:last-child  { border-radius: 0 0 20px 20px; }
       .hero-content { padding: 64px 24px; }
+      .theme-row { grid-template-columns: 64px 1fr; }
+      .theme-big-num { font-size: 1.8rem; }
+      .theme-body { padding: 28px 20px; }
       .content-blocks-grid { grid-template-columns: 1fr; }
       .tres-colunas-grid { grid-template-columns: 1fr; }
     }
@@ -570,6 +620,61 @@
       <span class="ticker-item">Posicionamento estratégico <span class="ticker-sep"></span></span>
     </div>
   </div>
+
+  <!-- CONTEÚDO PROGRAMÁTICO -->
+  <section class="section">
+    <div class="container">
+      <div class="themes-header">
+        <div class="section-eyebrow">Conteúdo programático</div>
+        <h2 class="themes-title">3 temas. 6 aulas. Do fundamento à prática.</h2>
+        <p class="themes-sub">Cada tema é abordado em duas aulas sequenciais — fundamentos e aplicação real, extraídos do currículo do MBA USP em Gestão de Marketing Estratégico.</p>
+      </div>
+      <div class="themes-list">
+        <div class="theme-row">
+          <div class="theme-num-col"><div class="theme-big-num">01</div></div>
+          <div class="theme-body">
+            <div class="theme-lessons">Aulas 1 e 2</div>
+            <h3>Gestão Estratégica e Marketing</h3>
+            <p>Compreenda os fundamentos da gestão estratégica aplicada ao marketing e como tomar decisões com visão de negócio.</p>
+            <div class="theme-tags">
+              <span class="theme-tag">Estratégia de marketing</span>
+              <span class="theme-tag">Gestão de marca</span>
+              <span class="theme-tag">Análise de mercado</span>
+              <span class="theme-tag">Decisão estratégica</span>
+            </div>
+          </div>
+        </div>
+        <div class="theme-row">
+          <div class="theme-num-col"><div class="theme-big-num">02</div></div>
+          <div class="theme-body">
+            <div class="theme-lessons">Aulas 3 e 4</div>
+            <h3>Segmentação de Mercado e Posicionamento</h3>
+            <p>Aprenda a identificar e segmentar públicos para criar posicionamentos que geram resultado e diferenciação.</p>
+            <div class="theme-tags">
+              <span class="theme-tag">Segmentação de público</span>
+              <span class="theme-tag">Personas e ICP</span>
+              <span class="theme-tag">Posicionamento de marca</span>
+              <span class="theme-tag">Proposta de valor</span>
+            </div>
+          </div>
+        </div>
+        <div class="theme-row">
+          <div class="theme-num-col"><div class="theme-big-num">03</div></div>
+          <div class="theme-body">
+            <div class="theme-lessons">Aulas 5 e 6</div>
+            <h3>Mídias Sociais e Leads Orgânicos em Marketing</h3>
+            <p>Entenda como gerar leads e construir presença digital com estratégias orgânicas eficientes.</p>
+            <div class="theme-tags">
+              <span class="theme-tag">Estratégia de conteúdo</span>
+              <span class="theme-tag">Geração de leads</span>
+              <span class="theme-tag">Mídias sociais</span>
+              <span class="theme-tag">Marketing orgânico</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- CONTEÚDO: 3 blocos -->
   <section class="section">
