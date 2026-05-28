@@ -56,6 +56,10 @@ const ploomesPipelineId = Number(Deno.env.get("PLOOMES_PIPELINE_ID") ?? "5000141
 const ploomesStageId = Number(Deno.env.get("PLOOMES_STAGE_ID") ?? "50008137");
 const defaultTrailName = "Trilha CONTIFRS";
 
+const acBaseUrl = (Deno.env.get("ACTIVECAMPAIGN_BASE_URL") ?? "").replace(/\/+$/, "");
+const acApiToken = Deno.env.get("ACTIVECAMPAIGN_API_TOKEN") ?? "";
+const AC_CONSULTANT_LIST_ID = "35";
+
 if (!supabaseUrl || !serviceRoleKey) {
   throw new Error("SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY são obrigatórios.");
 }
@@ -367,6 +371,85 @@ async function createInteractionRecord(contactId: number, content: string, dealI
   });
 }
 
+// ── ActiveCampaign helpers ──────────────────────────────────────────────────
+
+async function acFetch(path: string, init: RequestInit = {}) {
+  if (!acBaseUrl || !acApiToken) return null;
+
+  const response = await fetch(`${acBaseUrl}${path}`, {
+    ...init,
+    headers: {
+      "Api-Token": acApiToken,
+      "Content-Type": "application/json",
+      ...(init.headers ?? {}),
+    },
+  });
+
+  const text = await response.text();
+  try {
+    return text ? JSON.parse(text) as Record<string, unknown> : {};
+  } catch {
+    return { raw: text };
+  }
+}
+
+function splitName(nome: string) {
+  const parts = nome.trim().split(/\s+/).filter(Boolean);
+  return { firstName: parts[0] ?? "", lastName: parts.slice(1).join(" ") };
+}
+
+async function syncToActiveCampaign(lead: LeadRow): Promise<void> {
+  if (!acBaseUrl || !acApiToken) {
+    console.warn("[ploomes-sync-lead] AC não configurado — sync AC ignorado.");
+    return;
+  }
+
+  const { firstName, lastName } = splitName(lead.nome);
+  const phone = normalizePhone(lead.telefone ?? "");
+
+  const syncData = await acFetch("/api/3/contact/sync", {
+    method: "POST",
+    body: JSON.stringify({
+      contact: {
+        email: lead.email,
+        firstName: firstName || lead.nome,
+        lastName,
+        phone: phone || undefined,
+      },
+    }),
+  });
+
+  const contactId = String((syncData?.contact as Record<string, unknown>)?.id ?? "").trim();
+  if (!contactId) {
+    throw new Error("ActiveCampaign não retornou id de contato.");
+  }
+
+  // Verifica se já está na lista
+  const membershipData = await acFetch(`/api/3/contacts/${contactId}/contactLists`);
+  const memberships = Array.isArray(membershipData?.contactLists)
+    ? membershipData.contactLists as Array<Record<string, unknown>>
+    : [];
+
+  const alreadySubscribed = memberships.some(
+    item => String(item.list ?? "") === AC_CONSULTANT_LIST_ID && String(item.status ?? "") === "1",
+  );
+
+  if (!alreadySubscribed) {
+    await acFetch("/api/3/contactLists", {
+      method: "POST",
+      body: JSON.stringify({
+        contactList: {
+          list: AC_CONSULTANT_LIST_ID,
+          contact: contactId,
+          status: 1,
+        },
+      }),
+    });
+  }
+
+  console.info(`[ploomes-sync-lead] AC sync ok. contactId=${contactId}, listId=${AC_CONSULTANT_LIST_ID}, alreadySubscribed=${alreadySubscribed}`);
+}
+
 Deno.serve(async request => {
   if (request.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -428,6 +511,15 @@ Deno.serve(async request => {
     await markLead(email, "synced", String(contact.Id), String(dealId));
     console.info(`[ploomes-sync-lead] Lead ${email} sincronizado com sucesso. contactId=${contact.Id}, dealId=${dealId}`);
 
+    // Sync AC em paralelo — falha não bloqueia resposta
+    let acSyncError: string | null = null;
+    try {
+      await syncToActiveCampaign(lead);
+    } catch (acErr) {
+      acSyncError = acErr instanceof Error ? acErr.message : "Erro desconhecido no AC sync.";
+      console.error(`[ploomes-sync-lead] AC sync falhou (não crítico): ${acSyncError}`);
+    }
+
     return json({
       ok: true,
       contactId: contact.Id,
@@ -437,6 +529,8 @@ Deno.serve(async request => {
       historyDealsCount: existingDeals.length,
       pipelineId: ploomesPipelineId,
       stageId: ploomesStageId,
+      acListId: AC_CONSULTANT_LIST_ID,
+      acSyncError,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Erro ao sincronizar lead com o Ploomes.";
