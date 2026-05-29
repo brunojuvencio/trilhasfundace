@@ -1122,6 +1122,7 @@
 
       if (window.fbq) fbq("track", "Lead");
       if (window.gtag) gtag("event", "generate_lead");
+      if (window.lintrk) lintrk("track", { conversion_id: 28320761 });
 
       await syncLeadToActiveCampaign({
         nome,
