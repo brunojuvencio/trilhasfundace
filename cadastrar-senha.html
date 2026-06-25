@@ -728,22 +728,32 @@
       submitBtn.textContent = "Acessar a trilha";
 
       if (error) {
-        if (error.message.includes("already registered")) {
+        const alreadyExists = error.message.includes("already registered") || error.message.includes("User already registered");
+
+        if (alreadyExists) {
           const { error: loginError } = await db.auth.signInWithPassword({ email: emailParam, password });
           if (!loginError) {
             window.location.href = `./Index.html?trilha=${currentTrailSlug()}`;
             return;
           }
+          showMessage("error-msg", "Este e-mail já possui cadastro. Acesse a trilha pelo link de login ou tente a senha que usou anteriormente.");
+          return;
         }
 
-        showMessage("error-msg", "Erro ao criar conta. Tente novamente.");
+        if (error.message.includes("Password should be")) {
+          showMessage("error-msg", "A senha deve ter ao menos 6 caracteres.");
+          return;
+        }
+
+        console.error("[cadastrar-senha] signUp error:", error.message);
+        showMessage("error-msg", "Não foi possível criar sua conta. Tente novamente ou entre em contato com comunicacao@fundace.org.br.");
         return;
       }
 
       if (data.session) {
         window.location.href = `./Index.html?trilha=${currentTrailSlug()}`;
       } else {
-        showMessage("success", "Cadastro realizado com sucesso. Faça login para acessar a trilha.");
+        showMessage("success", "Cadastro realizado! Verifique seu e-mail para confirmar o acesso.");
       }
     }
 
