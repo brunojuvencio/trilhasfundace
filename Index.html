@@ -684,7 +684,7 @@
     const courses = {
       ifrs: {
         id: "ifrs",
-        title: "MBA Contabilidade em IFRS",
+        title: "Trilha de Contabilidade em IFRS",
         subtitle: "Contabilidade, tributação e normas internacionais na prática.",
         description: "Conteúdos extraídos das aulas do MBA USP Contabilidade em IFRS. Assista na ordem, avance no seu ritmo e compreenda como as informações contábeis e fiscais impactam a gestão e a tomada de decisão.",
         pill: "4 temas · 8 aulas",
@@ -902,6 +902,59 @@
               "Redução de custos e aumento de eficiência.",
               "Fundamentos de Inteligência Artificial.",
               "Machine Learning aplicado à operação."
+            ]
+          }
+        ]
+      },
+      financas: {
+        id: "financas",
+        title: "Trilha de Finanças",
+        subtitle: "Análise de investimentos, indicadores financeiros e gestão de risco.",
+        description: "Conteúdos extraídos das aulas do MBA USP em Finanças. Aprenda a avaliar investimentos, interpretar indicadores e tomar decisões financeiras com mais segurança e método.",
+        pill: "3 aulas",
+        ctaUrl: "https://www.fundace.org.br/curso/mba-usp-ead-em-financas",
+        certificateSlug: "financas",
+        lessons: [
+          {
+            id: "financas-1",
+            title: "Matemática Financeira — VPL x TIR",
+            duration: "Aula 1",
+            level: "Finanças · Fundamentos",
+            teacher: "Eduardo Mendes",
+            videoUrl: "https://www.youtube.com/watch?v=s3yZvIX7004",
+            eyebrow: "Aula 1 · liberada",
+            highlights: [
+              "Avalie investimentos com base em VPL e TIR.",
+              "Entenda quando cada indicador deve ser usado.",
+              "Tome decisões de investimento com critérios objetivos."
+            ]
+          },
+          {
+            id: "financas-2",
+            title: "Análise de Indicadores Financeiros",
+            duration: "Aula 2",
+            level: "Finanças · Indicadores",
+            teacher: "Vinícius Magnani",
+            videoUrl: "https://youtu.be/umEW9ss9lkY",
+            eyebrow: "Aula 2",
+            highlights: [
+              "Interprete os principais indicadores financeiros.",
+              "Transforme números em decisões estratégicas.",
+              "Analise a saúde financeira de uma empresa."
+            ]
+          },
+          {
+            id: "financas-3",
+            title: "Risco e Retorno de Ativos",
+            duration: "Aula 3",
+            level: "Finanças · Risco",
+            teacher: "Vinícius Magnani",
+            videoUrl: "https://youtu.be/akzU40-B7xQ",
+            eyebrow: "Aula 3 · Encerramento da trilha",
+            highlights: [
+              "Equilibre risco e retorno nas decisões de investimento.",
+              "Aplique fundamentos de finanças no contexto real.",
+              "Conclua a trilha com visão financeira mais estratégica."
             ]
           }
         ]
@@ -1389,6 +1442,7 @@
       const normalized = normalizePlain(raw);
       if (normalized.includes("gestao")) return "gestao";
       if (normalized.includes("contifrs") || normalized.includes("ifrs") || normalized.includes("contabilidade")) return "ifrs";
+      if (normalized.includes("financas")) return "financas";
       const dynamicCourse = Object.values(courses).find(course => {
         const candidates = [course.id, course.title, course.subtitle, course.nome, course.slug].map(normalizePlain);
         return candidates.includes(normalized);

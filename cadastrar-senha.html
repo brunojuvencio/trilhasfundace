@@ -424,9 +424,14 @@
       return normalizeText(value).includes("marketing");
     }
 
+    function isFinancasTrailName(value) {
+      return normalizeText(value).includes("financas") || normalizeText(value).includes("finanças");
+    }
+
     function currentTrailSlug(context = offerState.leadContext) {
       if (isGestaoTrailName(context?.nome_trilha) || trilhaParam === "gestao") return "gestao";
       if (isMarketingTrailName(context?.nome_trilha) || trilhaParam === "marketing") return "marketing";
+      if (isFinancasTrailName(context?.nome_trilha) || trilhaParam === "financas") return "financas";
       return "ifrs";
     }
 
@@ -445,6 +450,12 @@
         modalTitle.textContent = "Sua trilha começa na operação. O próximo passo pode ser estratégico.";
         modalCopy.textContent = "Profissionais que conectam produção, dados e IA costumam crescer quando conseguem transformar rotina operacional em decisão. O MBA USP em Gestão de Produção com Aplicações em IA aprofunda esse caminho com professores da FEA-RP/USP e aplicação prática.";
         modalStrong.innerHTML = "Se quiser entender a estrutura, o formato e o investimento do programa completo, nosso time explica — sem compromisso.";
+      } else if (slug === "financas") {
+        document.title = "Crie sua senha | Trilha Finanças Fundace";
+        backLink.href = "./captacao-financas.html";
+        modalTitle.textContent = "A trilha é o começo. O próximo passo pode transformar sua carreira em finanças.";
+        modalCopy.textContent = "Profissionais que dominam finanças de verdade costumam querer ir além de uma introdução. O MBA USP em Finanças da Fundace é o programa completo — professores da FEA-RP/USP, certificado USP e aplicação real de análise financeira, investimentos e gestão de risco.";
+        modalStrong.innerHTML = "O programa tem investimento médio de <strong>R$ 500 por mês</strong>. Se quiser entender a estrutura e o formato, nosso time explica — sem compromisso.";
       } else {
         document.title = "Crie sua senha | Trilha IFRS Fundace";
         backLink.href = "./captacao.html";
@@ -462,7 +473,10 @@
 
     updateTrailCopy();
 
-    if (!emailParam) window.location.href = trilhaParam === "gestao" ? "./captacao-gestao.html" : "./captacao.html";
+    if (!emailParam) {
+      const fallbackMap = { gestao: "./captacao-gestao.html", marketing: "./captacao-marketing.html", financas: "./captacao-financas.html" };
+      window.location.href = fallbackMap[trilhaParam] || "./captacao.html";
+    }
 
     function readCookie(name) {
       const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
