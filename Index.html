@@ -592,11 +592,11 @@
             <!-- CTA Banner de acesso ao curso -->
             <div class="access-cta-banner" id="access-cta-banner">
               <div class="access-cta-banner-text">
-                <span>Trilha em Contabilidade em IFRS · Fundace / FEA-RP · USP</span>
-                <h3>Quer aprofundar com método e sair com certificado?</h3>
-                <p>Acesse o MBA USP Contabilidade em IFRS completo: conteúdo avançado, corpo docente da FEA-RP/USP e certificado emitido pela Fundace.</p>
+                <span id="cta-banner-eyebrow">Trilha em Contabilidade em IFRS · Fundace / FEA-RP · USP</span>
+                <h3 id="cta-banner-title">Quer aprofundar com método e sair com certificado?</h3>
+                <p id="cta-banner-body">Acesse o MBA USP Contabilidade em IFRS completo: conteúdo avançado, corpo docente da FEA-RP/USP e certificado emitido pela Fundace.</p>
               </div>
-              <a href="https://www.fundace.org.br/lp/mba-ead-usp-contabilidade-em-ifrs" target="_blank" rel="noreferrer" class="access-cta-btn">
+              <a id="cta-banner-link" href="https://www.fundace.org.br/lp/mba-ead-usp-contabilidade-em-ifrs" target="_blank" rel="noreferrer" class="access-cta-btn">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
                 Acessar o curso completo
               </a>
@@ -689,6 +689,9 @@
         description: "Conteúdos extraídos das aulas do MBA USP Contabilidade em IFRS. Assista na ordem, avance no seu ritmo e compreenda como as informações contábeis e fiscais impactam a gestão e a tomada de decisão.",
         pill: "4 temas · 8 aulas",
         ctaUrl: "https://www.fundace.org.br/lp/mba-ead-usp-contabilidade-em-ifrs",
+        ctaEyebrow: "Trilha em Contabilidade em IFRS · Fundace / FEA-RP · USP",
+        ctaTitle: "Quer aprofundar com método e sair com certificado?",
+        ctaBody: "Acesse o MBA USP Contabilidade em IFRS completo: conteúdo avançado, corpo docente da FEA-RP/USP e certificado emitido pela Fundace.",
         certificateSlug: "ifrs",
         lessons: [
       {
@@ -910,9 +913,12 @@
         id: "financas",
         title: "Trilha de Finanças",
         subtitle: "Análise de investimentos, indicadores financeiros e gestão de risco.",
-        description: "Conteúdos extraídos das aulas do MBA USP em Finanças. Aprenda a avaliar investimentos, interpretar indicadores e tomar decisões financeiras com mais segurança e método.",
+        description: "Aprenda a avaliar investimentos, interpretar indicadores e tomar decisões financeiras com mais segurança e método.",
         pill: "3 aulas",
         ctaUrl: "https://www.fundace.org.br/curso/mba-usp-ead-em-financas",
+        ctaEyebrow: "Trilha de Finanças · Fundace / FEA-RP · USP",
+        ctaTitle: "Quer aprofundar com método e sair com certificado?",
+        ctaBody: "Acesse o MBA USP em Finanças completo: conteúdo avançado, corpo docente da FEA-RP/USP e certificado emitido pela Fundace.",
         certificateSlug: "financas",
         lessons: [
           {
@@ -1584,6 +1590,14 @@
         ctaBanner.style.display = "";
         topbarCta.href = currentCourse.ctaUrl;
         topbarCta.style.display = "";
+        const bannerLink = document.getElementById("cta-banner-link");
+        if (bannerLink) bannerLink.href = currentCourse.ctaUrl;
+        const bannerEyebrow = document.getElementById("cta-banner-eyebrow");
+        if (bannerEyebrow && currentCourse.ctaEyebrow) bannerEyebrow.textContent = currentCourse.ctaEyebrow;
+        const bannerTitle = document.getElementById("cta-banner-title");
+        if (bannerTitle && currentCourse.ctaTitle) bannerTitle.textContent = currentCourse.ctaTitle;
+        const bannerBody = document.getElementById("cta-banner-body");
+        if (bannerBody && currentCourse.ctaBody) bannerBody.textContent = currentCourse.ctaBody;
       } else {
         ctaBanner.style.display = "none";
         topbarCta.style.display = "none";
