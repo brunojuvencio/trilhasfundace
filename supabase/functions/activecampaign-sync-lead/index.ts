@@ -40,6 +40,8 @@ const activeCampaignGestaoListId = (Deno.env.get("ACTIVECAMPAIGN_GESTAO_LIST_ID"
 const activeCampaignGestaoListName = (Deno.env.get("ACTIVECAMPAIGN_GESTAO_LIST_NAME") ?? "TrilhaGestaoProducaoIA").trim();
 const activeCampaignFinancasListId = (Deno.env.get("ACTIVECAMPAIGN_FINANCAS_LIST_ID") ?? "50").trim();
 const activeCampaignFinancasListName = (Deno.env.get("ACTIVECAMPAIGN_FINANCAS_LIST_NAME") ?? "TrilhaFinancas").trim();
+const activeCampaignMarketingListId = (Deno.env.get("ACTIVECAMPAIGN_MARKETING_LIST_ID") ?? "35").trim();
+const activeCampaignMarketingListName = (Deno.env.get("ACTIVECAMPAIGN_MARKETING_LIST_NAME") ?? "TrilhaMarketing").trim();
 const activeCampaignTrailFieldId = (Deno.env.get("ACTIVECAMPAIGN_TRAIL_FIELD_ID") ?? "").trim();
 
 if (!supabaseUrl || !serviceRoleKey) {
@@ -122,6 +124,11 @@ function isFinancasTrail(lead: LeadRow) {
   return trailName.includes("financas") || trailName.includes("finanças");
 }
 
+function isMarketingTrail(lead: LeadRow) {
+  const trailName = normalizeText(cleanString(lead.nome_trilha));
+  return trailName.includes("marketing");
+}
+
 function splitName(nome: string) {
   const parts = nome.trim().split(/\s+/).filter(Boolean);
   return {
@@ -192,6 +199,13 @@ function getListConfigForLead(lead: LeadRow) {
     return {
       id: activeCampaignFinancasListId,
       name: activeCampaignFinancasListName,
+    };
+  }
+
+  if (isMarketingTrail(lead)) {
+    return {
+      id: activeCampaignMarketingListId,
+      name: activeCampaignMarketingListName,
     };
   }
 
