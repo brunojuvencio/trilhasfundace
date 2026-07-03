@@ -671,7 +671,7 @@
     const db = createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
     const initialTrailParam = (new URLSearchParams(window.location.search).get("trilha") || "").trim().toLowerCase();
     let currentUser = null;
-    let allowedTrail = "";
+    let allowedTrails = [];
     let lastTrackedLessonId = null;
 
     (async () => {
@@ -1505,6 +1505,12 @@
     }
 
     async function resolveAllowedTrail(session) {
+      // Suporte a múltiplas trilhas via metadata.trilhas (array)
+      const metadataTrilhas = session.user.user_metadata?.trilhas;
+      if (Array.isArray(metadataTrilhas) && metadataTrilhas.length > 0) {
+        return metadataTrilhas.map(t => normalizeTrailSlug(t)).filter(Boolean);
+      }
+
       const metadataTrail = normalizeTrailSlug(session.user.user_metadata?.trilha);
       let leadTrail = "";
 
@@ -1533,21 +1539,23 @@
         }
       }
 
-      return resolved;
+      return resolved ? [resolved] : [];
     }
 
     function renderCourseSelector() {
       const grid = document.getElementById("course-grid");
       grid.innerHTML = "";
       const sortedCourses = Object.values(courses).sort((a, b) => {
-        if (allowedTrail) {
-          if (a.id === allowedTrail) return -1;
-          if (b.id === allowedTrail) return 1;
+        if (allowedTrails.length > 0) {
+          const aAllowed = allowedTrails.includes(a.id);
+          const bAllowed = allowedTrails.includes(b.id);
+          if (aAllowed && !bAllowed) return -1;
+          if (!aAllowed && bAllowed) return 1;
         }
         return 0;
       });
       sortedCourses.forEach(course => {
-        const isBlocked = allowedTrail && course.id !== allowedTrail;
+        const isBlocked = allowedTrails.length > 0 && !allowedTrails.includes(course.id);
         const btn = document.createElement("button");
         btn.className = isBlocked ? "course-card locked-trail" : "course-card";
         if (!isBlocked) {
@@ -1566,7 +1574,7 @@
     }
 
     async function selectCourse(courseId) {
-      if (allowedTrail && courseId !== allowedTrail) {
+      if (allowedTrails.length > 0 && !allowedTrails.includes(courseId)) {
         showCourseSelector();
         return;
       }
@@ -1626,10 +1634,10 @@
       state.user = { name: userName };
 
       await loadDynamicCourses();
-      allowedTrail = await resolveAllowedTrail(session);
+      allowedTrails = await resolveAllowedTrail(session);
 
       const requestedTrail = courses[initialTrailParam] ? initialTrailParam : "";
-      const resolvedTrail = allowedTrail || requestedTrail;
+      const resolvedTrail = allowedTrails.length === 1 ? allowedTrails[0] : (allowedTrails.includes(requestedTrail) ? requestedTrail : requestedTrail);
 
       renderCourseSelector();
 
