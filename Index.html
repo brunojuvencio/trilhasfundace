@@ -447,9 +447,20 @@
       box-shadow: var(--shadow);
     }
     .course-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-strong); border-color: var(--brand-yellow); }
-    .course-card.locked-trail { opacity: 0.45; cursor: not-allowed; filter: grayscale(0.4); }
+    .course-card.locked-trail { cursor: default; }
     .course-card.locked-trail:hover { transform: none; box-shadow: var(--shadow); border-color: rgba(0,0,0,0.08); }
+    .course-card-locked-content { opacity: 0.5; filter: grayscale(0.35); }
     .course-card-locked-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; font-weight: 700; color: #888; margin-top: 4px; }
+    .course-card-unlock-btn {
+      margin-top: 16px; display: inline-flex; align-items: center; gap: 6px;
+      font: inherit; font-size: 0.85rem; font-weight: 700; color: var(--brand-black);
+      background: var(--brand-yellow); border: none; border-radius: 999px;
+      padding: 10px 18px; cursor: pointer; box-shadow: 0 4px 14px rgba(254,183,55,0.3);
+    }
+    .course-card-unlock-btn:hover { filter: brightness(1.05); }
+    .course-card-unlock-btn:disabled { opacity: 0.6; cursor: wait; }
+    .course-card-unlock-status { margin-top: 10px; font-size: 0.8rem; color: #c0392b; }
+    .course-card-unlock-status.success { color: #1a8a4a; }
     .course-card h3 { font-size: 1.3rem; margin-bottom: 10px; }
     .course-card p { font-size: 0.92rem; color: var(--brand-ink-soft); line-height: 1.65; margin: 0 0 20px; }
     .course-card-eyebrow {
@@ -905,6 +916,59 @@
               "Redução de custos e aumento de eficiência.",
               "Fundamentos de Inteligência Artificial.",
               "Machine Learning aplicado à operação."
+            ]
+          }
+        ]
+      },
+      "gestao-projetos": {
+        id: "gestao-projetos",
+        title: "Trilha de Gestão de Projetos",
+        subtitle: "A gestão de projetos evoluiu. Você está acompanhando essa transformação?",
+        description: "Descubra como Inteligência Artificial, Design Thinking e gestão de processos estão transformando a maneira de conduzir projetos e prepare-se para os desafios da nova era.",
+        pill: "3 aulas",
+        ctaUrl: null,
+        certificateSlug: "gestao-projetos",
+        lessons: [
+          {
+            id: "gestao-projetos-1",
+            title: "Gestão de Projetos na Era da IA",
+            duration: "Aula 1",
+            level: "Cenário atual e caminhos possíveis",
+            teacher: "A confirmar",
+            videoUrl: "https://vimeo.com/1113659396/010bc6947d",
+            eyebrow: "Aula 1 · liberada",
+            highlights: [
+              "Como a IA está transformando a gestão de projetos.",
+              "Tendências e desafios para os próximos anos.",
+              "Como utilizar a IA de forma estratégica na gestão."
+            ]
+          },
+          {
+            id: "gestao-projetos-2",
+            title: "Criar e entregar",
+            duration: "Aula 2",
+            level: "A ponte entre Design Thinking e Gestão de Projetos",
+            teacher: "A confirmar",
+            videoUrl: "https://vimeo.com/1116191465/daae202809",
+            eyebrow: "Aula 2",
+            highlights: [
+              "Como transformar necessidades reais em soluções de valor.",
+              "Integração entre criatividade, inovação e execução.",
+              "Estratégias para desenvolver projetos mais eficientes."
+            ]
+          },
+          {
+            id: "gestao-projetos-3",
+            title: "Projetos e Processos",
+            duration: "Aula 3",
+            level: "Competências para liderar a nova era",
+            teacher: "A confirmar",
+            videoUrl: "https://www.youtube.com/watch?v=SPd31bn-QYc",
+            eyebrow: "Aula 3 · Encerramento da trilha",
+            highlights: [
+              "Competências mais valorizadas no gestor atual.",
+              "Como conectar processos, inovação e tecnologia.",
+              "Caminhos para uma atuação mais estratégica."
             ]
           }
         ]
@@ -1446,6 +1510,7 @@
       const raw = String(value || "").trim().toLowerCase();
       if (courses[raw]) return raw;
       const normalized = normalizePlain(raw);
+      if (normalized.includes("projetos")) return "gestao-projetos";
       if (normalized.includes("gestao")) return "gestao";
       if (normalized.includes("contifrs") || normalized.includes("ifrs") || normalized.includes("contabilidade")) return "ifrs";
       if (normalized.includes("financas")) return "financas";
@@ -1556,21 +1621,80 @@
       });
       sortedCourses.forEach(course => {
         const isBlocked = allowedTrails.length > 0 && !allowedTrails.includes(course.id);
-        const btn = document.createElement("button");
-        btn.className = isBlocked ? "course-card locked-trail" : "course-card";
+        const card = document.createElement(isBlocked ? "div" : "button");
+        card.className = isBlocked ? "course-card locked-trail" : "course-card";
         if (!isBlocked) {
-          btn.addEventListener("click", () => selectCourse(course.id));
+          card.addEventListener("click", () => selectCourse(course.id));
         }
-        btn.innerHTML = `
-          <div class="course-card-eyebrow">${escapeHtml(course.pill)}</div>
-          <h3>${escapeHtml(course.title)}</h3>
-          <p>${escapeHtml(course.description)}</p>
-          ${isBlocked
-            ? `<div class="course-card-locked-badge">🔒 Acesso não disponível para esta trilha</div>`
-            : `<div class="course-card-cta">Acessar trilha →</div>`}
-        `;
-        grid.appendChild(btn);
+        card.innerHTML = isBlocked
+          ? `
+            <div class="course-card-locked-content">
+              <div class="course-card-eyebrow">${escapeHtml(course.pill)}</div>
+              <h3>${escapeHtml(course.title)}</h3>
+              <p>${escapeHtml(course.description)}</p>
+              <div class="course-card-locked-badge">🔒 Acesso não disponível para esta trilha</div>
+            </div>
+            <button type="button" class="course-card-unlock-btn" data-trilha-id="${escapeHtml(course.id)}">Quero me inscrever nesta trilha</button>
+            <div class="course-card-unlock-status"></div>
+          `
+          : `
+            <div class="course-card-eyebrow">${escapeHtml(course.pill)}</div>
+            <h3>${escapeHtml(course.title)}</h3>
+            <p>${escapeHtml(course.description)}</p>
+            <div class="course-card-cta">Acessar trilha →</div>
+          `;
+        grid.appendChild(card);
+
+        if (isBlocked) {
+          const unlockBtn = card.querySelector(".course-card-unlock-btn");
+          const statusEl = card.querySelector(".course-card-unlock-status");
+          unlockBtn.addEventListener("click", event => {
+            event.stopPropagation();
+            requestTrilhaAccess(course.id, unlockBtn, statusEl);
+          });
+        }
       });
+    }
+
+    async function requestTrilhaAccess(trilhaId, buttonEl, statusEl) {
+      buttonEl.disabled = true;
+      buttonEl.textContent = "Liberando acesso...";
+      if (statusEl) {
+        statusEl.textContent = "";
+        statusEl.classList.remove("success");
+      }
+
+      try {
+        const { data: { session } } = await db.auth.getSession();
+        if (!session) throw new Error("Sessão expirada. Faça login novamente.");
+
+        const response = await fetch(`${window.SUPABASE_CONFIG.url}/functions/v1/trilha-self-enroll`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: window.SUPABASE_CONFIG.anonKey,
+            Authorization: `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({ trilhaSlug: trilhaId })
+        });
+
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || result.error) {
+          throw new Error(result.error || "Não foi possível liberar o acesso agora.");
+        }
+
+        allowedTrails = Array.isArray(result.trilhas) && result.trilhas.length
+          ? result.trilhas
+          : [...new Set([...allowedTrails, trilhaId])];
+        currentUser.user_metadata = { ...(currentUser.user_metadata || {}), trilhas: allowedTrails };
+
+        renderCourseSelector();
+      } catch (error) {
+        console.error("Erro ao liberar trilha:", error);
+        if (statusEl) statusEl.textContent = error.message || "Erro ao liberar acesso. Tente novamente.";
+        buttonEl.disabled = false;
+        buttonEl.textContent = "Quero me inscrever nesta trilha";
+      }
     }
 
     async function selectCourse(courseId) {
