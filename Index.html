@@ -680,7 +680,6 @@
   <script>
     const { createClient } = supabase;
     const db = createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
-    const initialTrailParam = (new URLSearchParams(window.location.search).get("trilha") || "").trim().toLowerCase();
     let currentUser = null;
     let allowedTrails = [];
     let lastTrackedLessonId = null;
@@ -1760,22 +1759,8 @@
       await loadDynamicCourses();
       allowedTrails = await resolveAllowedTrail(session);
 
-      const requestedTrail = courses[initialTrailParam] ? initialTrailParam : "";
-      const resolvedTrail = allowedTrails.length === 1 ? allowedTrails[0] : (allowedTrails.includes(requestedTrail) ? requestedTrail : requestedTrail);
-
       renderCourseSelector();
-
-      if (resolvedTrail) {
-        try {
-          await selectCourse(resolvedTrail);
-        } catch (err) {
-          console.error("Erro ao carregar trilha:", err);
-          document.getElementById("course-selector").style.display = "";
-          document.getElementById("portal-wrapper").style.display = "none";
-        }
-      } else {
-        document.getElementById("course-selector").style.display = "";
-      }
+      document.getElementById("course-selector").style.display = "";
     })();
 
     document.getElementById("logout-btn").addEventListener("click", async () => {
