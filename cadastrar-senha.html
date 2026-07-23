@@ -420,6 +420,11 @@
       return trailName.includes("gestao") && trailName.includes("producao");
     }
 
+    function isGestaoProjetosTrailName(value) {
+      const trailName = normalizeText(value);
+      return trailName.includes("gestao") && trailName.includes("projetos");
+    }
+
     function isMarketingTrailName(value) {
       return normalizeText(value).includes("marketing");
     }
@@ -429,6 +434,7 @@
     }
 
     function currentTrailSlug(context = offerState.leadContext) {
+      if (isGestaoProjetosTrailName(context?.nome_trilha) || trilhaParam === "gestao-projetos") return "gestao-projetos";
       if (isGestaoTrailName(context?.nome_trilha) || trilhaParam === "gestao") return "gestao";
       if (isMarketingTrailName(context?.nome_trilha) || trilhaParam === "marketing") return "marketing";
       if (isFinancasTrailName(context?.nome_trilha) || trilhaParam === "financas") return "financas";
@@ -444,6 +450,12 @@
         modalTitle.textContent = "A trilha é o começo. O próximo passo pode transformar sua carreira em marketing.";
         modalCopy.textContent = "Profissionais que dominam marketing estratégico de verdade costumam querer ir além de uma introdução. O MBA USP Gestão de Marketing Estratégico é o programa completo — professores da FEA-RP/USP, certificado USP e aplicação real de estratégia, posicionamento e geração de resultados.";
         modalStrong.innerHTML = "O programa tem investimento médio de <strong>R$ 500 por mês</strong>. Se quiser entender a estrutura e o formato, nosso time explica — sem compromisso.";
+      } else if (slug === "gestao-projetos") {
+        document.title = "Crie sua senha | Trilha Gestão de Projetos Fundace";
+        backLink.href = "./captacao-gestao-projetos.html";
+        modalTitle.textContent = "Essa é só a primeira parte da sua evolução em Gestão de Projetos.";
+        modalCopy.textContent = "A Trilha apresenta parte da metodologia utilizada no MBA com Certificado USP em Gestão de Projetos da FUNDACE, conectando fundamentos acadêmicos às demandas do mercado.";
+        modalStrong.innerHTML = "Se quiser conhecer a estrutura, o formato e o investimento do MBA completo, nosso time explica — sem compromisso.";
       } else if (slug === "gestao") {
         document.title = "Crie sua senha | Trilha Gestão Fundace";
         backLink.href = "./captacao-gestao.html";
@@ -474,7 +486,7 @@
     updateTrailCopy();
 
     if (!emailParam) {
-      const fallbackMap = { gestao: "./captacao-gestao.html", marketing: "./captacao-marketing.html", financas: "./captacao-financas.html" };
+      const fallbackMap = { gestao: "./captacao-gestao.html", "gestao-projetos": "./captacao-gestao-projetos.html", marketing: "./captacao-marketing.html", financas: "./captacao-financas.html" };
       window.location.href = fallbackMap[trilhaParam] || "./captacao.html";
     }
 
@@ -750,7 +762,8 @@
             window.location.href = `./Index.html?trilha=${currentTrailSlug()}`;
             return;
           }
-          showMessage("error-msg", "Este e-mail já possui cadastro. Acesse a trilha pelo link de login ou tente a senha que usou anteriormente.");
+          msgBox.className = "msg-box error-msg";
+          msgBox.innerHTML = 'Este e-mail já possui cadastro. <a href="./login.html" style="color: inherit; text-decoration: underline; font-weight: 700;">Acesse pelo login</a> com a senha que usou anteriormente.';
           return;
         }
 
