@@ -142,6 +142,19 @@ async function getLeadByEmail(email: string) {
   return rows[0] ?? null;
 }
 
+function normalizeTrilhaSlug(raw: string) {
+  const slug = raw.trim().toLowerCase();
+  if (TRILHAS[slug]) return slug;
+
+  const normalized = slug.normalize("NFD").replace(/[̀-ͯ]/g, "");
+  if (normalized.includes("projetos")) return "gestao-projetos";
+  if (normalized.includes("gestao")) return "gestao";
+  if (normalized.includes("contifrs") || normalized.includes("ifrs") || normalized.includes("contabilidade")) return "ifrs";
+  if (normalized.includes("financas")) return "financas";
+  if (normalized.includes("marketing")) return "marketing";
+  return "";
+}
+
 function currentTrilhas(userMetadata: Record<string, unknown> | null | undefined) {
   const metadata = userMetadata ?? {};
   if (Array.isArray(metadata.trilhas)) {
@@ -351,18 +364,19 @@ Deno.serve(async request => {
     return json({ error: "Body inválido." }, 400);
   }
 
-  const trilhaSlug = String(payload.trilhaSlug ?? "").trim().toLowerCase();
-  const trilha = TRILHAS[trilhaSlug];
-  if (!trilha) {
+  const rawSlug = String(payload.trilhaSlug ?? "").trim().toLowerCase();
+  const configKey = normalizeTrilhaSlug(rawSlug);
+  const trilha = TRILHAS[configKey];
+  if (!rawSlug || !trilha) {
     return json({ error: "Trilha inválida." }, 400);
   }
 
   const existingTrilhas = currentTrilhas(user.user_metadata);
-  if (existingTrilhas.includes(trilhaSlug)) {
+  if (existingTrilhas.includes(rawSlug)) {
     return json({ ok: true, alreadyEnrolled: true, trilhas: existingTrilhas });
   }
 
-  const nextTrilhas = [...existingTrilhas, trilhaSlug];
+  const nextTrilhas = [...existingTrilhas, rawSlug];
 
   try {
     await updateUserMetadata(user.id, {
