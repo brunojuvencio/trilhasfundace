@@ -1524,7 +1524,7 @@
     async function loadDynamicCourses() {
       const { data, error } = await db
         .from("trilhas")
-        .select("id, nome, slug, descricao, status, curso_id, cursos(nome, descricao), aulas(id, titulo, vimeo_id, duracao, ordem)")
+        .select("id, nome, slug, descricao, status, curso_id, cursos(nome, descricao), aulas(id, titulo, vimeo_id, video_provider, duracao, ordem)")
         .eq("status", "publicada");
 
       if (error) {
@@ -1557,7 +1557,11 @@
             duration: aula.duracao || `Aula ${index + 1}`,
             level: curso?.nome || "Trilha Fundace",
             teacher: "Corpo docente Fundace",
-            videoUrl: aula.vimeo_id ? `https://vimeo.com/${aula.vimeo_id}` : "",
+            videoUrl: aula.vimeo_id
+              ? aula.video_provider === "youtube"
+                ? `https://youtu.be/${aula.vimeo_id}`
+                : `https://vimeo.com/${aula.vimeo_id}`
+              : "",
             eyebrow: index === 0 ? "Aula 1 · liberada" : `Aula ${index + 1}`,
             highlights: [
               "Assista ao conteúdo da aula e avance na trilha.",

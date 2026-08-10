@@ -21,10 +21,13 @@ type CursoPayload = {
   descricao?: string;
 };
 
+type VideoProvider = "vimeo" | "youtube";
+
 type AulaPayload = {
   titulo?: string;
   vimeoUrl?: string;
   vimeoId?: string;
+  videoProvider?: string;
   duracao?: string;
   ordem?: number;
 };
@@ -86,6 +89,33 @@ function extractVimeoId(value: unknown) {
   return "";
 }
 
+function extractYoutubeId(value: unknown) {
+  const raw = String(value ?? "").trim();
+
+  const patterns = [
+    /^https?:\/\/(?:www\.)?youtube\.com\/watch\?(?:.*&)?v=([A-Za-z0-9_-]{11})(?:[&#].*)?$/i,
+    /^https?:\/\/(?:www\.)?youtube\.com\/embed\/([A-Za-z0-9_-]{11})(?:[/?#].*)?$/i,
+    /^https?:\/\/youtu\.be\/([A-Za-z0-9_-]{11})(?:[/?#].*)?$/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = raw.match(pattern);
+    if (match?.[1]) return match[1];
+  }
+
+  return "";
+}
+
+function extractVideoRef(value: unknown): { provider: VideoProvider; id: string } | null {
+  const vimeoId = extractVimeoId(value);
+  if (vimeoId) return { provider: "vimeo", id: vimeoId };
+
+  const youtubeId = extractYoutubeId(value);
+  if (youtubeId) return { provider: "youtube", id: youtubeId };
+
+  return null;
+}
+
 function mapCurso(row: Record<string, unknown>) {
   return {
     id: row.id,
@@ -96,12 +126,20 @@ function mapCurso(row: Record<string, unknown>) {
 
 function mapAula(row: Record<string, unknown>) {
   const vimeoId = String(row.vimeo_id ?? "");
+  const provider = (row.video_provider as VideoProvider) ?? "vimeo";
+  const vimeoUrl = !vimeoId
+    ? ""
+    : provider === "youtube"
+      ? `https://www.youtube.com/embed/${vimeoId}`
+      : `https://player.vimeo.com/video/${vimeoId}`;
+
   return {
     id: row.id,
     trilhaId: row.trilha_id,
     titulo: row.titulo,
     vimeoId,
-    vimeoUrl: vimeoId ? `https://player.vimeo.com/video/${vimeoId}` : "",
+    videoProvider: provider,
+    vimeoUrl,
     duracao: row.duracao ?? "",
     ordem: row.ordem,
     criadaEm: row.criada_em,
@@ -229,10 +267,21 @@ function validateAulaPayload(payload: AulaPayload, allowPartial = false) {
     values.titulo = titulo;
   }
 
-  if (!allowPartial || "vimeoUrl" in payload || "vimeoId" in payload) {
-    const vimeoId = extractVimeoId(payload.vimeoId || payload.vimeoUrl);
-    if (!vimeoId) throw new Error("Link ou ID do Vimeo inválido.");
-    values.vimeo_id = vimeoId;
+  if (!allowPartial || "vimeoUrl" in payload || "vimeoId" in payload || "videoProvider" in payload) {
+    const rawValue = payload.vimeoId || payload.vimeoUrl;
+    let videoRef = extractVideoRef(rawValue);
+
+    if (!videoRef && (payload.videoProvider === "vimeo" || payload.videoProvider === "youtube")) {
+      const bareId = cleanText(rawValue);
+      const isValid = payload.videoProvider === "vimeo"
+        ? /^\d+$/.test(bareId)
+        : /^[A-Za-z0-9_-]{11}$/.test(bareId);
+      if (isValid) videoRef = { provider: payload.videoProvider, id: bareId };
+    }
+
+    if (!videoRef) throw new Error("Link ou ID do Vimeo/YouTube inválido.");
+    values.vimeo_id = videoRef.id;
+    values.video_provider = videoRef.provider;
   }
 
   if (!allowPartial || "duracao" in payload) {
@@ -375,7 +424,7 @@ async function getTrilha(trilhaId: string) {
 
   const { data: aulas, error: aulasError } = await adminClient
     .from("aulas")
-    .select("id, trilha_id, titulo, vimeo_id, duracao, ordem, criada_em")
+    .select("id, trilha_id, titulo, vimeo_id, video_provider, duracao, ordem, criada_em")
     .eq("trilha_id", trilhaId)
     .order("ordem", { ascending: true })
     .order("criada_em", { ascending: true });
@@ -425,7 +474,7 @@ async function deleteTrilha(trilhaId: string) {
 async function listAulas(trilhaId: string) {
   const { data, error } = await adminClient
     .from("aulas")
-    .select("id, trilha_id, titulo, vimeo_id, duracao, ordem, criada_em")
+    .select("id, trilha_id, titulo, vimeo_id, video_provider, duracao, ordem, criada_em")
     .eq("trilha_id", trilhaId)
     .order("ordem", { ascending: true })
     .order("criada_em", { ascending: true });
@@ -445,7 +494,7 @@ async function createAula(request: Request, trilhaId: string) {
     const { data, error } = await adminClient
       .from("aulas")
       .insert(values)
-      .select("id, trilha_id, titulo, vimeo_id, duracao, ordem, criada_em")
+      .select("id, trilha_id, titulo, vimeo_id, video_provider, duracao, ordem, criada_em")
       .single();
 
     if (error) return json({ error: error.message }, 400);
@@ -468,7 +517,7 @@ async function updateAula(request: Request, aulaId: string) {
       .from("aulas")
       .update(values)
       .eq("id", aulaId)
-      .select("id, trilha_id, titulo, vimeo_id, duracao, ordem, criada_em")
+      .select("id, trilha_id, titulo, vimeo_id, video_provider, duracao, ordem, criada_em")
       .maybeSingle();
 
     if (error) return json({ error: error.message }, 400);

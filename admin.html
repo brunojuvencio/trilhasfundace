@@ -507,6 +507,7 @@
                 <select id="manual-trilha" required>
                   <option value="Trilha CONTIFRS">Contabilidade em IFRS</option>
                   <option value="Trilha de Gestão de Produção com IA">Gestão de Produção com IA</option>
+                  <option value="Trilha de Gestão de Projetos">Gestão de Projetos</option>
                 </select>
               </div>
               <div class="field">
@@ -751,7 +752,7 @@
             <div class="section-title">
               <div>
                 <h2>Lista de aulas</h2>
-                <p>Edite títulos inline, cole links do Vimeo e reordene.</p>
+                <p>Edite títulos inline, cole links do Vimeo ou YouTube e reordene.</p>
               </div>
               <button type="button" class="button-secondary" id="lesson-add-button">+ Adicionar aula</button>
             </div>
@@ -872,7 +873,10 @@
       "gestao-3": "Gestão de Produção com IA - S&OP Compras - Parte 1",
       "gestao-4": "Gestão de Produção com IA - S&OP Compras - Parte 2",
       "gestao-5": "Gestão de Produção com IA - Big Data e IA em Operações - Parte 1",
-      "gestao-6": "Gestão de Produção com IA - Big Data e IA em Operações - Parte 2"
+      "gestao-6": "Gestão de Produção com IA - Big Data e IA em Operações - Parte 2",
+      "gestao-projetos-1": "Gestão de Projetos - Gestão de Projetos na Era da IA",
+      "gestao-projetos-2": "Gestão de Projetos - Criar e entregar",
+      "gestao-projetos-3": "Gestão de Projetos - Projetos e Processos"
     };
 
     const state = {
@@ -1131,13 +1135,38 @@
       return "";
     }
 
+    function extractYoutubeId(value) {
+      const raw = String(value || "").trim();
+      const patterns = [
+        /^https?:\/\/(?:www\.)?youtube\.com\/watch\?(?:.*&)?v=([A-Za-z0-9_-]{11})(?:[&#].*)?$/i,
+        /^https?:\/\/(?:www\.)?youtube\.com\/embed\/([A-Za-z0-9_-]{11})(?:[/?#].*)?$/i,
+        /^https?:\/\/youtu\.be\/([A-Za-z0-9_-]{11})(?:[/?#].*)?$/i
+      ];
+      for (const pattern of patterns) {
+        const match = raw.match(pattern);
+        if (match?.[1]) return match[1];
+      }
+      if (/^[A-Za-z0-9_-]{11}$/.test(raw) && !/^\d+$/.test(raw)) return raw;
+      return "";
+    }
+
+    function extractVideoRef(value) {
+      const vimeoId = extractVimeoId(value);
+      if (vimeoId) return { provider: "vimeo", id: vimeoId };
+      const youtubeId = extractYoutubeId(value);
+      if (youtubeId) return { provider: "youtube", id: youtubeId };
+      return null;
+    }
+
     function createDraftId() {
       if (window.crypto?.randomUUID) return window.crypto.randomUUID();
       return `draft-${Date.now()}-${Math.random().toString(16).slice(2)}`;
     }
 
     function normalizeLesson(aula = {}, index = 0) {
-      const vimeoId = aula.vimeoId || extractVimeoId(aula.vimeoUrl);
+      const videoRef = aula.vimeoId ? { provider: aula.videoProvider || "vimeo", id: aula.vimeoId } : extractVideoRef(aula.vimeoUrl);
+      const vimeoId = videoRef?.id || "";
+      const videoProvider = videoRef?.provider || "vimeo";
       return {
         id: aula.id || "",
         clientId: aula.clientId || createDraftId(),
@@ -1145,6 +1174,7 @@
         titulo: aula.titulo || "",
         draftTitle: aula.titulo || "",
         vimeoId,
+        videoProvider,
         vimeoInput: aula.vimeoInput || vimeoId || "",
         duracao: aula.duracao || "",
         ordem: Number(aula.ordem || index + 1),
@@ -1283,7 +1313,7 @@
     function hasValidLessonReady() {
       return state.trailEditor.lessons.some(lesson => {
         const title = (lesson.draftTitle || lesson.titulo || "").trim();
-        const vimeoId = lesson.vimeoId || extractVimeoId(lesson.vimeoInput);
+        const vimeoId = lesson.vimeoId || extractVideoRef(lesson.vimeoInput)?.id;
         return title && vimeoId;
       });
     }
@@ -1291,7 +1321,7 @@
     function hasSavedValidLessonReady() {
       return state.trailEditor.lessons.some(lesson => {
         const title = (lesson.draftTitle || lesson.titulo || "").trim();
-        const vimeoId = lesson.vimeoId || extractVimeoId(lesson.vimeoInput);
+        const vimeoId = lesson.vimeoId || extractVideoRef(lesson.vimeoInput)?.id;
         return lesson.id && title && vimeoId;
       });
     }
@@ -1357,8 +1387,13 @@
         const key = lessonKey(lesson);
         const titleValue = escapeHtml(lesson.draftTitle ?? lesson.titulo);
         const videoValue = escapeHtml(lesson.vimeoInput || lesson.vimeoId || "");
-        const thumb = lesson.vimeoId
-          ? `<img class="lesson-thumb" src="https://vumbnail.com/${escapeHtml(lesson.vimeoId)}.jpg" alt="Preview da aula">`
+        const thumbSrc = !lesson.vimeoId
+          ? ""
+          : lesson.videoProvider === "youtube"
+            ? `https://img.youtube.com/vi/${escapeHtml(lesson.vimeoId)}/hqdefault.jpg`
+            : `https://vumbnail.com/${escapeHtml(lesson.vimeoId)}.jpg`;
+        const thumb = thumbSrc
+          ? `<img class="lesson-thumb" src="${thumbSrc}" alt="Preview da aula">`
           : `<div class="lesson-thumb" aria-hidden="true"></div>`;
         const titleControl = lesson.editingTitle
           ? `<input class="lesson-input" data-lesson-title-input data-lesson-key="${escapeHtml(key)}" value="${titleValue}" placeholder="Título da aula">`
@@ -1376,7 +1411,7 @@
             <div class="lesson-order" title="Arraste para reordenar">${index + 1}</div>
             ${titleControl}
             <div class="lesson-video">
-              <input class="lesson-input" data-lesson-vimeo-input data-lesson-key="${escapeHtml(key)}" value="${videoValue}" placeholder="URL ou ID do Vimeo">
+              <input class="lesson-input" data-lesson-vimeo-input data-lesson-key="${escapeHtml(key)}" value="${videoValue}" placeholder="URL do Vimeo ou YouTube">
               ${thumb}
             </div>
             <input class="lesson-input" data-lesson-duration-input data-lesson-key="${escapeHtml(key)}" value="${escapeHtml(lesson.duracao || "")}" placeholder="Duração">
@@ -1400,12 +1435,12 @@
       if (!state.trailEditor.currentId) return null;
 
       const titulo = (lesson.draftTitle || lesson.titulo || "").trim();
-      const vimeoId = lesson.vimeoId || extractVimeoId(lesson.vimeoInput);
+      const videoRef = lesson.vimeoId ? { provider: lesson.videoProvider || "vimeo", id: lesson.vimeoId } : extractVideoRef(lesson.vimeoInput);
       const hasAnyValue = titulo || lesson.vimeoInput || lesson.duracao;
 
       if (!hasAnyValue) return null;
-      if (!titulo || !vimeoId) {
-        const message = "Preencha título e link do Vimeo para salvar a aula.";
+      if (!titulo || !videoRef) {
+        const message = "Preencha título e link do Vimeo ou YouTube para salvar a aula.";
         lesson.error = message;
         renderLessons();
         if (options.strict) throw new Error(message);
@@ -1414,7 +1449,8 @@
 
       const payload = {
         titulo,
-        vimeoUrl: vimeoId,
+        vimeoId: videoRef.id,
+        videoProvider: videoRef.provider,
         duracao: lesson.duracao || "",
         ordem: lesson.ordem
       };
@@ -1930,16 +1966,18 @@
       if (target.matches("[data-lesson-vimeo-input]")) {
         const value = target.value.trim();
         if (value) {
-          const vimeoId = extractVimeoId(value);
-          if (!vimeoId) {
-            lesson.error = "Use https://vimeo.com/ID, https://player.vimeo.com/video/ID ou apenas o ID numérico.";
+          const videoRef = extractVideoRef(value);
+          if (!videoRef) {
+            lesson.error = "Use um link do Vimeo (vimeo.com/ID) ou do YouTube (youtube.com/watch?v=ID ou youtu.be/ID).";
             renderLessons();
             return;
           }
-          lesson.vimeoId = vimeoId;
-          lesson.vimeoInput = vimeoId;
+          lesson.vimeoId = videoRef.id;
+          lesson.videoProvider = videoRef.provider;
+          lesson.vimeoInput = videoRef.id;
         } else {
           lesson.vimeoId = "";
+          lesson.videoProvider = "vimeo";
           lesson.vimeoInput = "";
         }
         lesson.error = "";
