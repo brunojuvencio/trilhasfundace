@@ -1577,7 +1577,10 @@
                   : `https://vimeo.com/${aula.vimeo_id}`
                 : "",
               eyebrow: index === 0 ? "Aula 1 · liberada" : `Aula ${index + 1}`,
-              highlights: [
+              highlights: isMateusAula ? [
+                "Da teoria à prática: como aplicar o Marketing Estratégico na carreira.",
+                "Conheça as disciplinas do MBA USP em Gestão de Marketing Estratégico e entenda como os conteúdos do curso podem ser aplicados aos desafios do dia a dia profissional."
+              ] : [
                 "Assista ao conteúdo da aula e avance na trilha.",
                 "Marque a aula como concluída para liberar o próximo conteúdo."
               ],
