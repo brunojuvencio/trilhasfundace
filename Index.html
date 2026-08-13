@@ -1393,6 +1393,18 @@
       videoShell.classList.toggle("locked", !unlocked);
       lockedOverlay.classList.toggle("hidden", unlocked);
 
+      const ctaBanner = document.getElementById("access-cta-banner");
+      if (lesson.ctaUrl) {
+        ctaBanner.style.display = "";
+        const bannerLink = document.getElementById("cta-banner-link");
+        if (bannerLink) bannerLink.href = lesson.ctaUrl;
+        document.getElementById("cta-banner-eyebrow").textContent = lesson.ctaEyebrow || "";
+        document.getElementById("cta-banner-title").textContent = lesson.ctaTitle || "";
+        document.getElementById("cta-banner-body").textContent = lesson.ctaBody || "";
+      } else if (!currentCourse?.ctaUrl) {
+        ctaBanner.style.display = "none";
+      }
+
       completeButton.textContent = isCompleted(lesson.id) ? "Aula concluída ✓" : "Marcar como concluída";
       completeButton.classList.toggle("completed", isCompleted(lesson.id));
       completeButton.disabled = !unlocked || isCompleted(lesson.id);
@@ -1551,23 +1563,32 @@
           pill: `${aulas.length} aula${aulas.length === 1 ? "" : "s"}`,
           ctaUrl: "",
           certificateSlug: slug,
-          lessons: aulas.map((aula, index) => ({
-            id: aula.id,
-            title: aula.titulo || `Aula ${index + 1}`,
-            duration: aula.duracao || `Aula ${index + 1}`,
-            level: curso?.nome || "Trilha Fundace",
-            teacher: "Corpo docente Fundace",
-            videoUrl: aula.vimeo_id
-              ? aula.video_provider === "youtube"
-                ? `https://youtu.be/${aula.vimeo_id}`
-                : `https://vimeo.com/${aula.vimeo_id}`
-              : "",
-            eyebrow: index === 0 ? "Aula 1 · liberada" : `Aula ${index + 1}`,
-            highlights: [
-              "Assista ao conteúdo da aula e avance na trilha.",
-              "Marque a aula como concluída para liberar o próximo conteúdo."
-            ]
-          }))
+          lessons: aulas.map((aula, index) => {
+            const isMateusAula = /mateus manfrin/i.test(aula.titulo || "");
+            return {
+              id: aula.id,
+              title: aula.titulo || `Aula ${index + 1}`,
+              duration: aula.duracao || `Aula ${index + 1}`,
+              level: curso?.nome || "Trilha Fundace",
+              teacher: "Corpo docente Fundace",
+              videoUrl: aula.vimeo_id
+                ? aula.video_provider === "youtube"
+                  ? `https://youtu.be/${aula.vimeo_id}`
+                  : `https://vimeo.com/${aula.vimeo_id}`
+                : "",
+              eyebrow: index === 0 ? "Aula 1 · liberada" : `Aula ${index + 1}`,
+              highlights: [
+                "Assista ao conteúdo da aula e avance na trilha.",
+                "Marque a aula como concluída para liberar o próximo conteúdo."
+              ],
+              ...(isMateusAula ? {
+                ctaUrl: "https://www.fundace.org.br/lp/mba-ead-usp-gestao-de-marketing-estrategico?utm_source=Trilha&utm_campaign=trilha_marketing_nova&utm_content=aula5_conhecer_curso",
+                ctaEyebrow: "MBA USP · Gestão de Marketing Estratégico",
+                ctaTitle: "Quer ir além? Conheça o curso completo.",
+                ctaBody: "Descubra as disciplinas do MBA USP em Gestão de Marketing Estratégico e continue aplicando esse conteúdo na sua carreira."
+              } : {})
+            };
+          })
         };
       });
     }
