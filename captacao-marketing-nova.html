@@ -226,6 +226,15 @@
       line-height: 1.65; margin-bottom: 16px; font-weight: 300;
     }
     .theme-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .theme-cta {
+      display: inline-flex; align-items: center; gap: 8px;
+      margin-top: 18px; padding: 11px 20px; border-radius: 9px;
+      background: var(--yellow); color: var(--black);
+      font-size: 0.84rem; font-weight: 700;
+      box-shadow: 0 6px 20px rgba(254,183,55,0.28);
+      transition: transform 0.18s, box-shadow 0.18s;
+    }
+    .theme-cta:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(254,183,55,0.4); }
     .theme-tag {
       font-size: 0.75rem; font-weight: 500; color: rgba(17,17,17,0.58);
       padding: 4px 12px; border-radius: 6px;
@@ -584,10 +593,6 @@
           <div class="stat-lbl">Gratuito</div>
         </div>
         <div class="stat-block">
-          <div class="stat-num">4</div>
-          <div class="stat-lbl">Aulas Gratuitas</div>
-        </div>
-        <div class="stat-block">
           <div class="stat-num">3</div>
           <div class="stat-lbl">Especialistas convidados</div>
         </div>
@@ -627,7 +632,7 @@
     <div class="container">
       <div class="themes-header">
         <div class="section-eyebrow">Programação do mini curso</div>
-        <h2 class="themes-title">3 aulas com especialistas de mercado</h2>
+        <h2 class="themes-title">4 aulas com especialistas de mercado</h2>
         <p class="themes-sub">Profissionais que atuam na prática de comunicação, inteligência artificial, automação e experiência do cliente.</p>
       </div>
       <div class="themes-list">
@@ -680,6 +685,23 @@
               <span class="theme-tag">Experiência do cliente</span>
               <span class="theme-tag">Estratégia</span>
             </div>
+          </div>
+        </div>
+        <div class="theme-row">
+          <div class="theme-num-col"><div class="theme-big-num">05</div></div>
+          <div class="theme-body">
+            <div class="theme-lessons">Aula 5 · Mateus Manfrin Artêncio</div>
+            <h3>Da teoria à prática: como aplicar o Marketing Estratégico na carreira</h3>
+            <p>Conheça as disciplinas do MBA USP em Gestão de Marketing Estratégico e entenda como os conteúdos do curso podem ser aplicados aos desafios do dia a dia profissional.</p>
+            <div class="theme-tags">
+              <span class="theme-tag">MBA USP</span>
+              <span class="theme-tag">Marketing Estratégico</span>
+              <span class="theme-tag">Carreira</span>
+            </div>
+            <a href="https://www.fundace.org.br/lp/mba-ead-usp-gestao-de-marketing-estrategico?utm_source=Trilha&utm_campaign=trilha_marketing_nova&utm_content=aula5_conhecer_curso" target="_blank" rel="noopener noreferrer" class="theme-cta">
+              Conhecer o curso
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </a>
           </div>
         </div>
       </div>

@@ -1754,14 +1754,16 @@
       const { data: { session } } = await db.auth.getSession();
       if (!session) { window.location.href = "./login.html"; return; }
 
-      currentUser = session.user;
+      const { data: { user: freshUser } } = await db.auth.getUser();
+      currentUser = freshUser || session.user;
+      const freshSession = { ...session, user: currentUser };
 
-      const userName = session.user.user_metadata?.name || session.user.email;
+      const userName = currentUser.user_metadata?.name || currentUser.email;
       document.getElementById("user-name").textContent = userName;
       state.user = { name: userName };
 
       await loadDynamicCourses();
-      allowedTrails = await resolveAllowedTrail(session);
+      allowedTrails = await resolveAllowedTrail(freshSession);
 
       renderCourseSelector();
       document.getElementById("course-selector").style.display = "";
