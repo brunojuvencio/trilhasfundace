@@ -97,9 +97,14 @@
       font-size: clamp(2.6rem, 5.5vw, 4.6rem);
       font-weight: 800; line-height: 1.0;
       letter-spacing: -0.04em; color: var(--white);
-      max-width: 27ch; margin-bottom: 20px;
+      max-width: 27ch; margin-bottom: 40px;
     }
     .hero h1 em { font-style: normal; color: var(--yellow); }
+    .hero h1 .hero-h1-sub {
+      display: block; font-size: 0.4em; font-weight: 400;
+      color: var(--white); letter-spacing: -0.01em;
+      margin-top: 10px;
+    }
     .hero-desc {
       font-size: 1.05rem; line-height: 1.78;
       color: rgba(255,255,255,0.5);
@@ -561,10 +566,10 @@
 
       <div class="hero-badge">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
-        Mini Curso Gratuito com Certificado
+        Mini Curso
       </div>
 
-      <h1><em>Estratégias de Marketing</em><br>para o mercado em transformação</h1>
+      <h1><em>Estratégias de Marketing</em><span class="hero-h1-sub">para o mercado em transformação</span></h1>
 
       <p class="hero-desc">
         Um mini curso gratuito com gravações de lives ao lado de <em>especialistas de mercado</em> —
