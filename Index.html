@@ -1536,7 +1536,7 @@
     async function loadDynamicCourses() {
       const { data, error } = await db
         .from("trilhas")
-        .select("id, nome, slug, descricao, status, curso_id, cursos(nome, descricao), aulas(id, titulo, vimeo_id, video_provider, duracao, ordem)")
+        .select("id, nome, slug, descricao, status, curso_id, permite_auto_inscricao, cursos(nome, descricao), aulas(id, titulo, vimeo_id, video_provider, duracao, ordem)")
         .eq("status", "publicada");
 
       if (error) {
@@ -1561,6 +1561,7 @@
           subtitle: trilha.nome,
           description: trilha.descricao || curso?.descricao || "Trilha Fundace com aulas selecionadas.",
           pill: `${aulas.length} aula${aulas.length === 1 ? "" : "s"}`,
+          allowSelfEnroll: trilha.permite_auto_inscricao !== false,
           ctaUrl: "",
           certificateSlug: slug,
           lessons: aulas.map((aula, index) => {
@@ -1661,8 +1662,10 @@
               <p>${escapeHtml(course.description)}</p>
               <div class="course-card-locked-badge">🔒 Acesso não disponível para esta trilha</div>
             </div>
-            <button type="button" class="course-card-unlock-btn" data-trilha-id="${escapeHtml(course.id)}">Quero me inscrever nesta trilha</button>
-            <div class="course-card-unlock-status"></div>
+            ${course.allowSelfEnroll
+              ? `<button type="button" class="course-card-unlock-btn" data-trilha-id="${escapeHtml(course.id)}">Quero me inscrever nesta trilha</button>
+                 <div class="course-card-unlock-status"></div>`
+              : ""}
           `
           : `
             <div class="course-card-eyebrow">${escapeHtml(course.pill)}</div>
@@ -1672,7 +1675,7 @@
           `;
         grid.appendChild(card);
 
-        if (isBlocked) {
+        if (isBlocked && course.allowSelfEnroll) {
           const unlockBtn = card.querySelector(".course-card-unlock-btn");
           const statusEl = card.querySelector(".course-card-unlock-status");
           unlockBtn.addEventListener("click", event => {
@@ -1791,6 +1794,11 @@
 
       renderCourseSelector();
       document.getElementById("course-selector").style.display = "";
+
+      const requestedTrilha = normalizeTrailSlug(new URLSearchParams(window.location.search).get("trilha") || "");
+      if (requestedTrilha && courses[requestedTrilha]) {
+        await selectCourse(requestedTrilha);
+      }
     })();
 
     document.getElementById("logout-btn").addEventListener("click", async () => {
