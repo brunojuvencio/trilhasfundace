@@ -220,6 +220,25 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
+    /* ── SCROLL REVEAL ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal.is-visible { opacity: 1; transform: translateY(0); }
+    .learn-grid .reveal:nth-child(2) { transition-delay: 0.08s; }
+    .learn-grid .reveal:nth-child(3) { transition-delay: 0.16s; }
+    .audience-grid .reveal:nth-child(2) { transition-delay: 0.06s; }
+    .audience-grid .reveal:nth-child(3) { transition-delay: 0.12s; }
+    .audience-grid .reveal:nth-child(4) { transition-delay: 0.18s; }
+    .benefits-grid .reveal:nth-child(2) { transition-delay: 0.06s; }
+    .benefits-grid .reveal:nth-child(3) { transition-delay: 0.12s; }
+    .benefits-grid .reveal:nth-child(4) { transition-delay: 0.18s; }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1; transform: none; transition: none; }
+    }
+
     @media (max-width: 768px) {
       .nav { padding: 22px 24px; }
       .hero-body { padding: 28px 24px 56px; }
@@ -353,16 +372,36 @@
 
     .learn-instructor {
       display: flex;
-      align-items: baseline;
-      gap: 6px;
+      align-items: center;
+      gap: 12px;
       font-size: 12.5px;
+      line-height: 1.4;
       color: rgba(15,15,15,0.45);
-      margin-bottom: 16px;
-      padding-bottom: 16px;
+      margin-bottom: 18px;
+      padding-bottom: 18px;
       border-bottom: 1px solid rgba(0,0,0,0.06);
     }
 
     .learn-instructor strong { font-weight: 600; color: rgba(15,15,15,0.72); }
+
+    .learn-instructor-photo {
+      width: 46px;
+      height: 46px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: center 18%;
+      border: 2px solid rgba(254,183,55,0.55);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.14);
+      filter: grayscale(55%) contrast(1.02);
+      transition: filter 0.35s ease, transform 0.35s ease, border-color 0.35s ease;
+    }
+
+    .learn-card:hover .learn-instructor-photo {
+      filter: grayscale(0%);
+      transform: scale(1.06);
+      border-color: var(--yellow);
+    }
 
     .learn-card ul { list-style: none; display: flex; flex-direction: column; gap: 11px; margin-top: auto; }
 
@@ -773,7 +812,7 @@
 </section>
 
 <section class="intro-section">
-  <div class="intro-wrap">
+  <div class="intro-wrap reveal">
     <h2>A IA já auxilia advogados na elaboração de documentos, análise de contratos e pesquisas jurídicas.</h2>
     <p>Ao mesmo tempo, a Inteligência Artificial cria novos desafios relacionados à <strong>ética, compliance, responsabilidade e segurança jurídica</strong> — e muda a forma como decisões estratégicas de negócio são tomadas.</p>
     <p>Se você quer entender esse cenário e se preparar para atuar nele, a Semana IA no Direito foi criada para você.</p>
@@ -782,21 +821,24 @@
 
 <section class="learn-section">
   <div class="learn-wrap">
-    <div class="learn-head">
+    <div class="learn-head reveal">
       <span class="section-kicker">Programa · 3 aulas</span>
       <h2>O que você vai <em>aprender</em></h2>
     </div>
 
     <div class="learn-grid">
 
-      <div class="learn-card">
+      <div class="learn-card reveal">
         <div class="learn-icon">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FEB737" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 18V5"></path><path d="M15 13a4.17 4.17 0 0 1-3-4 4.17 4.17 0 0 1-3 4"></path><path d="M17.598 6.5A3 3 0 1 0 12 5a3 3 0 1 0-5.598 1.5"></path><path d="M17.997 5.125a4 4 0 0 1 2.526 5.77"></path><path d="M18 18a4 4 0 0 0 2-7.464"></path><path d="M19.967 17.483A4 4 0 1 1 12 18a4 4 0 1 1-7.967-.517"></path><path d="M6 18a4 4 0 0 1-2-7.464"></path><path d="M6.003 5.125a4 4 0 0 0-2.526 5.77"></path></svg>
         </div>
         <span class="learn-eyebrow">Aula 1</span>
         <h3>Do Prompt à Petição</h3>
         <p class="learn-sub">Ferramentas de IA para Advogados</p>
-        <div class="learn-instructor">Com <strong>Prof. Dr. Saylon Alves Pereira</strong> — Doutor pela FGV, USP</div>
+        <div class="learn-instructor">
+          <img class="learn-instructor-photo" src="prof-saylon.jpg" alt="Foto de Prof. Dr. Saylon Alves Pereira" loading="lazy">
+          <span>Com <strong>Prof. Dr. Saylon Alves Pereira</strong> — Doutor pela FGV, USP</span>
+        </div>
         <ul>
           <li>Panorama das principais ferramentas de IA usadas no Direito.</li>
           <li>Como aplicá-las, na prática, no dia a dia jurídico.</li>
@@ -804,14 +846,17 @@
         </ul>
       </div>
 
-      <div class="learn-card">
+      <div class="learn-card reveal">
         <div class="learn-icon">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FEB737" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M9 8h6"></path><path d="M9 12h6"></path><path d="m9 16 1.5 0"></path><path d="M9 3v18"></path></svg>
         </div>
         <span class="learn-eyebrow">Aula 2</span>
         <h3>IA com Segurança Jurídica</h3>
         <p class="learn-sub">Compliance na Advocacia e nos Negócios</p>
-        <div class="learn-instructor">Com <strong>Profa. Dra. Luciana Morilas</strong> — Livre-docente, FEARP/USP</div>
+        <div class="learn-instructor">
+          <img class="learn-instructor-photo" src="prof-luciana.jpg" alt="Foto de Profa. Dra. Luciana Morilas" loading="lazy">
+          <span>Com <strong>Profa. Dra. Luciana Morilas</strong> — Livre-docente, FEARP/USP</span>
+        </div>
         <ul>
           <li>As prevenções jurídicas necessárias para usar IA com segurança.</li>
           <li>Ética, compliance e responsabilidade na advocacia e nos negócios.</li>
@@ -819,14 +864,17 @@
         </ul>
       </div>
 
-      <div class="learn-card">
+      <div class="learn-card reveal">
         <div class="learn-icon">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FEB737" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></svg>
         </div>
         <span class="learn-eyebrow">Aula 3</span>
         <h3>IA em M&amp;A e Negócios Críticos</h3>
         <p class="learn-sub">Operações de alto valor e alto risco</p>
-        <div class="learn-instructor">Com <strong>Prof. Lucas F. G. Bento</strong> — Sócio, TN Advogados</div>
+        <div class="learn-instructor">
+          <img class="learn-instructor-photo" src="prof-lucas.jpg" alt="Foto de Prof. Lucas F. G. Bento" loading="lazy">
+          <span>Com <strong>Prof. Lucas F. G. Bento</strong> — Sócio, TN Advogados</span>
+        </div>
         <ul>
           <li>Como a IA atua em fusões e aquisições.</li>
           <li>Aplicação em operações críticas de alto valor e alto risco.</li>
@@ -840,7 +888,7 @@
 
 <section class="audience-section">
   <div class="audience-wrap">
-    <div class="audience-head">
+    <div class="audience-head reveal">
       <span class="section-kicker">Público</span>
       <h2>Para quem é esta <em>Trilha?</em></h2>
     </div>
@@ -849,25 +897,25 @@
     <p>Vagas limitadas.</p>
 
     <div class="audience-grid">
-      <div class="audience-card">
+      <div class="audience-card reveal">
         <span class="audience-icon">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FEB737" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></svg>
         </span>
         Advogados
       </div>
-      <div class="audience-card">
+      <div class="audience-card reveal">
         <span class="audience-icon">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FEB737" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></svg>
         </span>
         Gestores jurídicos
       </div>
-      <div class="audience-card">
+      <div class="audience-card reveal">
         <span class="audience-icon">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FEB737" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></svg>
         </span>
         Empresários e consultores
       </div>
-      <div class="audience-card">
+      <div class="audience-card reveal">
         <span class="audience-icon">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FEB737" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></svg>
         </span>
@@ -879,12 +927,12 @@
 
 <section class="benefits-section">
   <div class="benefits-wrap">
-    <div class="benefits-head">
+    <div class="benefits-head reveal">
       <h2>Por que <em>participar?</em></h2>
     </div>
 
     <div class="benefits-grid">
-      <div class="benefit-card">
+      <div class="benefit-card reveal">
         <div class="learn-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FEB737" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 7h6v6"></path><path d="m22 7-8.5 8.5-5-5L2 17"></path></svg>
         </div>
@@ -892,7 +940,7 @@
         <p>Panorama real de como a IA já está sendo usada na advocacia e na gestão jurídica.</p>
       </div>
 
-      <div class="benefit-card">
+      <div class="benefit-card reveal">
         <div class="learn-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FEB737" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
         </div>
@@ -900,7 +948,7 @@
         <p>Entenda os riscos de ética, compliance e responsabilidade envolvidos no uso de IA.</p>
       </div>
 
-      <div class="benefit-card">
+      <div class="benefit-card reveal">
         <div class="learn-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FEB737" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"></path><path d="M22 10v6"></path><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"></path></svg>
         </div>
@@ -908,7 +956,7 @@
         <p>Pesquisadores da FEARP/USP e um sócio de escritório que atua em M&amp;A nacionais e internacionais.</p>
       </div>
 
-      <div class="benefit-card">
+      <div class="benefit-card reveal">
         <div class="learn-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FEB737" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
         </div>
@@ -922,7 +970,7 @@
 <section class="register-section" id="inscricao">
   <div class="register-wrap">
 
-    <div class="register-copy">
+    <div class="register-copy reveal">
       <span class="section-kicker">Inscrição gratuita</span>
       <h2 class="reg-headline">Comece agora a <em>Semana IA no Direito</em></h2>
       <p class="reg-sub">Entenda como a Inteligência Artificial está transformando a advocacia, a gestão jurídica e as decisões de negócio.</p>
@@ -933,7 +981,7 @@
     </div>
 
     <div class="register-form-col">
-      <div class="form-card">
+      <div class="form-card reveal" style="transition-delay: 0.1s;">
         <h3>Garanta sua vaga</h3>
         <p class="form-sub">Leva menos de 1 minuto.</p>
         <form id="register-form" class="form-grid" novalidate>
@@ -1014,7 +1062,7 @@
 <section class="mba-section">
   <div class="mba-wrap">
 
-    <div class="mba-content">
+    <div class="mba-content reveal">
       <span class="section-kicker">MBA com Certificado USP</span>
       <h2>Essa é só o primeiro passo na sua jornada em <em>Direito e Negócios.</em></h2>
       <p class="mba-lead">Conheça o MBA com Certificado USP em Gestão do Direito nas Empresas.</p>
@@ -1024,7 +1072,7 @@
       <a href="#" class="mba-link">Conheça o MBA →</a>
     </div>
 
-    <div class="mba-card">
+    <div class="mba-card reveal" style="transition-delay: 0.1s;">
       <div class="mba-card-head">
         <div>
           <p>Certificação</p>
@@ -1046,6 +1094,23 @@
   <img src="Logo Fundace-F-BRANCO (1).png" alt="FUNDACE">
   <span>© 2026 FUNDACE. Todos os direitos reservados.</span>
 </footer>
+
+<script>
+  if ("IntersectionObserver" in window) {
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: "0px 0px -40px 0px" });
+
+    document.querySelectorAll(".reveal").forEach(el => revealObserver.observe(el));
+  } else {
+    document.querySelectorAll(".reveal").forEach(el => el.classList.add("is-visible"));
+  }
+</script>
 
 <script src="./supabase/config.js"></script>
 <script src="./supabase/tracking.js"></script>
