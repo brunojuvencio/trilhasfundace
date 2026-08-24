@@ -1525,6 +1525,7 @@
       if (normalized.includes("gestao")) return "gestao";
       if (normalized.includes("contifrs") || normalized.includes("ifrs") || normalized.includes("contabilidade")) return "ifrs";
       if (normalized.includes("financas")) return "financas";
+      if (normalized.includes("direito") || normalized.includes("gde")) return "semana-ia-no-direito";
       const dynamicCourse = Object.values(courses).find(course => {
         const candidates = [course.id, course.title, course.subtitle, course.nome, course.slug].map(normalizePlain);
         return candidates.includes(normalized);

@@ -61,6 +61,11 @@ const TRILHAS: Record<string, TrilhaConfig> = {
     acListId: (Deno.env.get("ACTIVECAMPAIGN_MARKETING_LIST_ID") ?? "35").trim(),
     acListName: (Deno.env.get("ACTIVECAMPAIGN_MARKETING_LIST_NAME") ?? "TrilhaMarketing").trim(),
   },
+  "semana-ia-no-direito": {
+    nome: "Semana IA no Direito",
+    acListId: (Deno.env.get("ACTIVECAMPAIGN_GDE_LIST_ID") ?? "66").trim(),
+    acListName: (Deno.env.get("ACTIVECAMPAIGN_GDE_LIST_NAME") ?? "TrilhaGDE").trim(),
+  },
 };
 
 function json(body: Record<string, unknown>, status = 200) {
@@ -152,6 +157,7 @@ function normalizeTrilhaSlug(raw: string) {
   if (normalized.includes("contifrs") || normalized.includes("ifrs") || normalized.includes("contabilidade")) return "ifrs";
   if (normalized.includes("financas")) return "financas";
   if (normalized.includes("marketing")) return "marketing";
+  if (normalized.includes("direito") || normalized.includes("gde")) return "semana-ia-no-direito";
   return "";
 }
 

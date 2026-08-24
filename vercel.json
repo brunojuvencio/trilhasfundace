@@ -18,6 +18,8 @@
     { "source": "/marketing", "destination": "/captacao-marketing.html" },
     { "source": "/marketing-nova", "destination": "/captacao-marketing-nova.html" },
     { "source": "/financas", "destination": "/captacao-financas.html" },
+    { "source": "/gde", "destination": "/captacao-gde.html" },
+    { "source": "/direito", "destination": "/captacao-gde.html" },
     { "source": "/api/cursos", "destination": "https://hasptpxcyavfdzxtwpws.supabase.co/functions/v1/trilhas-api/cursos" },
     { "source": "/api/cursos/:path*", "destination": "https://hasptpxcyavfdzxtwpws.supabase.co/functions/v1/trilhas-api/cursos/:path*" },
     { "source": "/api/trilhas", "destination": "https://hasptpxcyavfdzxtwpws.supabase.co/functions/v1/trilhas-api/trilhas" },

@@ -433,11 +433,17 @@
       return normalizeText(value).includes("financas") || normalizeText(value).includes("finanças");
     }
 
+    function isGdeTrailName(value) {
+      const trailName = normalizeText(value);
+      return trailName.includes("direito") || trailName.includes("gde");
+    }
+
     function currentTrailSlug(context = offerState.leadContext) {
       if (isGestaoProjetosTrailName(context?.nome_trilha) || trilhaParam === "gestao-projetos") return "gestao-projetos";
       if (isGestaoTrailName(context?.nome_trilha) || trilhaParam === "gestao") return "gestao";
       if (isMarketingTrailName(context?.nome_trilha) || trilhaParam === "marketing") return "marketing";
       if (isFinancasTrailName(context?.nome_trilha) || trilhaParam === "financas") return "financas";
+      if (isGdeTrailName(context?.nome_trilha) || trilhaParam === "semana-ia-no-direito" || trilhaParam === "gde") return "semana-ia-no-direito";
       return "ifrs";
     }
 
@@ -468,6 +474,12 @@
         modalTitle.textContent = "A trilha é o começo. O próximo passo pode transformar sua carreira em finanças.";
         modalCopy.textContent = "Profissionais que dominam finanças de verdade costumam querer ir além de uma introdução. O MBA USP em Finanças da Fundace é o programa completo — professores da FEA-RP/USP, certificado USP e aplicação real de análise financeira, investimentos e gestão de risco.";
         modalStrong.innerHTML = "O programa tem investimento médio de <strong>R$ 500 por mês</strong>. Se quiser entender a estrutura e o formato, nosso time explica — sem compromisso.";
+      } else if (slug === "semana-ia-no-direito") {
+        document.title = "Crie sua senha | Semana IA no Direito Fundace";
+        backLink.href = "./captacao-gde.html";
+        modalTitle.textContent = "Essa é só o primeiro passo na sua jornada em Direito e Negócios.";
+        modalCopy.textContent = "O MBA com Certificado USP em Gestão do Direito nas Empresas prepara profissionais para integrar o conhecimento jurídico à estratégia empresarial, com professores da FEA-RP/USP e aplicação prática em compliance, contratos, M&A e governança.";
+        modalStrong.innerHTML = "Se quiser conhecer a estrutura, o formato e o investimento do MBA completo, nosso time explica — sem compromisso.";
       } else {
         document.title = "Crie sua senha | Trilha IFRS Fundace";
         backLink.href = "./captacao.html";
@@ -486,7 +498,7 @@
     updateTrailCopy();
 
     if (!emailParam) {
-      const fallbackMap = { gestao: "./captacao-gestao.html", "gestao-projetos": "./captacao-gestao-projetos.html", marketing: "./captacao-marketing.html", financas: "./captacao-financas.html" };
+      const fallbackMap = { gestao: "./captacao-gestao.html", "gestao-projetos": "./captacao-gestao-projetos.html", marketing: "./captacao-marketing.html", financas: "./captacao-financas.html", "semana-ia-no-direito": "./captacao-gde.html" };
       window.location.href = fallbackMap[trilhaParam] || "./captacao.html";
     }
 
