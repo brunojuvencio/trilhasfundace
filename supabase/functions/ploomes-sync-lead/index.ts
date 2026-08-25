@@ -54,7 +54,9 @@ const ploomesUserKey = Deno.env.get("PLOOMES_API_KEY") ?? "";
 const ploomesBaseUrl = (Deno.env.get("PLOOMES_BASE_URL") ?? "https://public-api2.ploomes.com").replace(/\/+$/, "");
 const ploomesPipelineId = Number(Deno.env.get("PLOOMES_PIPELINE_ID") ?? "50001415");
 const ploomesStageId = Number(Deno.env.get("PLOOMES_STAGE_ID") ?? "50008137");
+const ploomesMarketingNovaStageId = Number(Deno.env.get("PLOOMES_MARKETING_NOVA_STAGE_ID") ?? "50009841");
 const defaultTrailName = "Trilha CONTIFRS";
+const marketingNovaTrailName = "Mini Curso Estratégias de Marketing para o Mercado em Transformação";
 
 const acBaseUrl = (Deno.env.get("ACTIVECAMPAIGN_BASE_URL") ?? "").replace(/\/+$/, "");
 const acApiToken = Deno.env.get("ACTIVECAMPAIGN_API_TOKEN") ?? "";
@@ -92,6 +94,36 @@ function cleanString(value: unknown) {
 
 function getTrailName(lead: LeadRow) {
   return cleanString(lead.nome_trilha) || defaultTrailName;
+}
+
+function normalizeText(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+function isMarketingNovaTrail(lead: LeadRow) {
+  return normalizeText(getTrailName(lead)) === normalizeText(marketingNovaTrailName);
+}
+
+function meetsMarketingNovaCriteria(lead: LeadRow) {
+  if (!lead.possui_formacao_superior) return false;
+  if (cleanString(lead.pretende_pos) === "nao") return false;
+  return true;
+}
+
+function getDealTitle(lead: LeadRow) {
+  if (isMarketingNovaTrail(lead)) {
+    return `${cleanString(lead.nome)} - ${getTrailName(lead)}`;
+  }
+  return getTrailName(lead);
+}
+
+function getDealStageId(lead: LeadRow) {
+  if (isMarketingNovaTrail(lead)) return ploomesMarketingNovaStageId;
+  return ploomesStageId;
 }
 
 async function ploomesFetch(path: string, init: RequestInit = {}) {
@@ -314,14 +346,14 @@ function buildOtherProperties(lead: LeadRow) {
 }
 
 async function createDeal(contactId: number, lead: LeadRow) {
-  const title = getTrailName(lead);
+  const title = getDealTitle(lead);
   const response = await ploomesFetch("/Deals", {
     method: "POST",
     body: JSON.stringify({
       Title: title,
       ContactId: contactId,
       PipelineId: ploomesPipelineId,
-      StageId: ploomesStageId,
+      StageId: getDealStageId(lead),
       OtherProperties: buildOtherProperties(lead),
     }),
   });
@@ -450,9 +482,12 @@ async function syncToActiveCampaign(lead: LeadRow): Promise<void> {
   console.info(`[ploomes-sync-lead] AC sync ok. contactId=${contactId}, listId=${AC_CONSULTANT_LIST_ID}, alreadySubscribed=${alreadySubscribed}`);
 }
 
-// Desativado a pedido do Bruno em 2026-08-24: nenhum lead deve ir para o
-// Ploomes ate a estrutura de funil/CRM ser revista. Reative trocando para true.
-const PLOOMES_SYNC_ENABLED = false;
+// Desativado por padrao em 2026-08-24 a pedido do Bruno (nenhum lead deveria
+// ir para o Ploomes ate a estrutura de funil/CRM ser revista). Reativado em
+// 2026-08-25 apenas para a trilha nova de marketing — ver isMarketingNovaTrail
+// e meetsMarketingNovaCriteria mais abaixo, que restringem quem de fato
+// sincroniza. Trocar para false aqui desliga tudo de novo, para qualquer trilha.
+const PLOOMES_SYNC_ENABLED = true;
 
 Deno.serve(async request => {
   if (request.method === "OPTIONS") {
@@ -482,8 +517,15 @@ Deno.serve(async request => {
 
   try {
     const lead = await getLeadByEmail(email);
-    if (!lead.consultor_contact_opt_in) {
-      return json({ error: "Lead não autorizou contato do consultor." }, 400);
+
+    if (!isMarketingNovaTrail(lead)) {
+      console.info(`[ploomes-sync-lead] Trilha "${getTrailName(lead)}" fora do escopo atual — ignorando lead ${email}.`);
+      return json({ ok: true, skipped: true, reason: "Sincronizacao com Ploomes habilitada apenas para a trilha nova de marketing." });
+    }
+
+    if (!meetsMarketingNovaCriteria(lead)) {
+      console.info(`[ploomes-sync-lead] Lead ${email} nao atende aos criterios (formacao superior / interesse em pos) — ignorando.`);
+      return json({ ok: true, skipped: true, reason: "Lead sem formacao superior ou sem interesse em MBA." });
     }
 
     console.info(`[ploomes-sync-lead] Iniciando sincronização do lead ${email}.`);
