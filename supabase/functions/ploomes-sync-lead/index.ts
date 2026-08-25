@@ -450,6 +450,10 @@ async function syncToActiveCampaign(lead: LeadRow): Promise<void> {
   console.info(`[ploomes-sync-lead] AC sync ok. contactId=${contactId}, listId=${AC_CONSULTANT_LIST_ID}, alreadySubscribed=${alreadySubscribed}`);
 }
 
+// Desativado a pedido do Bruno em 2026-08-24: nenhum lead deve ir para o
+// Ploomes ate a estrutura de funil/CRM ser revista. Reative trocando para true.
+const PLOOMES_SYNC_ENABLED = false;
+
 Deno.serve(async request => {
   if (request.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -469,6 +473,11 @@ Deno.serve(async request => {
   const email = normalizeEmail(payload.email ?? "");
   if (!email) {
     return json({ error: "E-mail é obrigatório." }, 400);
+  }
+
+  if (!PLOOMES_SYNC_ENABLED) {
+    console.info(`[ploomes-sync-lead] Sync desativado — ignorando lead ${email}.`);
+    return json({ ok: true, skipped: true, reason: "Sincronizacao com Ploomes temporariamente desativada." });
   }
 
   try {

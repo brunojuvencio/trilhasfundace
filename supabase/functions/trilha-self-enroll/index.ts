@@ -35,6 +35,10 @@ if (!supabaseUrl || !serviceRoleKey) {
   throw new Error("SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY são obrigatórios.");
 }
 
+// Desativado a pedido do Bruno em 2026-08-24: nenhum lead deve ir para o
+// Ploomes ate a estrutura de funil/CRM ser revista. Reative trocando para true.
+const PLOOMES_SYNC_ENABLED = false;
+
 const TRILHAS: Record<string, TrilhaConfig> = {
   "ifrs": {
     nome: "Trilha CONTIFRS",
@@ -409,11 +413,13 @@ Deno.serve(async request => {
     warnings.push(`ActiveCampaign: ${error instanceof Error ? error.message : "erro desconhecido"}`);
   }
 
-  try {
-    await syncPloomes(nome, email, telefone, trilha);
-    ploomesSynced = true;
-  } catch (error) {
-    warnings.push(`Ploomes: ${error instanceof Error ? error.message : "erro desconhecido"}`);
+  if (PLOOMES_SYNC_ENABLED) {
+    try {
+      await syncPloomes(nome, email, telefone, trilha);
+      ploomesSynced = true;
+    } catch (error) {
+      warnings.push(`Ploomes: ${error instanceof Error ? error.message : "erro desconhecido"}`);
+    }
   }
 
   return json({

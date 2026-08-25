@@ -21,3 +21,13 @@ jobs:
         run: supabase functions deploy trilhas-api --project-ref hasptpxcyavfdzxtwpws --no-verify-jwt
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Deploy ploomes-sync-lead
+        run: supabase functions deploy ploomes-sync-lead --project-ref hasptpxcyavfdzxtwpws --no-verify-jwt
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Deploy trilha-self-enroll
+        run: supabase functions deploy trilha-self-enroll --project-ref hasptpxcyavfdzxtwpws --no-verify-jwt
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
