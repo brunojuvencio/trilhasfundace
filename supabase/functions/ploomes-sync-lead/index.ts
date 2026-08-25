@@ -54,7 +54,9 @@ const ploomesUserKey = Deno.env.get("PLOOMES_API_KEY") ?? "";
 const ploomesBaseUrl = (Deno.env.get("PLOOMES_BASE_URL") ?? "https://public-api2.ploomes.com").replace(/\/+$/, "");
 const ploomesPipelineId = Number(Deno.env.get("PLOOMES_PIPELINE_ID") ?? "50001415");
 const ploomesStageId = Number(Deno.env.get("PLOOMES_STAGE_ID") ?? "50008137");
-const ploomesMarketingNovaStageId = Number(Deno.env.get("PLOOMES_MARKETING_NOVA_STAGE_ID") ?? "50009841");
+// Pipeline "Trilhas - COMUNICAÇÃO" e sua stage inicial "Lead" (confirmados via API em 2026-08-25).
+const ploomesMarketingNovaPipelineId = Number(Deno.env.get("PLOOMES_MARKETING_NOVA_PIPELINE_ID") ?? "50009841");
+const ploomesMarketingNovaStageId = Number(Deno.env.get("PLOOMES_MARKETING_NOVA_STAGE_ID") ?? "50046553");
 const defaultTrailName = "Trilha CONTIFRS";
 const marketingNovaTrailName = "Mini Curso Estratégias de Marketing para o Mercado em Transformação";
 
@@ -126,6 +128,11 @@ function getDealStageId(lead: LeadRow) {
   return ploomesStageId;
 }
 
+function getDealPipelineId(lead: LeadRow) {
+  if (isMarketingNovaTrail(lead)) return ploomesMarketingNovaPipelineId;
+  return ploomesPipelineId;
+}
+
 async function ploomesFetch(path: string, init: RequestInit = {}) {
   const response = await fetch(`${ploomesBaseUrl}${path}`, {
     ...init,
@@ -184,13 +191,21 @@ async function getLeadByEmail(email: string) {
   return data;
 }
 
-async function markLead(email: string, status: "pending" | "synced" | "error", contactId?: string, dealId?: string, error?: string) {
+async function markLead(
+  email: string,
+  status: "pending" | "synced" | "error",
+  contactId?: string,
+  dealId?: string,
+  error?: string,
+  pipelineId: number = ploomesPipelineId,
+  stageId: number = ploomesStageId,
+) {
   const { error: rpcError } = await adminClient.rpc("update_lead_ploomes_sync", {
     p_email: email,
     p_contact_id: contactId ?? null,
     p_deal_id: dealId ?? null,
-    p_pipeline_id: String(ploomesPipelineId),
-    p_stage_id: String(ploomesStageId),
+    p_pipeline_id: String(pipelineId),
+    p_stage_id: String(stageId),
     p_status: status,
     p_error: error ?? null,
   });
@@ -352,7 +367,7 @@ async function createDeal(contactId: number, lead: LeadRow) {
     body: JSON.stringify({
       Title: title,
       ContactId: contactId,
-      PipelineId: ploomesPipelineId,
+      PipelineId: getDealPipelineId(lead),
       StageId: getDealStageId(lead),
       OtherProperties: buildOtherProperties(lead),
     }),
@@ -529,7 +544,7 @@ Deno.serve(async request => {
     }
 
     console.info(`[ploomes-sync-lead] Iniciando sincronização do lead ${email}.`);
-    await markLead(email, "pending");
+    await markLead(email, "pending", undefined, undefined, undefined, getDealPipelineId(lead), getDealStageId(lead));
 
     let contact = await findContactByEmail(email);
     let foundBy = contact ? "email" : null;
@@ -559,7 +574,7 @@ Deno.serve(async request => {
       await createInteractionRecord(contact.Id, content, dealId);
     }
 
-    await markLead(email, "synced", String(contact.Id), String(dealId));
+    await markLead(email, "synced", String(contact.Id), String(dealId), undefined, getDealPipelineId(lead), getDealStageId(lead));
     console.info(`[ploomes-sync-lead] Lead ${email} sincronizado com sucesso. contactId=${contact.Id}, dealId=${dealId}`);
 
     // Sync AC em paralelo — falha não bloqueia resposta
@@ -578,8 +593,8 @@ Deno.serve(async request => {
       contactAlreadyExisted,
       foundBy,
       historyDealsCount: existingDeals.length,
-      pipelineId: ploomesPipelineId,
-      stageId: ploomesStageId,
+      pipelineId: getDealPipelineId(lead),
+      stageId: getDealStageId(lead),
       acListId: AC_CONSULTANT_LIST_ID,
       acSyncError,
     });
