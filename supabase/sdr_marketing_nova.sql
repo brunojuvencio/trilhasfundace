@@ -79,6 +79,9 @@ declare
   v_trail_nome constant text := 'Mini Curso Estratégias de Marketing para o Mercado em Transformação';
   v_trilha_id uuid;
   v_total_aulas integer;
+  -- So traz gatilhos a partir de ontem (00:00 em SP), pra fila nao comecar
+  -- lotada de coisa antiga ja vencida por natureza.
+  v_cutoff timestamptz := (date_trunc('day', (now() at time zone 'America/Sao_Paulo') - interval '1 day')) at time zone 'America/Sao_Paulo';
 begin
   if not public.is_admin() then
     raise exception 'Acesso negado.';
@@ -119,6 +122,7 @@ begin
     and t.lead_email = l.email
   where l.nome_trilha = v_trail_nome
     and l.pretende_pos = 'sim_agora'
+    and l.created_at >= v_cutoff
 
   union all
 
@@ -141,6 +145,7 @@ begin
     where a.trilha_id = v_trilha_id
     group by ulp.user_id
     having count(distinct ulp.lesson_id) >= v_total_aulas
+      and max(ulp.completed_at) >= v_cutoff
   ) p
   inner join auth.users u on u.id = p.user_id
   left join public.leads l on lower(l.email::text) = lower(u.email)
