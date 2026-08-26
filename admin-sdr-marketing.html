@@ -167,7 +167,9 @@
   </main>
 
   <script src="/supabase/config.js"></script>
+  <script src="/supabase/certificate-template.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
   <script>
     const { createClient } = supabase;
     const db = createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
@@ -183,6 +185,98 @@
     let currentView = "pending";
     let refreshTimer = null;
     let tickTimer = null;
+
+    // Fixos porque essa tela é exclusiva da trilha nova de Marketing.
+    const TRILHA_TITLE = "Mini Curso Estratégias de Marketing para o Mercado em Transformação";
+    const TRILHA_SLUG = "trilha-nova-de-marketing";
+    const TRILHA_LESSON_TITLES = [
+      "Introdução ao Mini Curso Estratégias de Marketing",
+      "Murilo Dotti - Desafios da comunicação e marketing na era da Inteligência Artificial",
+      "Leonardo Pereira - Tecnologia Aplicada: Ferramentas de Automação para Escalar a Produtividade e Gerar Valor para o Negócio",
+      "Rafael Wirz - Transformação Digital e Estratégias para Evolução da Experiência do Cliente",
+      "Mateus Manfrin Artêncio - Da teoria à prática: transformação estratégica e aplicação profissional"
+    ];
+
+    function wrapCertificateText(text, maxChars) {
+      const words = text.split(/\s+/).filter(Boolean);
+      const lines = [];
+      let current = "";
+      words.forEach(word => {
+        const candidate = current ? `${current} ${word}` : word;
+        if (candidate.length <= maxChars) {
+          current = candidate;
+        } else {
+          if (current) lines.push(current);
+          current = word;
+        }
+      });
+      if (current) lines.push(current);
+      return lines;
+    }
+
+    // Mesma lógica de geração de certificado do portal do aluno (Index.html),
+    // adaptada para gerar em nome de qualquer lead a partir do painel do SDR.
+    async function generateCertificateFor(name) {
+      const { PDFDocument, StandardFonts, rgb } = PDFLib;
+      const base64 = window.CERTIFICATE_TEMPLATE_BASE64;
+      if (!base64) throw new Error("Template do certificado não encontrado.");
+
+      const binary = atob(base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+
+      const pdfDoc = await PDFDocument.load(bytes);
+      const page = pdfDoc.getPages()[0];
+      const width = page.getWidth();
+      const height = page.getHeight();
+      const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+      const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+      const fontItalic = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
+
+      const nameSize = width > height ? 24 : 19;
+      const bodySize = width > height ? 9 : 7.5;
+      const lineGap = width > height ? 13 : 10;
+      const ink = rgb(0.15, 0.15, 0.15);
+      const inkSoft = rgb(0.22, 0.22, 0.22);
+
+      const drawCentered = (text, y, sz, fnt, color) => {
+        const tw = fnt.widthOfTextAtSize(text, sz);
+        page.drawText(text, { x: (width - tw) / 2, y, size: sz, font: fnt, color });
+      };
+
+      drawCentered("A FUNDACE certifica que", height * 0.65, bodySize, font, inkSoft);
+      drawCentered(name, height * 0.575, nameSize, fontBold, ink);
+      drawCentered("cumpriu a grade do curso", height * 0.51, bodySize, fontItalic, inkSoft);
+      drawCentered(TRILHA_TITLE, height * 0.47, width > height ? 13 : 10, fontBold, ink);
+
+      const lessonListSize = width > height ? 7.5 : 6;
+      const maxChars = width > height ? 68 : 46;
+      const cleanTitle = t => t
+        .replace(/^Aula\s+\d+\s*[:\-–]\s*/i, "")
+        .replace(/\s*[-–]\s*Parte\s+\d+\s*$/i, "")
+        .trim();
+      const uniqueTopics = [...new Set(TRILHA_LESSON_TITLES.map(cleanTitle))];
+      const lessonText = `composto pelas seguintes aulas: ${uniqueTopics.join(", ")}.`;
+      const lessonLines = wrapCertificateText(lessonText, maxChars).slice(0, 4);
+      const lessonStartY = height * 0.42;
+      lessonLines.forEach((line, i) => {
+        const lw = font.widthOfTextAtSize(line, lessonListSize);
+        page.drawText(line, { x: (width - lw) / 2, y: lessonStartY - (i * lineGap), size: lessonListSize, font, color: inkSoft });
+      });
+
+      const dateStr = new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+      drawCentered(dateStr, height * 0.335, bodySize, font, inkSoft);
+
+      const output = await pdfDoc.save();
+      const blob = new Blob([output], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const safeName = name.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      link.href = url;
+      link.download = `certificado-${TRILHA_SLUG}-${safeName || "aluno"}.pdf`;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
 
     // Limite abaixo do qual o gatilho vira "quase estourando" (amarelo).
     const SOON_THRESHOLD_MS = 3 * 60 * 60 * 1000; // 3 horas
@@ -271,6 +365,10 @@
         ? `<div class="contacted-meta">Contatado em ${formatDateTime(item.contatado_em)}${item.contatado_por ? `<br>por ${escapeHtml(item.contatado_por)}` : ""}</div>`
         : "";
 
+      const certificateButton = item.situacao === "B"
+        ? `<button type="button" class="button button-secondary certificate-btn" data-name="${escapeHtml(item.lead_nome || item.lead_email)}">Baixar certificado</button>`
+        : "";
+
       const deadlineLabel = item.contatado_em ? "" : ` (${formatRelativeDeadline(item)})`;
 
       return `
@@ -293,6 +391,7 @@
           </div>
           <div class="lead-actions">
             ${waButton}
+            ${certificateButton}
             ${contactedMeta}
           </div>
         </article>
@@ -317,6 +416,10 @@
 
       contentEl.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
         checkbox.addEventListener("change", onToggleContacted);
+      });
+
+      contentEl.querySelectorAll(".certificate-btn").forEach(btn => {
+        btn.addEventListener("click", onDownloadCertificate);
       });
     }
 
@@ -347,6 +450,23 @@
         item.contatado_por = data.contacted_by;
       }
       render();
+    }
+
+    async function onDownloadCertificate(event) {
+      const btn = event.currentTarget;
+      const name = btn.dataset.name;
+      const originalLabel = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "Gerando...";
+      try {
+        await generateCertificateFor(name);
+      } catch (error) {
+        console.error("[admin-sdr-marketing] Falha ao gerar certificado:", error);
+        alert("Não foi possível gerar o certificado agora.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = originalLabel;
+      }
     }
 
     function tickReorder() {
