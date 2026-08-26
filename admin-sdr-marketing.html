@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contato Ativo · Trilha Nova de Marketing | Fundace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f6f0e7;
+      --ink: #181411;
+      --muted: #695f57;
+      --line: rgba(24, 20, 17, 0.11);
+      --panel: rgba(255, 252, 248, 0.92);
+      --panel-strong: #fffdfa;
+      --accent: #d47a1f;
+      --accent-soft: rgba(212, 122, 31, 0.14);
+      --ok: #1f7a52;
+      --ok-soft: rgba(31, 122, 82, 0.12);
+      --warn: #9b5d16;
+      --warn-soft: rgba(203, 138, 25, 0.16);
+      --danger: #9d2f2f;
+      --danger-soft: rgba(157, 47, 47, 0.12);
+      --shadow: 0 24px 80px rgba(66, 43, 18, 0.1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Manrope", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(212, 122, 31, 0.18), transparent 32%),
+        linear-gradient(180deg, #f9f4ed 0%, var(--bg) 100%);
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: "";
+      position: fixed; inset: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(24,20,17,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(24,20,17,0.03) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: linear-gradient(180deg, rgba(0,0,0,0.4), transparent 90%);
+    }
+
+    a { color: inherit; }
+
+    .topbar {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(249,244,237,0.94);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--line);
+      padding: 0 40px;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 20px; height: 60px;
+    }
+    .topbar-brand { display: flex; align-items: center; gap: 12px; }
+    .topbar-eyebrow { font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); font-weight: 800; }
+    .topbar-title { font-family: "Fraunces", serif; font-size: 1.2rem; line-height: 1; letter-spacing: -0.03em; }
+    .topbar-actions { display: flex; gap: 8px; align-items: center; }
+
+    .button, button { font: inherit; border: 0; border-radius: 999px; padding: 9px 16px; font-weight: 700; cursor: pointer; font-size: 0.84rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: transform 0.15s ease, opacity 0.15s ease; }
+    .button:hover, button:hover { transform: translateY(-1px); }
+    .button-secondary { background: rgba(24,20,17,0.06); color: var(--ink); }
+    .button-ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+    .button-primary { background: var(--accent); color: #fff; }
+    .button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .shell { width: min(1100px, calc(100% - 40px)); margin: 0 auto; padding: 32px 0 64px; position: relative; z-index: 1; }
+
+    .page-head { margin-bottom: 24px; }
+    .page-head h1 { font-family: "Fraunces", serif; font-size: 1.9rem; letter-spacing: -0.03em; margin-bottom: 6px; }
+    .page-head p { color: var(--muted); font-size: 0.94rem; line-height: 1.6; max-width: 70ch; }
+
+    .view-toggle { display: flex; gap: 8px; margin-bottom: 20px; }
+    .view-toggle button { background: var(--panel); border: 1px solid var(--line); color: var(--muted); }
+    .view-toggle button.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+    .view-toggle .count { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; font-size: 0.68rem; font-weight: 800; background: var(--accent-soft); color: var(--accent); }
+    .view-toggle button.active .count { background: rgba(255,255,255,0.22); color: #fff; }
+
+    .empty-state { background: var(--panel); border: 1px dashed var(--line); border-radius: 20px; padding: 48px 24px; text-align: center; color: var(--muted); }
+
+    .queue { display: grid; gap: 12px; }
+
+    .lead-card {
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 18px 22px;
+      box-shadow: var(--shadow);
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 18px;
+      align-items: center;
+      border-left: 4px solid var(--line);
+    }
+    .lead-card.urgency-overdue { border-left-color: var(--danger); }
+    .lead-card.urgency-soon { border-left-color: var(--warn); }
+    .lead-card.urgency-ok { border-left-color: var(--ok); }
+    .lead-card.is-done { opacity: 0.6; }
+
+    .lead-check { display: flex; align-items: center; justify-content: center; }
+    .lead-check input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--accent); cursor: pointer; }
+
+    .lead-main { min-width: 0; }
+    .lead-name-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+    .lead-name { font-weight: 800; font-size: 1.02rem; }
+    .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 999px; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.03em; text-transform: uppercase; }
+    .badge-a { background: rgba(157, 47, 47, 0.1); color: #7a2929; }
+    .badge-b { background: rgba(24, 20, 17, 0.08); color: var(--muted); }
+    .badge-overdue { background: var(--danger-soft); color: var(--danger); }
+    .badge-soon { background: var(--warn-soft); color: var(--warn); }
+    .badge-ok { background: var(--ok-soft); color: var(--ok); }
+    .badge-nophone { background: var(--danger-soft); color: var(--danger); }
+
+    .lead-trigger { color: var(--muted); font-size: 0.86rem; margin-bottom: 6px; }
+    .lead-times { display: flex; gap: 18px; flex-wrap: wrap; font-size: 0.8rem; color: var(--muted); }
+    .lead-times strong { color: var(--ink); font-weight: 700; }
+
+    .lead-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+    .whatsapp-btn { background: #1f7a52; color: #fff; white-space: nowrap; }
+    .whatsapp-btn[aria-disabled="true"] { background: rgba(24,20,17,0.08); color: var(--muted); pointer-events: none; }
+    .contacted-meta { font-size: 0.72rem; color: var(--muted); text-align: right; }
+
+    @media (max-width: 720px) {
+      .lead-card { grid-template-columns: auto 1fr; }
+      .lead-actions { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; align-items: center; }
+    }
+
+    .loading-state { padding: 60px 0; text-align: center; color: var(--muted); }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-brand">
+      <div>
+        <div class="topbar-eyebrow">SDR · Contato Ativo</div>
+        <div class="topbar-title">Trilha Nova de Marketing</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <a class="button button-secondary" href="./admin.html">Painel admin</a>
+      <button class="button button-ghost" type="button" id="refresh-button">Atualizar</button>
+      <button class="button button-primary" type="button" id="logout-button">Sair</button>
+    </div>
+  </header>
+
+  <main class="shell">
+    <div class="page-head">
+      <h1>Fila de contato ativo</h1>
+      <p>Leads da trilha nova de Marketing que geraram um gatilho de contato — intenção imediata no formulário (Situação A) ou conclusão da trilha (Situação B). Ordenado por prioridade e prazo mais urgente primeiro.</p>
+    </div>
+
+    <div class="view-toggle">
+      <button type="button" class="active" data-view="pending">Fila ativa <span class="count" id="count-pending">0</span></button>
+      <button type="button" data-view="done">Já contatados <span class="count" id="count-done">0</span></button>
+    </div>
+
+    <div id="content">
+      <div class="loading-state">Carregando fila...</div>
+    </div>
+  </main>
+
+  <script src="./supabase/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const { createClient } = supabase;
+    const db = createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
+
+    const contentEl = document.getElementById("content");
+    const refreshButton = document.getElementById("refresh-button");
+    const logoutButton = document.getElementById("logout-button");
+    const viewButtons = document.querySelectorAll(".view-toggle button");
+    const countPendingEl = document.getElementById("count-pending");
+    const countDoneEl = document.getElementById("count-done");
+
+    let queue = [];
+    let currentView = "pending";
+    let refreshTimer = null;
+    let tickTimer = null;
+
+    // Limite abaixo do qual o gatilho vira "quase estourando" (amarelo).
+    const SOON_THRESHOLD_MS = 3 * 60 * 60 * 1000; // 3 horas
+
+    function normalizeWhatsappPhone(raw) {
+      const digits = String(raw || "").replace(/\D/g, "");
+      if (digits.length === 10 || digits.length === 11) return "55" + digits;
+      if ((digits.length === 12 || digits.length === 13) && digits.startsWith("55")) return digits;
+      return null;
+    }
+
+    function urgency(item) {
+      if (item.contatado_em) return "done";
+      const diffMs = new Date(item.prazo_em).getTime() - Date.now();
+      if (diffMs < 0) return "overdue";
+      if (diffMs < SOON_THRESHOLD_MS) return "soon";
+      return "ok";
+    }
+
+    function formatDateTime(value) {
+      if (!value) return "—";
+      return new Date(value).toLocaleString("pt-BR", {
+        day: "2-digit", month: "2-digit", year: "2-digit",
+        hour: "2-digit", minute: "2-digit"
+      });
+    }
+
+    function formatRelativeDeadline(item) {
+      const diffMs = new Date(item.prazo_em).getTime() - Date.now();
+      const abs = Math.abs(diffMs);
+      const hours = Math.floor(abs / (60 * 60 * 1000));
+      const minutes = Math.floor((abs % (60 * 60 * 1000)) / (60 * 1000));
+      const label = hours > 0 ? `${hours}h${minutes ? ` ${minutes}min` : ""}` : `${minutes}min`;
+      return diffMs < 0 ? `estourado há ${label}` : `faltam ${label}`;
+    }
+
+    function sortQueue(items) {
+      return [...items].sort((a, b) => {
+        if (a.situacao !== b.situacao) return a.situacao.localeCompare(b.situacao);
+        return new Date(a.prazo_em) - new Date(b.prazo_em);
+      });
+    }
+
+    async function loadQueue() {
+      const { data, error } = await db.rpc("get_marketing_nova_sdr_queue");
+      if (error) {
+        contentEl.innerHTML = `<div class="empty-state">Não foi possível carregar a fila agora.<br><small>${escapeHtml(error.message)}</small></div>`;
+        return;
+      }
+      queue = sortQueue(data || []);
+      render();
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function renderCard(item) {
+      const state = urgency(item);
+      const phone = normalizeWhatsappPhone(item.lead_telefone);
+      const situacaoBadge = item.situacao === "A"
+        ? `<span class="badge badge-a">Situação A</span>`
+        : `<span class="badge badge-b">Situação B</span>`;
+
+      let urgencyBadge = "";
+      if (state === "overdue") urgencyBadge = `<span class="badge badge-overdue">Prazo estourado</span>`;
+      else if (state === "soon") urgencyBadge = `<span class="badge badge-soon">Quase estourando</span>`;
+      else if (state === "ok") urgencyBadge = `<span class="badge badge-ok">No prazo</span>`;
+
+      const phoneBadge = phone ? "" : `<span class="badge badge-nophone">Sem telefone válido</span>`;
+
+      const waButton = phone
+        ? `<a class="button whatsapp-btn" target="_blank" rel="noopener" href="https://wa.me/${phone}">WhatsApp →</a>`
+        : `<span class="button whatsapp-btn" aria-disabled="true">Sem telefone</span>`;
+
+      const contactedMeta = item.contatado_em
+        ? `<div class="contacted-meta">Contatado em ${formatDateTime(item.contatado_em)}${item.contatado_por ? `<br>por ${escapeHtml(item.contatado_por)}` : ""}</div>`
+        : "";
+
+      const deadlineLabel = item.contatado_em ? "" : ` (${formatRelativeDeadline(item)})`;
+
+      return `
+        <article class="lead-card urgency-${state} ${item.contatado_em ? "is-done" : ""}" data-key="${escapeHtml(item.trigger_type)}::${escapeHtml(item.lead_email)}">
+          <div class="lead-check">
+            <input type="checkbox" ${item.contatado_em ? "checked" : ""} data-trail="${escapeHtml(item.trail_slug || "trilha-nova-de-marketing")}" data-trigger="${escapeHtml(item.trigger_type)}" data-email="${escapeHtml(item.lead_email)}" title="Contato feito">
+          </div>
+          <div class="lead-main">
+            <div class="lead-name-row">
+              <span class="lead-name">${escapeHtml(item.lead_nome || item.lead_email)}</span>
+              ${situacaoBadge}
+              ${urgencyBadge}
+              ${phoneBadge}
+            </div>
+            <div class="lead-trigger">${escapeHtml(item.trigger_label)}</div>
+            <div class="lead-times">
+              <span>Gatilho: <strong>${formatDateTime(item.gatilho_em)}</strong></span>
+              <span>Prazo: <strong>${formatDateTime(item.prazo_em)}</strong>${deadlineLabel}</span>
+            </div>
+          </div>
+          <div class="lead-actions">
+            ${waButton}
+            ${contactedMeta}
+          </div>
+        </article>
+      `;
+    }
+
+    function render() {
+      const pending = queue.filter(item => !item.contatado_em);
+      const done = queue.filter(item => item.contatado_em);
+
+      countPendingEl.textContent = pending.length;
+      countDoneEl.textContent = done.length;
+
+      const list = currentView === "pending" ? pending : done;
+
+      if (!list.length) {
+        contentEl.innerHTML = `<div class="empty-state">${currentView === "pending" ? "Nenhum gatilho pendente agora." : "Ninguém foi contatado ainda."}</div>`;
+        return;
+      }
+
+      contentEl.innerHTML = `<div class="queue">${list.map(renderCard).join("")}</div>`;
+
+      contentEl.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener("change", onToggleContacted);
+      });
+    }
+
+    async function onToggleContacted(event) {
+      const checkbox = event.target;
+      const { trail, trigger, email } = checkbox.dataset;
+      const contacted = checkbox.checked;
+      checkbox.disabled = true;
+
+      const { data, error } = await db.rpc("mark_sdr_lead_contacted", {
+        p_trail_slug: trail,
+        p_trigger_type: trigger,
+        p_lead_email: email,
+        p_contacted: contacted
+      });
+
+      checkbox.disabled = false;
+
+      if (error) {
+        checkbox.checked = !contacted;
+        alert("Não foi possível salvar. Tente novamente.");
+        return;
+      }
+
+      const item = queue.find(q => q.trigger_type === trigger && q.lead_email.toLowerCase() === email.toLowerCase());
+      if (item) {
+        item.contatado_em = data.contacted_at;
+        item.contatado_por = data.contacted_by;
+      }
+      render();
+    }
+
+    function tickReorder() {
+      // Só recalcula/rerenderiza a view atual, sem novo request — deadlines mudam com o tempo.
+      render();
+    }
+
+    viewButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        viewButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentView = btn.dataset.view;
+        render();
+      });
+    });
+
+    refreshButton.addEventListener("click", () => {
+      contentEl.innerHTML = `<div class="loading-state">Atualizando...</div>`;
+      loadQueue();
+    });
+
+    logoutButton.addEventListener("click", async () => {
+      await db.auth.signOut();
+      window.location.href = "./admin-login.html";
+    });
+
+    (async () => {
+      const { data: { session } } = await db.auth.getSession();
+      if (!session) { window.location.href = "./admin-login.html"; return; }
+
+      const { data: isAdmin, error: adminError } = await db.rpc("is_admin");
+      if (adminError || !isAdmin) {
+        window.location.href = "./admin-login.html";
+        return;
+      }
+
+      await loadQueue();
+
+      refreshTimer = setInterval(loadQueue, 5 * 60 * 1000); // busca de novo a cada 5min
+      tickTimer = setInterval(tickReorder, 60 * 1000); // reordena/recolore a cada 1min
+    })();
+  </script>
+</body>
+</html>

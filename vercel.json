@@ -10,6 +10,7 @@
     { "source": "/redefinir-senha", "destination": "/redefinir-senha.html" },
     { "source": "/trilha", "destination": "/Index.html" },
     { "source": "/admin/trilhas", "destination": "/admin.html?tab=trilhas" },
+    { "source": "/admin/sdr", "destination": "/admin-sdr-marketing.html" },
     { "source": "/admin", "destination": "/admin-login.html" },
     { "source": "/admin-login", "destination": "/admin-login.html" },
     { "source": "/painel-admin", "destination": "/admin.html" },
