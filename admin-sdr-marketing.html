@@ -144,7 +144,7 @@
       </div>
     </div>
     <div class="topbar-actions">
-      <a class="button button-secondary" href="./admin.html">Painel admin</a>
+      <a class="button button-secondary" href="/admin.html">Painel admin</a>
       <button class="button button-ghost" type="button" id="refresh-button">Atualizar</button>
       <button class="button button-primary" type="button" id="logout-button">Sair</button>
     </div>
@@ -166,7 +166,7 @@
     </div>
   </main>
 
-  <script src="./supabase/config.js"></script>
+  <script src="/supabase/config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const { createClient } = supabase;
@@ -227,13 +227,18 @@
     }
 
     async function loadQueue() {
-      const { data, error } = await db.rpc("get_marketing_nova_sdr_queue");
-      if (error) {
-        contentEl.innerHTML = `<div class="empty-state">Não foi possível carregar a fila agora.<br><small>${escapeHtml(error.message)}</small></div>`;
-        return;
+      try {
+        const { data, error } = await db.rpc("get_marketing_nova_sdr_queue");
+        if (error) {
+          contentEl.innerHTML = `<div class="empty-state">Não foi possível carregar a fila agora.<br><small>${escapeHtml(error.message)}</small></div>`;
+          return;
+        }
+        queue = sortQueue(data || []);
+        render();
+      } catch (error) {
+        console.error("[admin-sdr-marketing] Falha ao carregar fila:", error);
+        contentEl.innerHTML = `<div class="empty-state">Não foi possível carregar a fila agora.<br><small>${escapeHtml(error && error.message ? error.message : String(error))}</small></div>`;
       }
-      queue = sortQueue(data || []);
-      render();
     }
 
     function escapeHtml(value) {
@@ -365,16 +370,17 @@
 
     logoutButton.addEventListener("click", async () => {
       await db.auth.signOut();
-      window.location.href = "./admin-login.html";
+      window.location.href = "/admin-login.html";
     });
 
     (async () => {
+     try {
       const { data: { session } } = await db.auth.getSession();
-      if (!session) { window.location.href = "./admin-login.html"; return; }
+      if (!session) { window.location.href = "/admin-login.html"; return; }
 
       const { data: isAdmin, error: adminError } = await db.rpc("is_admin");
       if (adminError || !isAdmin) {
-        window.location.href = "./admin-login.html";
+        window.location.href = "/admin-login.html";
         return;
       }
 
@@ -382,6 +388,10 @@
 
       refreshTimer = setInterval(loadQueue, 5 * 60 * 1000); // busca de novo a cada 5min
       tickTimer = setInterval(tickReorder, 60 * 1000); // reordena/recolore a cada 1min
+     } catch (error) {
+      console.error("[admin-sdr-marketing] Falha ao inicializar:", error);
+      contentEl.innerHTML = `<div class="empty-state">Não foi possível carregar a página agora.<br><small>${escapeHtml(error && error.message ? error.message : String(error))}</small></div>`;
+     }
     })();
   </script>
 </body>
