@@ -61,6 +61,129 @@ with check (public.is_admin());
 create index if not exists sdr_contact_triggers_lookup_idx
   on public.sdr_contact_triggers (trail_slug, trigger_type, lead_email);
 
+-- Biblioteca de abordagens salvas: cada uma tem uma tag curta (o que aparece
+-- no card, escolhido num select) e a mensagem completa (fica só aqui, o SDR
+-- não digita ela no card).
+create table if not exists public.sdr_approach_templates (
+  id bigint generated always as identity primary key,
+  trail_slug text not null default 'trilha-nova-de-marketing',
+  tag text not null,
+  message text not null default '',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.sdr_approach_templates
+  add column if not exists trail_slug text not null default 'trilha-nova-de-marketing',
+  add column if not exists tag text,
+  add column if not exists message text not null default '',
+  add column if not exists created_at timestamptz not null default now(),
+  add column if not exists updated_at timestamptz not null default now();
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'sdr_approach_templates_unique'
+      and conrelid = 'public.sdr_approach_templates'::regclass
+  ) then
+    alter table public.sdr_approach_templates
+      add constraint sdr_approach_templates_unique unique (trail_slug, tag);
+  end if;
+end $$;
+
+alter table public.sdr_approach_templates enable row level security;
+
+drop policy if exists "Admins can read sdr approach templates" on public.sdr_approach_templates;
+create policy "Admins can read sdr approach templates"
+on public.sdr_approach_templates
+for select
+to authenticated
+using (public.is_admin());
+
+drop policy if exists "Admins can write sdr approach templates" on public.sdr_approach_templates;
+create policy "Admins can write sdr approach templates"
+on public.sdr_approach_templates
+for all
+to authenticated
+using (public.is_admin())
+with check (public.is_admin());
+
+create or replace function public.list_sdr_approach_templates(p_trail_slug text default 'trilha-nova-de-marketing')
+returns setof public.sdr_approach_templates
+language sql
+security definer
+set search_path = public
+as $$
+  select *
+  from public.sdr_approach_templates
+  where trail_slug = coalesce(nullif(trim(p_trail_slug), ''), 'trilha-nova-de-marketing')
+    and public.is_admin()
+  order by tag asc;
+$$;
+
+revoke all on function public.list_sdr_approach_templates(text) from public;
+grant execute on function public.list_sdr_approach_templates(text) to authenticated;
+
+create or replace function public.upsert_sdr_approach_template(
+  p_trail_slug text,
+  p_tag text,
+  p_message text
+)
+returns public.sdr_approach_templates
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_trail_slug text := coalesce(nullif(trim(p_trail_slug), ''), 'trilha-nova-de-marketing');
+  v_tag text := trim(coalesce(p_tag, ''));
+  v_row public.sdr_approach_templates;
+begin
+  if not public.is_admin() then
+    raise exception 'Acesso negado.';
+  end if;
+
+  if v_tag = '' then
+    raise exception 'A tag da abordagem é obrigatória.';
+  end if;
+
+  insert into public.sdr_approach_templates (trail_slug, tag, message)
+  values (v_trail_slug, v_tag, coalesce(p_message, ''))
+  on conflict (trail_slug, tag) do update
+  set message = coalesce(p_message, ''), updated_at = now()
+  returning * into v_row;
+
+  return v_row;
+end;
+$$;
+
+revoke all on function public.upsert_sdr_approach_template(text, text, text) from public;
+grant execute on function public.upsert_sdr_approach_template(text, text, text) to authenticated;
+
+create or replace function public.delete_sdr_approach_template(
+  p_trail_slug text,
+  p_tag text
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not public.is_admin() then
+    raise exception 'Acesso negado.';
+  end if;
+
+  delete from public.sdr_approach_templates
+  where trail_slug = coalesce(nullif(trim(p_trail_slug), ''), 'trilha-nova-de-marketing')
+    and tag = trim(coalesce(p_tag, ''));
+end;
+$$;
+
+revoke all on function public.delete_sdr_approach_template(text, text) from public;
+grant execute on function public.delete_sdr_approach_template(text, text) to authenticated;
+
 -- Universo completo de gatilhos da trilha nova de Marketing (situações A e B),
 -- SEM corte por data — usado tanto pela fila (que aplica o corte) quanto pelas
 -- métricas (que precisam do histórico inteiro). Função interna, não exposta.

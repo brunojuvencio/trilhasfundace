@@ -138,7 +138,7 @@
     .stat-card .stat-value { font-family: "Fraunces", serif; font-size: 1.7rem; letter-spacing: -0.02em; }
     .stat-card .stat-label { font-size: 0.74rem; color: var(--muted); margin-top: 2px; line-height: 1.4; }
     .stat-card .stat-sub { font-size: 0.68rem; color: var(--muted); opacity: 0.8; margin-top: 4px; }
-    .metrics-approach-btn { align-self: center; justify-self: stretch; height: 100%; background: var(--panel); border: 1px solid var(--line); color: var(--ink); border-radius: 16px; white-space: normal; text-align: center; }
+    .metrics-approach-btn { flex: 1; justify-content: center; background: var(--panel); border: 1px solid var(--line); color: var(--ink); border-radius: 16px; white-space: normal; text-align: center; }
 
     @media (max-width: 820px) {
       .metrics-bar { grid-template-columns: repeat(2, 1fr); }
@@ -155,12 +155,6 @@
     }
     .followup-check { display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--ink); cursor: pointer; font-weight: 600; }
     .followup-check input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--ok); cursor: pointer; }
-    .approach-input {
-      font: inherit; font-size: 0.82rem; padding: 6px 12px; border-radius: 999px;
-      border: 1px solid var(--line); background: #fff; color: var(--ink);
-      min-width: 220px; flex: 1;
-    }
-    .approach-input:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
     .approach-saved { font-size: 0.68rem; color: var(--ok); opacity: 0; transition: opacity 0.3s ease; }
     .approach-saved.show { opacity: 1; }
 
@@ -181,6 +175,31 @@
     .approach-table th { color: var(--muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; }
     .approach-table td.num, .approach-table th.num { text-align: right; }
     .modal-close { margin-top: 18px; width: 100%; justify-content: center; }
+
+    .template-form { display: grid; gap: 12px; padding-bottom: 18px; margin-bottom: 18px; border-bottom: 1px solid var(--line); }
+    .template-form-row { display: grid; gap: 6px; }
+    .template-form-row label { font-size: 0.76rem; font-weight: 700; color: var(--muted); }
+    .template-form-row input, .template-form-row textarea {
+      font: inherit; font-size: 0.86rem; padding: 9px 12px; border-radius: 12px;
+      border: 1px solid var(--line); background: #fff; color: var(--ink); resize: vertical;
+    }
+    .template-form-row input:focus, .template-form-row textarea:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+    .template-form-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+    .template-list { display: grid; gap: 10px; }
+    .template-item { border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; background: var(--panel); }
+    .template-item-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+    .template-item-tag { font-weight: 800; font-size: 0.9rem; }
+    .template-item-actions { display: flex; gap: 6px; }
+    .template-item-actions button { padding: 4px 10px; font-size: 0.72rem; }
+    .template-item-message { font-size: 0.8rem; color: var(--muted); white-space: pre-wrap; }
+
+    .approach-select {
+      font: inherit; font-size: 0.82rem; padding: 6px 12px; border-radius: 999px;
+      border: 1px solid var(--line); background: #fff; color: var(--ink);
+      min-width: 200px;
+    }
+    .approach-select:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
   </style>
 </head>
 <body>
@@ -221,7 +240,10 @@
         <div class="stat-label">Taxa de resposta geral</div>
         <div class="stat-sub">de todos os gatilhos</div>
       </div>
-      <button type="button" class="button metrics-approach-btn" id="approach-modal-btn">Ver taxa por abordagem</button>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <button type="button" class="button metrics-approach-btn" id="approach-modal-btn">Ver taxa por abordagem</button>
+        <button type="button" class="button metrics-approach-btn" id="approach-manage-btn">Gerenciar abordagens</button>
+      </div>
     </div>
 
     <div class="view-toggle">
@@ -243,7 +265,32 @@
     </div>
   </div>
 
-  <datalist id="approach-options"></datalist>
+  <div class="modal-backdrop" id="template-modal" hidden>
+    <div class="modal-card">
+      <h2>Gerenciar abordagens</h2>
+      <p class="modal-sub">Cadastre aqui a mensagem completa de cada abordagem. No card, você só escolhe a tag — a mensagem fica salva só aqui.</p>
+
+      <form id="template-form" class="template-form">
+        <input type="hidden" id="template-form-original-tag" value="">
+        <div class="template-form-row">
+          <label for="template-tag-input">Tag (aparece no card)</label>
+          <input type="text" id="template-tag-input" placeholder="Ex: Direta, Prova social, Urgência..." required maxlength="60">
+        </div>
+        <div class="template-form-row">
+          <label for="template-message-input">Mensagem completa</label>
+          <textarea id="template-message-input" rows="4" placeholder="Cole aqui o texto que você manda no WhatsApp nessa abordagem"></textarea>
+        </div>
+        <div class="template-form-actions">
+          <button type="button" class="button button-ghost" id="template-form-cancel" hidden>Cancelar edição</button>
+          <button type="submit" class="button button-primary" id="template-form-submit">Salvar abordagem</button>
+        </div>
+      </form>
+
+      <div id="template-list-body"></div>
+
+      <button type="button" class="button button-secondary modal-close" id="template-modal-close">Fechar</button>
+    </div>
+  </div>
 
   <script src="/supabase/config.js"></script>
   <script src="/supabase/certificate-template.js"></script>
@@ -262,6 +309,7 @@
 
     let queue = [];
     let metrics = null;
+    let templates = [];
     let currentView = "pending";
     let refreshTimer = null;
     let tickTimer = null;
@@ -270,11 +318,20 @@
     const metricRespondidosEl = document.getElementById("metric-respondidos");
     const metricNoPrazoEl = document.getElementById("metric-no-prazo");
     const metricGeralEl = document.getElementById("metric-geral");
-    const approachOptionsEl = document.getElementById("approach-options");
     const approachModalEl = document.getElementById("approach-modal");
     const approachModalBodyEl = document.getElementById("approach-modal-body");
     const approachModalBtn = document.getElementById("approach-modal-btn");
     const approachModalCloseBtn = document.getElementById("approach-modal-close");
+
+    const templateModalEl = document.getElementById("template-modal");
+    const templateManageBtn = document.getElementById("approach-manage-btn");
+    const templateModalCloseBtn = document.getElementById("template-modal-close");
+    const templateListBodyEl = document.getElementById("template-list-body");
+    const templateFormEl = document.getElementById("template-form");
+    const templateFormOriginalTagEl = document.getElementById("template-form-original-tag");
+    const templateTagInputEl = document.getElementById("template-tag-input");
+    const templateMessageInputEl = document.getElementById("template-message-input");
+    const templateFormCancelBtn = document.getElementById("template-form-cancel");
 
     // Fixos porque essa tela é exclusiva da trilha nova de Marketing.
     const TRILHA_TITLE = "Mini Curso Estratégias de Marketing para o Mercado em Transformação";
@@ -446,10 +503,6 @@
       metricNoPrazoEl.textContent = `${metrics.taxa_contato_no_prazo_pct}%`;
       metricGeralEl.textContent = `${metrics.taxa_resposta_geral_pct}%`;
 
-      approachOptionsEl.innerHTML = (metrics.por_abordagem || [])
-        .map(row => `<option value="${escapeHtml(row.abordagem)}"></option>`)
-        .join("");
-
       renderApproachModal();
     }
 
@@ -476,6 +529,77 @@
           </tbody>
         </table>
       `;
+    }
+
+    async function loadTemplates() {
+      try {
+        const { data, error } = await db.rpc("list_sdr_approach_templates");
+        if (error) {
+          console.error("[admin-sdr-marketing] Falha ao carregar abordagens:", error);
+          return;
+        }
+        templates = data || [];
+        renderTemplateManageModal();
+        render(); // reconstrói os selects dos cards com a lista atualizada
+      } catch (error) {
+        console.error("[admin-sdr-marketing] Falha ao carregar abordagens:", error);
+      }
+    }
+
+    function renderTemplateManageModal() {
+      if (!templates.length) {
+        templateListBodyEl.innerHTML = `<p class="modal-sub">Nenhuma abordagem cadastrada ainda. Use o formulário acima pra criar a primeira.</p>`;
+        return;
+      }
+      templateListBodyEl.innerHTML = `
+        <div class="template-list">
+          ${templates.map(t => `
+            <div class="template-item">
+              <div class="template-item-head">
+                <span class="template-item-tag">${escapeHtml(t.tag)}</span>
+                <div class="template-item-actions">
+                  <button type="button" class="button button-ghost template-edit-btn" data-tag="${escapeHtml(t.tag)}">Editar</button>
+                  <button type="button" class="button button-ghost template-delete-btn" data-tag="${escapeHtml(t.tag)}">Excluir</button>
+                </div>
+              </div>
+              <div class="template-item-message">${escapeHtml(t.message) || "<em>Sem mensagem salva</em>"}</div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+
+      templateListBodyEl.querySelectorAll(".template-edit-btn").forEach(btn => {
+        btn.addEventListener("click", () => startEditTemplate(btn.dataset.tag));
+      });
+      templateListBodyEl.querySelectorAll(".template-delete-btn").forEach(btn => {
+        btn.addEventListener("click", () => onDeleteTemplate(btn.dataset.tag));
+      });
+    }
+
+    function startEditTemplate(tag) {
+      const t = templates.find(x => x.tag === tag);
+      if (!t) return;
+      templateFormOriginalTagEl.value = t.tag;
+      templateTagInputEl.value = t.tag;
+      templateMessageInputEl.value = t.message || "";
+      templateFormCancelBtn.hidden = false;
+      templateTagInputEl.focus();
+    }
+
+    function resetTemplateForm() {
+      templateFormEl.reset();
+      templateFormOriginalTagEl.value = "";
+      templateFormCancelBtn.hidden = true;
+    }
+
+    async function onDeleteTemplate(tag) {
+      if (!confirm(`Excluir a abordagem "${tag}"? Cards que já usam essa tag mantêm o histórico, só não vai mais aparecer pra escolher.`)) return;
+      const { error } = await db.rpc("delete_sdr_approach_template", { p_trail_slug: TRILHA_SLUG, p_tag: tag });
+      if (error) {
+        alert("Não foi possível excluir agora.");
+        return;
+      }
+      await loadTemplates();
     }
 
     function escapeHtml(value) {
@@ -521,7 +645,13 @@
               <input type="checkbox" class="responded-checkbox" ${item.respondeu ? "checked" : ""} data-trail="${escapeHtml(item.trail_slug || "trilha-nova-de-marketing")}" data-trigger="${escapeHtml(item.trigger_type)}" data-email="${escapeHtml(item.lead_email)}">
               Lead respondeu
             </label>
-            <input type="text" class="approach-input" list="approach-options" placeholder="Abordagem usada (ex: Direta, Prova social...)" value="${escapeHtml(item.abordagem || "")}" data-trail="${escapeHtml(item.trail_slug || "trilha-nova-de-marketing")}" data-trigger="${escapeHtml(item.trigger_type)}" data-email="${escapeHtml(item.lead_email)}">
+            <select class="approach-select" data-trail="${escapeHtml(item.trail_slug || "trilha-nova-de-marketing")}" data-trigger="${escapeHtml(item.trigger_type)}" data-email="${escapeHtml(item.lead_email)}">
+              <option value="">Abordagem usada...</option>
+              ${templates.map(t => `<option value="${escapeHtml(t.tag)}" ${item.abordagem === t.tag ? "selected" : ""}>${escapeHtml(t.tag)}</option>`).join("")}
+              ${item.abordagem && !templates.some(t => t.tag === item.abordagem)
+                ? `<option value="${escapeHtml(item.abordagem)}" selected>${escapeHtml(item.abordagem)} (removida)</option>`
+                : ""}
+            </select>
             <span class="approach-saved">Salvo ✓</span>
           </div>
         `
@@ -583,8 +713,8 @@
         checkbox.addEventListener("change", onToggleResponded);
       });
 
-      contentEl.querySelectorAll(".approach-input").forEach(input => {
-        input.addEventListener("change", onApproachChange);
+      contentEl.querySelectorAll(".approach-select").forEach(select => {
+        select.addEventListener("change", onApproachChange);
       });
     }
 
@@ -722,6 +852,49 @@
       if (event.target === approachModalEl) approachModalEl.hidden = true;
     });
 
+    templateManageBtn.addEventListener("click", () => {
+      resetTemplateForm();
+      renderTemplateManageModal();
+      templateModalEl.hidden = false;
+    });
+    templateModalCloseBtn.addEventListener("click", () => { templateModalEl.hidden = true; });
+    templateModalEl.addEventListener("click", event => {
+      if (event.target === templateModalEl) templateModalEl.hidden = true;
+    });
+    templateFormCancelBtn.addEventListener("click", resetTemplateForm);
+
+    templateFormEl.addEventListener("submit", async event => {
+      event.preventDefault();
+      const originalTag = templateFormOriginalTagEl.value.trim();
+      const newTag = templateTagInputEl.value.trim();
+      const message = templateMessageInputEl.value;
+
+      if (!newTag) return;
+
+      const submitBtn = document.getElementById("template-form-submit");
+      submitBtn.disabled = true;
+
+      try {
+        if (originalTag && originalTag !== newTag) {
+          await db.rpc("delete_sdr_approach_template", { p_trail_slug: TRILHA_SLUG, p_tag: originalTag });
+        }
+        const { error } = await db.rpc("upsert_sdr_approach_template", {
+          p_trail_slug: TRILHA_SLUG,
+          p_tag: newTag,
+          p_message: message
+        });
+        if (error) throw error;
+
+        resetTemplateForm();
+        await loadTemplates();
+      } catch (error) {
+        console.error("[admin-sdr-marketing] Falha ao salvar abordagem:", error);
+        alert("Não foi possível salvar a abordagem agora.");
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
     logoutButton.addEventListener("click", async () => {
       await db.auth.signOut();
       window.location.href = "/admin-login.html";
@@ -738,6 +911,7 @@
         return;
       }
 
+      await loadTemplates();
       await Promise.all([loadQueue(), loadMetrics()]);
 
       refreshTimer = setInterval(() => { loadQueue(); loadMetrics(); }, 5 * 60 * 1000); // busca de novo a cada 5min
