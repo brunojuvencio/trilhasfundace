@@ -193,9 +193,13 @@ language sql
 security definer
 set search_path = public
 as $$
+  -- Corte FIXO (não é "ontem" relativo a hoje, senão o pendente que passar
+  -- disso some da fila igual sumia o contatado antes). Serve só pra não
+  -- começar com o backlog de antes do painel existir; a partir daqui, tudo
+  -- que gatilhar fica na fila até ser contatado, não importa há quanto tempo.
   select *
   from public.get_marketing_nova_sdr_all()
-  where gatilho_em >= (date_trunc('day', (now() at time zone 'America/Sao_Paulo') - interval '1 day')) at time zone 'America/Sao_Paulo'
+  where gatilho_em >= timestamptz '2026-08-25 00:00:00-03'
      or contatado_em is not null
   order by situacao asc, prazo_em asc;
 $$;
