@@ -132,6 +132,55 @@
     }
 
     .loading-state { padding: 60px 0; text-align: center; color: var(--muted); }
+
+    .metrics-bar { display: grid; grid-template-columns: repeat(3, 1fr) auto; gap: 12px; margin-bottom: 24px; align-items: stretch; }
+    .stat-card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px 18px; }
+    .stat-card .stat-value { font-family: "Fraunces", serif; font-size: 1.7rem; letter-spacing: -0.02em; }
+    .stat-card .stat-label { font-size: 0.74rem; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+    .stat-card .stat-sub { font-size: 0.68rem; color: var(--muted); opacity: 0.8; margin-top: 4px; }
+    .metrics-approach-btn { align-self: center; justify-self: stretch; height: 100%; background: var(--panel); border: 1px solid var(--line); color: var(--ink); border-radius: 16px; white-space: normal; text-align: center; }
+
+    @media (max-width: 820px) {
+      .metrics-bar { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .lead-followup {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--line);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 14px;
+    }
+    .followup-check { display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--ink); cursor: pointer; font-weight: 600; }
+    .followup-check input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--ok); cursor: pointer; }
+    .approach-input {
+      font: inherit; font-size: 0.82rem; padding: 6px 12px; border-radius: 999px;
+      border: 1px solid var(--line); background: #fff; color: var(--ink);
+      min-width: 220px; flex: 1;
+    }
+    .approach-input:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+    .approach-saved { font-size: 0.68rem; color: var(--ok); opacity: 0; transition: opacity 0.3s ease; }
+    .approach-saved.show { opacity: 1; }
+
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(24,20,17,0.45);
+      display: flex; align-items: center; justify-content: center; padding: 24px;
+      z-index: 100;
+    }
+    .modal-backdrop[hidden] { display: none; }
+    .modal-card {
+      background: var(--panel-strong); border-radius: 20px; box-shadow: var(--shadow);
+      width: min(560px, 100%); max-height: 80vh; overflow: auto; padding: 26px 28px;
+    }
+    .modal-card h2 { font-family: "Fraunces", serif; font-size: 1.3rem; margin-bottom: 4px; }
+    .modal-card .modal-sub { color: var(--muted); font-size: 0.84rem; margin-bottom: 18px; }
+    .approach-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+    .approach-table th, .approach-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+    .approach-table th { color: var(--muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .approach-table td.num, .approach-table th.num { text-align: right; }
+    .modal-close { margin-top: 18px; width: 100%; justify-content: center; }
   </style>
 </head>
 <body>
@@ -156,6 +205,25 @@
       <p>Leads da trilha nova de Marketing que geraram um gatilho de contato — intenção imediata no formulário (Situação A) ou conclusão da trilha (Situação B). Ordenado por prioridade e prazo mais urgente primeiro.</p>
     </div>
 
+    <div class="metrics-bar" id="metrics-bar" hidden>
+      <div class="stat-card">
+        <div class="stat-value" id="metric-respondidos">—</div>
+        <div class="stat-label">Taxa de resposta</div>
+        <div class="stat-sub">dos leads contatados</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="metric-no-prazo">—</div>
+        <div class="stat-label">Contato dentro do prazo</div>
+        <div class="stat-sub">dos leads contatados</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="metric-geral">—</div>
+        <div class="stat-label">Taxa de resposta geral</div>
+        <div class="stat-sub">de todos os gatilhos</div>
+      </div>
+      <button type="button" class="button metrics-approach-btn" id="approach-modal-btn">Ver taxa por abordagem</button>
+    </div>
+
     <div class="view-toggle">
       <button type="button" class="active" data-view="pending">Fila ativa <span class="count" id="count-pending">0</span></button>
       <button type="button" data-view="done">Já contatados <span class="count" id="count-done">0</span></button>
@@ -165,6 +233,17 @@
       <div class="loading-state">Carregando fila...</div>
     </div>
   </main>
+
+  <div class="modal-backdrop" id="approach-modal" hidden>
+    <div class="modal-card">
+      <h2>Taxa de resposta por abordagem</h2>
+      <p class="modal-sub">Considera só leads já contatados com a tag de abordagem preenchida.</p>
+      <div id="approach-modal-body">Carregando...</div>
+      <button type="button" class="button button-secondary modal-close" id="approach-modal-close">Fechar</button>
+    </div>
+  </div>
+
+  <datalist id="approach-options"></datalist>
 
   <script src="/supabase/config.js"></script>
   <script src="/supabase/certificate-template.js"></script>
@@ -182,9 +261,20 @@
     const countDoneEl = document.getElementById("count-done");
 
     let queue = [];
+    let metrics = null;
     let currentView = "pending";
     let refreshTimer = null;
     let tickTimer = null;
+
+    const metricsBarEl = document.getElementById("metrics-bar");
+    const metricRespondidosEl = document.getElementById("metric-respondidos");
+    const metricNoPrazoEl = document.getElementById("metric-no-prazo");
+    const metricGeralEl = document.getElementById("metric-geral");
+    const approachOptionsEl = document.getElementById("approach-options");
+    const approachModalEl = document.getElementById("approach-modal");
+    const approachModalBodyEl = document.getElementById("approach-modal-body");
+    const approachModalBtn = document.getElementById("approach-modal-btn");
+    const approachModalCloseBtn = document.getElementById("approach-modal-close");
 
     // Fixos porque essa tela é exclusiva da trilha nova de Marketing.
     const TRILHA_TITLE = "Mini Curso Estratégias de Marketing para o Mercado em Transformação";
@@ -335,6 +425,59 @@
       }
     }
 
+    async function loadMetrics() {
+      try {
+        const { data, error } = await db.rpc("get_marketing_nova_sdr_metrics");
+        if (error) {
+          console.error("[admin-sdr-marketing] Falha ao carregar métricas:", error);
+          return;
+        }
+        metrics = data;
+        renderMetrics();
+      } catch (error) {
+        console.error("[admin-sdr-marketing] Falha ao carregar métricas:", error);
+      }
+    }
+
+    function renderMetrics() {
+      if (!metrics) return;
+      metricsBarEl.hidden = false;
+      metricRespondidosEl.textContent = `${metrics.taxa_resposta_dos_contatados_pct}%`;
+      metricNoPrazoEl.textContent = `${metrics.taxa_contato_no_prazo_pct}%`;
+      metricGeralEl.textContent = `${metrics.taxa_resposta_geral_pct}%`;
+
+      approachOptionsEl.innerHTML = (metrics.por_abordagem || [])
+        .map(row => `<option value="${escapeHtml(row.abordagem)}"></option>`)
+        .join("");
+
+      renderApproachModal();
+    }
+
+    function renderApproachModal() {
+      const rows = (metrics && metrics.por_abordagem) || [];
+      if (!rows.length) {
+        approachModalBodyEl.innerHTML = `<p class="modal-sub">Nenhuma abordagem registrada ainda.</p>`;
+        return;
+      }
+      approachModalBodyEl.innerHTML = `
+        <table class="approach-table">
+          <thead>
+            <tr><th>Abordagem</th><th class="num">Contatados</th><th class="num">Responderam</th><th class="num">Taxa</th></tr>
+          </thead>
+          <tbody>
+            ${rows.map(row => `
+              <tr>
+                <td>${escapeHtml(row.abordagem)}</td>
+                <td class="num">${row.total_contatados}</td>
+                <td class="num">${row.total_respondidos}</td>
+                <td class="num">${row.taxa_resposta_pct}%</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      `;
+    }
+
     function escapeHtml(value) {
       return String(value ?? "")
         .replace(/&/g, "&amp;")
@@ -371,6 +514,19 @@
 
       const deadlineLabel = item.contatado_em ? "" : ` (${formatRelativeDeadline(item)})`;
 
+      const followupRow = item.contatado_em
+        ? `
+          <div class="lead-followup">
+            <label class="followup-check">
+              <input type="checkbox" class="responded-checkbox" ${item.respondeu ? "checked" : ""} data-trail="${escapeHtml(item.trail_slug || "trilha-nova-de-marketing")}" data-trigger="${escapeHtml(item.trigger_type)}" data-email="${escapeHtml(item.lead_email)}">
+              Lead respondeu
+            </label>
+            <input type="text" class="approach-input" list="approach-options" placeholder="Abordagem usada (ex: Direta, Prova social...)" value="${escapeHtml(item.abordagem || "")}" data-trail="${escapeHtml(item.trail_slug || "trilha-nova-de-marketing")}" data-trigger="${escapeHtml(item.trigger_type)}" data-email="${escapeHtml(item.lead_email)}">
+            <span class="approach-saved">Salvo ✓</span>
+          </div>
+        `
+        : "";
+
       return `
         <article class="lead-card urgency-${state} ${item.contatado_em ? "is-done" : ""}" data-key="${escapeHtml(item.trigger_type)}::${escapeHtml(item.lead_email)}">
           <div class="lead-check">
@@ -388,6 +544,7 @@
               <span>Gatilho: <strong>${formatDateTime(item.gatilho_em)}</strong></span>
               <span>Prazo: <strong>${formatDateTime(item.prazo_em)}</strong>${deadlineLabel}</span>
             </div>
+            ${followupRow}
           </div>
           <div class="lead-actions">
             ${waButton}
@@ -414,12 +571,20 @@
 
       contentEl.innerHTML = `<div class="queue">${list.map(renderCard).join("")}</div>`;
 
-      contentEl.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+      contentEl.querySelectorAll('.lead-check input[type="checkbox"]').forEach(checkbox => {
         checkbox.addEventListener("change", onToggleContacted);
       });
 
       contentEl.querySelectorAll(".certificate-btn").forEach(btn => {
         btn.addEventListener("click", onDownloadCertificate);
+      });
+
+      contentEl.querySelectorAll(".responded-checkbox").forEach(checkbox => {
+        checkbox.addEventListener("change", onToggleResponded);
+      });
+
+      contentEl.querySelectorAll(".approach-input").forEach(input => {
+        input.addEventListener("change", onApproachChange);
       });
     }
 
@@ -448,8 +613,67 @@
       if (item) {
         item.contatado_em = data.contacted_at;
         item.contatado_por = data.contacted_by;
+        item.respondeu = data.responded;
+        item.abordagem = data.approach_tag;
       }
       render();
+      loadMetrics();
+    }
+
+    async function onToggleResponded(event) {
+      const checkbox = event.target;
+      const { trail, trigger, email } = checkbox.dataset;
+      const responded = checkbox.checked;
+      checkbox.disabled = true;
+
+      const { data, error } = await db.rpc("set_sdr_lead_responded", {
+        p_trail_slug: trail,
+        p_trigger_type: trigger,
+        p_lead_email: email,
+        p_responded: responded
+      });
+
+      checkbox.disabled = false;
+
+      if (error) {
+        checkbox.checked = !responded;
+        alert("Não foi possível salvar. Tente novamente.");
+        return;
+      }
+
+      const item = queue.find(q => q.trigger_type === trigger && q.lead_email.toLowerCase() === email.toLowerCase());
+      if (item) item.respondeu = data.responded;
+      loadMetrics();
+    }
+
+    async function onApproachChange(event) {
+      const input = event.target;
+      const { trail, trigger, email } = input.dataset;
+      const savedFlag = input.parentElement.querySelector(".approach-saved");
+      input.disabled = true;
+
+      const { data, error } = await db.rpc("set_sdr_lead_approach", {
+        p_trail_slug: trail,
+        p_trigger_type: trigger,
+        p_lead_email: email,
+        p_approach_tag: input.value
+      });
+
+      input.disabled = false;
+
+      if (error) {
+        alert("Não foi possível salvar a abordagem. Tente novamente.");
+        return;
+      }
+
+      const item = queue.find(q => q.trigger_type === trigger && q.lead_email.toLowerCase() === email.toLowerCase());
+      if (item) item.abordagem = data.approach_tag;
+
+      if (savedFlag) {
+        savedFlag.classList.add("show");
+        setTimeout(() => savedFlag.classList.remove("show"), 2000);
+      }
+      loadMetrics();
     }
 
     async function onDownloadCertificate(event) {
@@ -486,6 +710,16 @@
     refreshButton.addEventListener("click", () => {
       contentEl.innerHTML = `<div class="loading-state">Atualizando...</div>`;
       loadQueue();
+      loadMetrics();
+    });
+
+    approachModalBtn.addEventListener("click", () => {
+      renderApproachModal();
+      approachModalEl.hidden = false;
+    });
+    approachModalCloseBtn.addEventListener("click", () => { approachModalEl.hidden = true; });
+    approachModalEl.addEventListener("click", event => {
+      if (event.target === approachModalEl) approachModalEl.hidden = true;
     });
 
     logoutButton.addEventListener("click", async () => {
@@ -504,9 +738,9 @@
         return;
       }
 
-      await loadQueue();
+      await Promise.all([loadQueue(), loadMetrics()]);
 
-      refreshTimer = setInterval(loadQueue, 5 * 60 * 1000); // busca de novo a cada 5min
+      refreshTimer = setInterval(() => { loadQueue(); loadMetrics(); }, 5 * 60 * 1000); // busca de novo a cada 5min
       tickTimer = setInterval(tickReorder, 60 * 1000); // reordena/recolore a cada 1min
      } catch (error) {
       console.error("[admin-sdr-marketing] Falha ao inicializar:", error);
