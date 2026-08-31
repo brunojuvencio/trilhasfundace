@@ -78,6 +78,7 @@ create table if not exists public.sdr_pipeline_stages (
   nome text not null,
   ordem integer not null default 1,
   is_default boolean not null default false,
+  is_loss_stage boolean not null default false,
   created_at timestamptz not null default now()
 );
 
@@ -87,7 +88,11 @@ alter table public.sdr_pipeline_stages
   add column if not exists nome text,
   add column if not exists ordem integer not null default 1,
   add column if not exists is_default boolean not null default false,
+  add column if not exists is_loss_stage boolean not null default false,
   add column if not exists created_at timestamptz not null default now();
+
+alter table public.sdr_contact_triggers
+  add column if not exists loss_reason text;
 
 do $$
 begin
@@ -238,6 +243,40 @@ $$;
 revoke all on function public.rename_sdr_pipeline_stage(bigint, text) from public;
 grant execute on function public.rename_sdr_pipeline_stage(bigint, text) to authenticated;
 
+-- Marca (ou desmarca) uma etapa como "etapa de perda": mover um lead pra ela
+-- passa a pedir o motivo, guardado em sdr_contact_triggers.loss_reason.
+create or replace function public.set_sdr_pipeline_stage_loss_flag(
+  p_stage_id bigint,
+  p_is_loss_stage boolean
+)
+returns public.sdr_pipeline_stages
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_row public.sdr_pipeline_stages;
+begin
+  if not public.is_admin() then
+    raise exception 'Acesso negado.';
+  end if;
+
+  update public.sdr_pipeline_stages
+  set is_loss_stage = p_is_loss_stage
+  where id = p_stage_id
+  returning * into v_row;
+
+  if v_row.id is null then
+    raise exception 'Etapa não encontrada.';
+  end if;
+
+  return v_row;
+end;
+$$;
+
+revoke all on function public.set_sdr_pipeline_stage_loss_flag(bigint, boolean) from public;
+grant execute on function public.set_sdr_pipeline_stage_loss_flag(bigint, boolean) to authenticated;
+
 create or replace function public.reorder_sdr_pipeline_stages(
   p_funil text,
   p_stage_ids bigint[]
@@ -309,12 +348,15 @@ grant execute on function public.delete_sdr_pipeline_stage(bigint) to authentica
 
 -- Move um lead de etapa (usado pelo Kanban, arrastar ou pelo select "mover
 -- para"). Sair da etapa inicial marca contato feito (se ainda não estava);
--- voltar pra etapa inicial desfaz a marca de contato.
+-- voltar pra etapa inicial desfaz a marca de contato. Se a etapa de destino
+-- for uma etapa de perda, grava o motivo (obrigatório nesse caso).
+drop function if exists public.move_sdr_lead_stage(text, text, text, bigint);
 create or replace function public.move_sdr_lead_stage(
   p_trail_slug text,
   p_trigger_type text,
   p_lead_email text,
-  p_stage_id bigint
+  p_stage_id bigint,
+  p_loss_reason text default null
 )
 returns public.sdr_contact_triggers
 language plpgsql
@@ -326,6 +368,8 @@ declare
   v_trigger_type text := trim(coalesce(p_trigger_type, ''));
   v_email citext := lower(trim(coalesce(p_lead_email, '')));
   v_is_default boolean;
+  v_is_loss boolean;
+  v_loss_reason text := nullif(trim(coalesce(p_loss_reason, '')), '');
   v_row public.sdr_contact_triggers;
 begin
   if not public.is_admin() then
@@ -336,16 +380,24 @@ begin
     raise exception 'Parâmetros obrigatórios ausentes.';
   end if;
 
-  select is_default into v_is_default from public.sdr_pipeline_stages where id = p_stage_id and funil = v_trigger_type;
+  select is_default, is_loss_stage into v_is_default, v_is_loss
+  from public.sdr_pipeline_stages
+  where id = p_stage_id and funil = v_trigger_type;
+
   if v_is_default is null then
     raise exception 'Etapa inválida para esse funil.';
   end if;
 
-  insert into public.sdr_contact_triggers (trail_slug, trigger_type, lead_email, stage_id, stage_changed_at, contacted_at, contacted_by)
+  if v_is_loss and v_loss_reason is null then
+    raise exception 'Informe o motivo da perda.';
+  end if;
+
+  insert into public.sdr_contact_triggers (trail_slug, trigger_type, lead_email, stage_id, stage_changed_at, contacted_at, contacted_by, loss_reason)
   values (
     v_trail_slug, v_trigger_type, v_email, p_stage_id, now(),
     case when not v_is_default then now() else null end,
-    case when not v_is_default then coalesce(auth.jwt() ->> 'email', 'admin') else null end
+    case when not v_is_default then coalesce(auth.jwt() ->> 'email', 'admin') else null end,
+    case when v_is_loss then v_loss_reason else null end
   )
   on conflict (trail_slug, trigger_type, lead_email) do update
   set
@@ -360,15 +412,16 @@ begin
       when v_is_default then null
       when public.sdr_contact_triggers.contacted_by is not null then public.sdr_contact_triggers.contacted_by
       else coalesce(auth.jwt() ->> 'email', 'admin')
-    end
+    end,
+    loss_reason = case when v_is_loss then v_loss_reason else public.sdr_contact_triggers.loss_reason end
   returning * into v_row;
 
   return v_row;
 end;
 $$;
 
-revoke all on function public.move_sdr_lead_stage(text, text, text, bigint) from public;
-grant execute on function public.move_sdr_lead_stage(text, text, text, bigint) to authenticated;
+revoke all on function public.move_sdr_lead_stage(text, text, text, bigint, text) from public;
+grant execute on function public.move_sdr_lead_stage(text, text, text, bigint, text) to authenticated;
 
 -- Biblioteca de abordagens salvas: cada uma tem uma tag curta (o que aparece
 -- no card, escolhido num select) e a mensagem completa (fica só aqui, o SDR
@@ -531,7 +584,9 @@ returns table (
   stage_nome text,
   stage_ordem integer,
   stage_is_default boolean,
-  stage_desde timestamptz
+  stage_is_loss boolean,
+  stage_desde timestamptz,
+  motivo_perda text
 )
 language plpgsql
 security definer
@@ -582,7 +637,9 @@ begin
     coalesce(st.nome, ds.nome),
     coalesce(st.ordem, ds.ordem),
     coalesce(st.is_default, ds.is_default, true),
-    coalesce(t.stage_changed_at, l.created_at)
+    coalesce(st.is_loss_stage, ds.is_loss_stage, false),
+    coalesce(t.stage_changed_at, l.created_at),
+    t.loss_reason
   from public.leads l
   left join public.sdr_contact_triggers t
     on t.trail_slug = v_trail_slug
@@ -620,7 +677,9 @@ begin
     coalesce(st.nome, ds.nome),
     coalesce(st.ordem, ds.ordem),
     coalesce(st.is_default, ds.is_default, true),
-    coalesce(t.stage_changed_at, p.gatilho_em)
+    coalesce(st.is_loss_stage, ds.is_loss_stage, false),
+    coalesce(t.stage_changed_at, p.gatilho_em),
+    t.loss_reason
   from (
     select ulp.user_id, max(ulp.completed_at) as gatilho_em
     from public.user_lesson_progress ulp
@@ -665,7 +724,9 @@ returns table (
   stage_nome text,
   stage_ordem integer,
   stage_is_default boolean,
-  stage_desde timestamptz
+  stage_is_loss boolean,
+  stage_desde timestamptz,
+  motivo_perda text
 )
 language sql
 security definer

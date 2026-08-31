@@ -115,10 +115,12 @@
     .kcard-followup .followup-check { font-size: 0.74rem; }
     .kcard-followup .approach-select { width: 100%; min-width: 0; font-size: 0.74rem; padding: 5px 10px; }
 
-    .stage-item { display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; background: var(--panel); margin-bottom: 8px; }
+    .stage-item-wrap { margin-bottom: 8px; }
+    .stage-item { display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; background: var(--panel); }
     .stage-item input[type="text"] { flex: 1; font: inherit; font-size: 0.84rem; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: #fff; }
     .stage-item .badge-default { font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.03em; color: var(--accent); background: var(--accent-soft); padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
     .stage-item-actions { display: flex; gap: 4px; }
+    .stage-loss-check { margin-top: 6px; padding-left: 4px; color: var(--muted); font-weight: 600; }
     .stage-item-actions button { padding: 4px 8px; font-size: 0.68rem; }
 
     .empty-state { background: var(--panel); border: 1px dashed var(--line); border-radius: 20px; padding: 48px 24px; text-align: center; color: var(--muted); }
@@ -319,6 +321,23 @@
     </div>
   </div>
 
+  <div class="modal-backdrop" id="loss-reason-modal" hidden>
+    <div class="modal-card">
+      <h2>Motivo da perda</h2>
+      <p class="modal-sub" id="loss-reason-sub"></p>
+      <form id="loss-reason-form" class="template-form">
+        <div class="template-form-row">
+          <label for="loss-reason-input">Motivo</label>
+          <textarea id="loss-reason-input" rows="3" required placeholder="Ex: sem orçamento, escolheu concorrente, não respondeu mais..."></textarea>
+        </div>
+        <div class="template-form-actions">
+          <button type="button" class="button button-ghost" id="loss-reason-cancel">Cancelar</button>
+          <button type="submit" class="button button-primary">Confirmar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <div class="modal-backdrop" id="approach-modal" hidden>
     <div class="modal-card">
       <h2>Taxa de resposta por abordagem</h2>
@@ -388,6 +407,36 @@
     const stageListBodyEl = document.getElementById("stage-list-body");
     const stageFormEl = document.getElementById("stage-form");
     const stageNameInputEl = document.getElementById("stage-name-input");
+
+    const lossReasonModalEl = document.getElementById("loss-reason-modal");
+    const lossReasonSubEl = document.getElementById("loss-reason-sub");
+    const lossReasonFormEl = document.getElementById("loss-reason-form");
+    const lossReasonInputEl = document.getElementById("loss-reason-input");
+    const lossReasonCancelBtn = document.getElementById("loss-reason-cancel");
+    let lossReasonResolver = null;
+
+    function askLossReason(stageName) {
+      lossReasonSubEl.textContent = `Etapa "${stageName}" exige um motivo antes de mover o lead pra ela.`;
+      lossReasonInputEl.value = "";
+      lossReasonModalEl.hidden = false;
+      lossReasonInputEl.focus();
+      return new Promise(resolve => { lossReasonResolver = resolve; });
+    }
+
+    lossReasonFormEl.addEventListener("submit", event => {
+      event.preventDefault();
+      const value = lossReasonInputEl.value.trim();
+      if (!value) return;
+      lossReasonModalEl.hidden = true;
+      if (lossReasonResolver) lossReasonResolver(value);
+      lossReasonResolver = null;
+    });
+
+    lossReasonCancelBtn.addEventListener("click", () => {
+      lossReasonModalEl.hidden = true;
+      if (lossReasonResolver) lossReasonResolver(null);
+      lossReasonResolver = null;
+    });
 
     const metricsBarEl = document.getElementById("metrics-bar");
     const metricRespondidosEl = document.getElementById("metric-respondidos");
@@ -713,14 +762,22 @@
 
       const stages = stagesByFunil[currentFunil] || [];
       stageListBodyEl.innerHTML = stages.map((stage, index) => `
-        <div class="stage-item" data-stage-id="${stage.id}">
-          <input type="text" value="${escapeHtml(stage.nome)}" data-stage-id="${stage.id}" class="stage-rename-input">
-          ${stage.is_default ? `<span class="badge-default">Entrada</span>` : ""}
-          <div class="stage-item-actions">
-            <button type="button" class="button button-ghost stage-move-up" data-stage-id="${stage.id}" ${index === 0 ? "disabled" : ""}>▲</button>
-            <button type="button" class="button button-ghost stage-move-down" data-stage-id="${stage.id}" ${index === stages.length - 1 ? "disabled" : ""}>▼</button>
-            ${!stage.is_default ? `<button type="button" class="button button-ghost stage-delete-btn" data-stage-id="${stage.id}" data-stage-nome="${escapeHtml(stage.nome)}">Excluir</button>` : ""}
+        <div class="stage-item-wrap">
+          <div class="stage-item" data-stage-id="${stage.id}">
+            <input type="text" value="${escapeHtml(stage.nome)}" data-stage-id="${stage.id}" class="stage-rename-input">
+            ${stage.is_default ? `<span class="badge-default">Entrada</span>` : ""}
+            <div class="stage-item-actions">
+              <button type="button" class="button button-ghost stage-move-up" data-stage-id="${stage.id}" ${index === 0 ? "disabled" : ""}>▲</button>
+              <button type="button" class="button button-ghost stage-move-down" data-stage-id="${stage.id}" ${index === stages.length - 1 ? "disabled" : ""}>▼</button>
+              ${!stage.is_default ? `<button type="button" class="button button-ghost stage-delete-btn" data-stage-id="${stage.id}" data-stage-nome="${escapeHtml(stage.nome)}">Excluir</button>` : ""}
+            </div>
           </div>
+          ${!stage.is_default ? `
+            <label class="followup-check stage-loss-check">
+              <input type="checkbox" class="stage-loss-toggle" data-stage-id="${stage.id}" ${stage.is_loss_stage ? "checked" : ""}>
+              Etapa de perda (pede motivo ao mover pra cá)
+            </label>
+          ` : ""}
         </div>
       `).join("");
 
@@ -736,6 +793,18 @@
       stageListBodyEl.querySelectorAll(".stage-delete-btn").forEach(btn => {
         btn.addEventListener("click", () => onDeleteStage(Number(btn.dataset.stageId), btn.dataset.stageNome));
       });
+      stageListBodyEl.querySelectorAll(".stage-loss-toggle").forEach(checkbox => {
+        checkbox.addEventListener("change", () => onToggleStageLoss(Number(checkbox.dataset.stageId), checkbox.checked));
+      });
+    }
+
+    async function onToggleStageLoss(stageId, isLoss) {
+      const { error } = await db.rpc("set_sdr_pipeline_stage_loss_flag", { p_stage_id: stageId, p_is_loss_stage: isLoss });
+      if (error) {
+        alert("Não foi possível salvar agora.");
+        return;
+      }
+      await loadStages();
     }
 
     async function onRenameStage(stageId, nome) {
@@ -815,6 +884,10 @@
         timeMeta = escapeHtml(formatTimeInStage(item));
       }
 
+      const lossReasonMeta = item.stage_is_loss && item.motivo_perda
+        ? `<div class="kcard-meta"><strong>Motivo:</strong> ${escapeHtml(item.motivo_perda)}</div>`
+        : "";
+
       const funilStages = stagesByFunil[currentFunil] || [];
       const moveOptions = funilStages
         .filter(s => s.id !== item.stage_id)
@@ -844,6 +917,7 @@
           <div class="kcard-name">${escapeHtml(item.lead_nome || item.lead_email)}</div>
           <div class="kcard-badges">${urgencyBadge}${phoneBadge}</div>
           <div class="kcard-meta">${timeMeta}</div>
+          ${lossReasonMeta}
           <div class="kcard-actions">
             ${waButton}
             ${certificateButton}
@@ -949,28 +1023,38 @@
     }
 
     async function moveLeadStage(item, stageId) {
+      const stage = (stagesByFunil.A.concat(stagesByFunil.B)).find(s => s.id === stageId);
+
+      let lossReason;
+      if (stage && stage.is_loss_stage) {
+        lossReason = await askLossReason(stage.nome);
+        if (lossReason === null) return; // cancelou
+      }
+
       const { data, error } = await db.rpc("move_sdr_lead_stage", {
         p_trail_slug: item.trail_slug || TRILHA_SLUG,
         p_trigger_type: item.trigger_type,
         p_lead_email: item.lead_email,
-        p_stage_id: stageId
+        p_stage_id: stageId,
+        p_loss_reason: lossReason || null
       });
 
       if (error) {
-        alert("Não foi possível mover o lead agora. Tente novamente.");
+        alert(error.message || "Não foi possível mover o lead agora. Tente novamente.");
         return;
       }
 
-      const stage = (stagesByFunil.A.concat(stagesByFunil.B)).find(s => s.id === stageId);
       item.stage_id = data.stage_id;
       item.stage_nome = stage ? stage.nome : item.stage_nome;
       item.stage_ordem = stage ? stage.ordem : item.stage_ordem;
       item.stage_is_default = stage ? stage.is_default : item.stage_is_default;
+      item.stage_is_loss = stage ? stage.is_loss_stage : item.stage_is_loss;
       item.stage_desde = data.stage_changed_at;
       item.contatado_em = data.contacted_at;
       item.contatado_por = data.contacted_by;
       item.respondeu = data.responded;
       item.abordagem = data.approach_tag;
+      item.motivo_perda = data.loss_reason;
 
       renderBoard();
       loadMetrics();
