@@ -76,11 +76,50 @@
     .page-head h1 { font-family: "Fraunces", serif; font-size: 1.9rem; letter-spacing: -0.03em; margin-bottom: 6px; }
     .page-head p { color: var(--muted); font-size: 0.94rem; line-height: 1.6; max-width: 70ch; }
 
-    .view-toggle { display: flex; gap: 8px; margin-bottom: 20px; }
+    .funil-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+    .view-toggle { display: flex; gap: 8px; flex-wrap: wrap; }
     .view-toggle button { background: var(--panel); border: 1px solid var(--line); color: var(--muted); }
     .view-toggle button.active { background: var(--ink); color: #fff; border-color: var(--ink); }
     .view-toggle .count { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; font-size: 0.68rem; font-weight: 800; background: var(--accent-soft); color: var(--accent); }
     .view-toggle button.active .count { background: rgba(255,255,255,0.22); color: #fff; }
+
+    .board { display: flex; gap: 16px; align-items: flex-start; overflow-x: auto; padding-bottom: 12px; }
+    .board-column {
+      background: var(--panel); border: 1px solid var(--line); border-radius: 18px;
+      min-width: 300px; max-width: 320px; flex: 0 0 auto;
+      display: flex; flex-direction: column; max-height: calc(100vh - 260px);
+    }
+    .board-column.drag-over { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+    .board-column-head { padding: 14px 16px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .board-column-title { font-weight: 800; font-size: 0.92rem; }
+    .board-column-count { font-size: 0.7rem; font-weight: 800; color: var(--muted); background: rgba(24,20,17,0.06); border-radius: 999px; padding: 2px 8px; }
+    .board-column-body { padding: 12px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+    .board-empty { color: var(--muted); font-size: 0.78rem; text-align: center; padding: 18px 8px; border: 1px dashed var(--line); border-radius: 12px; }
+
+    .kcard {
+      background: var(--panel-strong); border: 1px solid var(--line); border-radius: 14px;
+      padding: 12px 14px; cursor: grab; border-left: 3px solid var(--line);
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .kcard.dragging { opacity: 0.4; }
+    .kcard.urgency-overdue { border-left-color: var(--danger); }
+    .kcard.urgency-soon { border-left-color: var(--warn); }
+    .kcard.urgency-ok { border-left-color: var(--ok); }
+    .kcard-name { font-weight: 800; font-size: 0.9rem; }
+    .kcard-meta { font-size: 0.72rem; color: var(--muted); line-height: 1.5; }
+    .kcard-badges { display: flex; flex-wrap: wrap; gap: 5px; }
+    .kcard-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .kcard-actions .button { padding: 5px 10px; font-size: 0.7rem; }
+    .kcard-move { font: inherit; font-size: 0.72rem; padding: 5px 8px; border-radius: 8px; border: 1px solid var(--line); background: #fff; color: var(--ink); }
+    .kcard-followup { display: flex; flex-direction: column; gap: 6px; padding-top: 8px; border-top: 1px dashed var(--line); }
+    .kcard-followup .followup-check { font-size: 0.74rem; }
+    .kcard-followup .approach-select { width: 100%; min-width: 0; font-size: 0.74rem; padding: 5px 10px; }
+
+    .stage-item { display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; background: var(--panel); margin-bottom: 8px; }
+    .stage-item input[type="text"] { flex: 1; font: inherit; font-size: 0.84rem; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: #fff; }
+    .stage-item .badge-default { font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.03em; color: var(--accent); background: var(--accent-soft); padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+    .stage-item-actions { display: flex; gap: 4px; }
+    .stage-item-actions button { padding: 4px 8px; font-size: 0.68rem; }
 
     .empty-state { background: var(--panel); border: 1px dashed var(--line); border-radius: 20px; padding: 48px 24px; text-align: center; color: var(--muted); }
 
@@ -220,8 +259,8 @@
 
   <main class="shell">
     <div class="page-head">
-      <h1>Fila de contato ativo</h1>
-      <p>Leads da trilha nova de Marketing que geraram um gatilho de contato — intenção imediata no formulário (Situação A) ou conclusão da trilha (Situação B). Ordenado por prioridade e prazo mais urgente primeiro.</p>
+      <h1>Contato ativo</h1>
+      <p>Dois funis separados — intenção imediata no formulário (Situação A) e conclusão da trilha (Situação B). Arraste o card ou use o menu "mover" pra avançar de etapa; as etapas de cada funil são configuráveis.</p>
     </div>
 
     <div class="metrics-bar" id="metrics-bar" hidden>
@@ -246,15 +285,39 @@
       </div>
     </div>
 
-    <div class="view-toggle">
-      <button type="button" class="active" data-view="pending">Fila ativa <span class="count" id="count-pending">0</span></button>
-      <button type="button" data-view="done">Já contatados <span class="count" id="count-done">0</span></button>
+    <div class="funil-bar">
+      <div class="view-toggle">
+        <button type="button" class="active" data-funil="A">Situação A · Intenção imediata <span class="count" id="count-funil-a">0</span></button>
+        <button type="button" data-funil="B">Situação B · Certificado <span class="count" id="count-funil-b">0</span></button>
+      </div>
+      <button type="button" class="button button-secondary" id="stage-manage-btn">Configurar etapas</button>
     </div>
 
     <div id="content">
       <div class="loading-state">Carregando fila...</div>
     </div>
   </main>
+
+  <div class="modal-backdrop" id="stage-modal" hidden>
+    <div class="modal-card">
+      <h2>Configurar etapas</h2>
+      <p class="modal-sub" id="stage-modal-sub">Funil selecionado. A primeira etapa é fixa (é onde um lead novo entra) — as demais você pode renomear, reordenar ou excluir.</p>
+
+      <form id="stage-form" class="template-form">
+        <div class="template-form-row">
+          <label for="stage-name-input">Nova etapa</label>
+          <input type="text" id="stage-name-input" placeholder="Ex: Reunião marcada, Proposta enviada..." required maxlength="60">
+        </div>
+        <div class="template-form-actions">
+          <button type="submit" class="button button-primary">Adicionar etapa</button>
+        </div>
+      </form>
+
+      <div id="stage-list-body"></div>
+
+      <button type="button" class="button button-secondary modal-close" id="stage-modal-close">Fechar</button>
+    </div>
+  </div>
 
   <div class="modal-backdrop" id="approach-modal" hidden>
     <div class="modal-card">
@@ -304,15 +367,27 @@
     const refreshButton = document.getElementById("refresh-button");
     const logoutButton = document.getElementById("logout-button");
     const viewButtons = document.querySelectorAll(".view-toggle button");
-    const countPendingEl = document.getElementById("count-pending");
-    const countDoneEl = document.getElementById("count-done");
+    const countFunilAEl = document.getElementById("count-funil-a");
+    const countFunilBEl = document.getElementById("count-funil-b");
+
+    const FUNIS = { A: "intencao_imediata", B: "trilha_concluida" };
 
     let queue = [];
     let metrics = null;
     let templates = [];
-    let currentView = "pending";
+    let stagesByFunil = { A: [], B: [] };
+    let currentFunil = "A";
     let refreshTimer = null;
     let tickTimer = null;
+    let draggedKey = null;
+
+    const stageModalEl = document.getElementById("stage-modal");
+    const stageModalSubEl = document.getElementById("stage-modal-sub");
+    const stageManageBtn = document.getElementById("stage-manage-btn");
+    const stageModalCloseBtn = document.getElementById("stage-modal-close");
+    const stageListBodyEl = document.getElementById("stage-list-body");
+    const stageFormEl = document.getElementById("stage-form");
+    const stageNameInputEl = document.getElementById("stage-name-input");
 
     const metricsBarEl = document.getElementById("metrics-bar");
     const metricRespondidosEl = document.getElementById("metric-respondidos");
@@ -436,11 +511,23 @@
     }
 
     function urgency(item) {
-      if (item.contatado_em) return "done";
+      // Prazo só faz sentido enquanto o lead ainda está na etapa inicial
+      // (ninguém mexeu nele ainda). Depois que avança de etapa, não há mais
+      // "atrasado" — o card já está sendo trabalhado.
+      if (!item.stage_is_default) return "moving";
       const diffMs = new Date(item.prazo_em).getTime() - Date.now();
       if (diffMs < 0) return "overdue";
       if (diffMs < SOON_THRESHOLD_MS) return "soon";
       return "ok";
+    }
+
+    function formatTimeInStage(item) {
+      const diffMs = Date.now() - new Date(item.stage_desde).getTime();
+      const hours = Math.floor(diffMs / (60 * 60 * 1000));
+      if (hours < 1) return "há poucos minutos nesta etapa";
+      if (hours < 24) return `há ${hours}h nesta etapa`;
+      const days = Math.floor(hours / 24);
+      return `há ${days} dia${days > 1 ? "s" : ""} nesta etapa`;
     }
 
     function formatDateTime(value) {
@@ -475,10 +562,27 @@
           return;
         }
         queue = sortQueue(data || []);
-        render();
+        renderBoard();
       } catch (error) {
         console.error("[admin-sdr-marketing] Falha ao carregar fila:", error);
         contentEl.innerHTML = `<div class="empty-state">Não foi possível carregar a fila agora.<br><small>${escapeHtml(error && error.message ? error.message : String(error))}</small></div>`;
+      }
+    }
+
+    async function loadStages() {
+      try {
+        const [resA, resB] = await Promise.all([
+          db.rpc("list_sdr_pipeline_stages", { p_funil: FUNIS.A }),
+          db.rpc("list_sdr_pipeline_stages", { p_funil: FUNIS.B })
+        ]);
+        if (resA.error || resB.error) {
+          console.error("[admin-sdr-marketing] Falha ao carregar etapas:", resA.error || resB.error);
+          return;
+        }
+        stagesByFunil = { A: resA.data || [], B: resB.data || [] };
+        renderStageManageModal();
+      } catch (error) {
+        console.error("[admin-sdr-marketing] Falha ao carregar etapas:", error);
       }
     }
 
@@ -540,7 +644,7 @@
         }
         templates = data || [];
         renderTemplateManageModal();
-        render(); // reconstrói os selects dos cards com a lista atualizada
+        renderBoard(); // reconstrói os selects dos cards com a lista atualizada
       } catch (error) {
         console.error("[admin-sdr-marketing] Falha ao carregar abordagens:", error);
       }
@@ -602,6 +706,79 @@
       await loadTemplates();
     }
 
+    const FUNIL_LABELS = { A: "Situação A · Intenção imediata", B: "Situação B · Certificado" };
+
+    function renderStageManageModal() {
+      stageModalSubEl.textContent = `Funil: ${FUNIL_LABELS[currentFunil]}. A primeira etapa é fixa (é onde um lead novo entra) — as demais você pode renomear, reordenar ou excluir.`;
+
+      const stages = stagesByFunil[currentFunil] || [];
+      stageListBodyEl.innerHTML = stages.map((stage, index) => `
+        <div class="stage-item" data-stage-id="${stage.id}">
+          <input type="text" value="${escapeHtml(stage.nome)}" data-stage-id="${stage.id}" class="stage-rename-input">
+          ${stage.is_default ? `<span class="badge-default">Entrada</span>` : ""}
+          <div class="stage-item-actions">
+            <button type="button" class="button button-ghost stage-move-up" data-stage-id="${stage.id}" ${index === 0 ? "disabled" : ""}>▲</button>
+            <button type="button" class="button button-ghost stage-move-down" data-stage-id="${stage.id}" ${index === stages.length - 1 ? "disabled" : ""}>▼</button>
+            ${!stage.is_default ? `<button type="button" class="button button-ghost stage-delete-btn" data-stage-id="${stage.id}" data-stage-nome="${escapeHtml(stage.nome)}">Excluir</button>` : ""}
+          </div>
+        </div>
+      `).join("");
+
+      stageListBodyEl.querySelectorAll(".stage-rename-input").forEach(input => {
+        input.addEventListener("change", () => onRenameStage(Number(input.dataset.stageId), input.value));
+      });
+      stageListBodyEl.querySelectorAll(".stage-move-up").forEach(btn => {
+        btn.addEventListener("click", () => onReorderStage(Number(btn.dataset.stageId), -1));
+      });
+      stageListBodyEl.querySelectorAll(".stage-move-down").forEach(btn => {
+        btn.addEventListener("click", () => onReorderStage(Number(btn.dataset.stageId), 1));
+      });
+      stageListBodyEl.querySelectorAll(".stage-delete-btn").forEach(btn => {
+        btn.addEventListener("click", () => onDeleteStage(Number(btn.dataset.stageId), btn.dataset.stageNome));
+      });
+    }
+
+    async function onRenameStage(stageId, nome) {
+      if (!nome.trim()) return;
+      const { error } = await db.rpc("rename_sdr_pipeline_stage", { p_stage_id: stageId, p_nome: nome.trim() });
+      if (error) {
+        alert("Não foi possível renomear agora.");
+        return;
+      }
+      await loadStages();
+      renderBoard();
+    }
+
+    async function onReorderStage(stageId, direction) {
+      const stages = [...(stagesByFunil[currentFunil] || [])];
+      const index = stages.findIndex(s => s.id === stageId);
+      const targetIndex = index + direction;
+      if (index < 0 || targetIndex < 0 || targetIndex >= stages.length) return;
+
+      [stages[index], stages[targetIndex]] = [stages[targetIndex], stages[index]];
+      const { error } = await db.rpc("reorder_sdr_pipeline_stages", {
+        p_funil: FUNIS[currentFunil],
+        p_stage_ids: stages.map(s => s.id)
+      });
+      if (error) {
+        alert("Não foi possível reordenar agora.");
+        return;
+      }
+      await loadStages();
+      renderBoard();
+    }
+
+    async function onDeleteStage(stageId, nome) {
+      if (!confirm(`Excluir a etapa "${nome}"? Só funciona se não houver nenhum lead nela agora.`)) return;
+      const { error } = await db.rpc("delete_sdr_pipeline_stage", { p_stage_id: stageId });
+      if (error) {
+        alert(error.message || "Não foi possível excluir agora.");
+        return;
+      }
+      await loadStages();
+      renderBoard();
+    }
+
     function escapeHtml(value) {
       return String(value ?? "")
         .replace(/&/g, "&amp;")
@@ -610,143 +787,192 @@
         .replace(/"/g, "&quot;");
     }
 
-    function renderCard(item) {
+    function itemKey(item) {
+      return `${item.trigger_type}::${item.lead_email}`;
+    }
+
+    function renderKCard(item) {
       const state = urgency(item);
       const phone = normalizeWhatsappPhone(item.lead_telefone);
-      const situacaoBadge = item.situacao === "A"
-        ? `<span class="badge badge-a">Situação A</span>`
-        : `<span class="badge badge-b">Situação B</span>`;
-
-      let urgencyBadge = "";
-      if (state === "overdue") urgencyBadge = `<span class="badge badge-overdue">Prazo estourado</span>`;
-      else if (state === "soon") urgencyBadge = `<span class="badge badge-soon">Quase estourando</span>`;
-      else if (state === "ok") urgencyBadge = `<span class="badge badge-ok">No prazo</span>`;
-
-      const phoneBadge = phone ? "" : `<span class="badge badge-nophone">Sem telefone válido</span>`;
+      const phoneBadge = phone ? "" : `<span class="badge badge-nophone">Sem telefone</span>`;
 
       const waButton = phone
         ? `<a class="button whatsapp-btn" target="_blank" rel="noopener" href="https://wa.me/${phone}">WhatsApp →</a>`
         : `<span class="button whatsapp-btn" aria-disabled="true">Sem telefone</span>`;
 
-      const contactedMeta = item.contatado_em
-        ? `<div class="contacted-meta">Contatado em ${formatDateTime(item.contatado_em)}${item.contatado_por ? `<br>por ${escapeHtml(item.contatado_por)}` : ""}</div>`
-        : "";
-
       const certificateButton = item.situacao === "B"
-        ? `<button type="button" class="button button-secondary certificate-btn" data-name="${escapeHtml(item.lead_nome || item.lead_email)}">Baixar certificado</button>`
+        ? `<button type="button" class="button button-secondary certificate-btn" data-name="${escapeHtml(item.lead_nome || item.lead_email)}">Certificado</button>`
         : "";
 
-      const deadlineLabel = item.contatado_em ? "" : ` (${formatRelativeDeadline(item)})`;
+      let timeMeta;
+      let urgencyBadge = "";
+      if (item.stage_is_default) {
+        timeMeta = `Prazo: <strong>${formatDateTime(item.prazo_em)}</strong> (${formatRelativeDeadline(item)})`;
+        if (state === "overdue") urgencyBadge = `<span class="badge badge-overdue">Prazo estourado</span>`;
+        else if (state === "soon") urgencyBadge = `<span class="badge badge-soon">Quase estourando</span>`;
+        else urgencyBadge = `<span class="badge badge-ok">No prazo</span>`;
+      } else {
+        timeMeta = escapeHtml(formatTimeInStage(item));
+      }
 
-      const followupRow = item.contatado_em
+      const funilStages = stagesByFunil[currentFunil] || [];
+      const moveOptions = funilStages
+        .filter(s => s.id !== item.stage_id)
+        .map(s => `<option value="${s.id}">Mover para: ${escapeHtml(s.nome)}</option>`)
+        .join("");
+
+      const followup = !item.stage_is_default
         ? `
-          <div class="lead-followup">
+          <div class="kcard-followup">
             <label class="followup-check">
-              <input type="checkbox" class="responded-checkbox" ${item.respondeu ? "checked" : ""} data-trail="${escapeHtml(item.trail_slug || "trilha-nova-de-marketing")}" data-trigger="${escapeHtml(item.trigger_type)}" data-email="${escapeHtml(item.lead_email)}">
+              <input type="checkbox" class="responded-checkbox" ${item.respondeu ? "checked" : ""} data-trail="${escapeHtml(item.trail_slug || TRILHA_SLUG)}" data-trigger="${escapeHtml(item.trigger_type)}" data-email="${escapeHtml(item.lead_email)}">
               Lead respondeu
             </label>
-            <select class="approach-select" data-trail="${escapeHtml(item.trail_slug || "trilha-nova-de-marketing")}" data-trigger="${escapeHtml(item.trigger_type)}" data-email="${escapeHtml(item.lead_email)}">
+            <select class="approach-select" data-trail="${escapeHtml(item.trail_slug || TRILHA_SLUG)}" data-trigger="${escapeHtml(item.trigger_type)}" data-email="${escapeHtml(item.lead_email)}">
               <option value="">Abordagem usada...</option>
               ${templates.map(t => `<option value="${escapeHtml(t.tag)}" ${item.abordagem === t.tag ? "selected" : ""}>${escapeHtml(t.tag)}</option>`).join("")}
               ${item.abordagem && !templates.some(t => t.tag === item.abordagem)
                 ? `<option value="${escapeHtml(item.abordagem)}" selected>${escapeHtml(item.abordagem)} (removida)</option>`
                 : ""}
             </select>
-            <span class="approach-saved">Salvo ✓</span>
           </div>
         `
         : "";
 
       return `
-        <article class="lead-card urgency-${state} ${item.contatado_em ? "is-done" : ""}" data-key="${escapeHtml(item.trigger_type)}::${escapeHtml(item.lead_email)}">
-          <div class="lead-check">
-            <input type="checkbox" ${item.contatado_em ? "checked" : ""} data-trail="${escapeHtml(item.trail_slug || "trilha-nova-de-marketing")}" data-trigger="${escapeHtml(item.trigger_type)}" data-email="${escapeHtml(item.lead_email)}" title="Contato feito">
-          </div>
-          <div class="lead-main">
-            <div class="lead-name-row">
-              <span class="lead-name">${escapeHtml(item.lead_nome || item.lead_email)}</span>
-              ${situacaoBadge}
-              ${urgencyBadge}
-              ${phoneBadge}
-            </div>
-            <div class="lead-trigger">${escapeHtml(item.trigger_label)}</div>
-            <div class="lead-times">
-              <span>Gatilho: <strong>${formatDateTime(item.gatilho_em)}</strong></span>
-              <span>Prazo: <strong>${formatDateTime(item.prazo_em)}</strong>${deadlineLabel}</span>
-            </div>
-            ${followupRow}
-          </div>
-          <div class="lead-actions">
+        <article class="kcard urgency-${state}" draggable="true" data-key="${escapeHtml(itemKey(item))}">
+          <div class="kcard-name">${escapeHtml(item.lead_nome || item.lead_email)}</div>
+          <div class="kcard-badges">${urgencyBadge}${phoneBadge}</div>
+          <div class="kcard-meta">${timeMeta}</div>
+          <div class="kcard-actions">
             ${waButton}
             ${certificateButton}
-            ${contactedMeta}
+            <select class="kcard-move" data-trail="${escapeHtml(item.trail_slug || TRILHA_SLUG)}" data-trigger="${escapeHtml(item.trigger_type)}" data-email="${escapeHtml(item.lead_email)}">
+              <option value="">Mover...</option>
+              ${moveOptions}
+            </select>
           </div>
+          ${followup}
         </article>
       `;
     }
 
-    function render() {
-      const pending = queue.filter(item => !item.contatado_em);
-      const done = queue.filter(item => item.contatado_em);
+    function renderBoard() {
+      const funilKey = FUNIS[currentFunil];
+      const items = queue.filter(item => item.trigger_type === funilKey);
+      const stages = stagesByFunil[currentFunil] || [];
 
-      countPendingEl.textContent = pending.length;
-      countDoneEl.textContent = done.length;
+      countFunilAEl.textContent = queue.filter(item => item.trigger_type === FUNIS.A).length;
+      countFunilBEl.textContent = queue.filter(item => item.trigger_type === FUNIS.B).length;
 
-      const list = currentView === "pending" ? pending : done;
-
-      if (!list.length) {
-        contentEl.innerHTML = `<div class="empty-state">${currentView === "pending" ? "Nenhum gatilho pendente agora." : "Ninguém foi contatado ainda."}</div>`;
+      if (!stages.length) {
+        contentEl.innerHTML = `<div class="empty-state">Nenhuma etapa configurada pra esse funil ainda.</div>`;
         return;
       }
 
-      contentEl.innerHTML = `<div class="queue">${list.map(renderCard).join("")}</div>`;
+      contentEl.innerHTML = `
+        <div class="board">
+          ${stages.map(stage => {
+            const stageItems = items
+              .filter(item => item.stage_id === stage.id)
+              .sort((a, b) => stage.is_default
+                ? new Date(a.prazo_em) - new Date(b.prazo_em)
+                : new Date(a.stage_desde) - new Date(b.stage_desde));
 
-      contentEl.querySelectorAll('.lead-check input[type="checkbox"]').forEach(checkbox => {
-        checkbox.addEventListener("change", onToggleContacted);
-      });
+            return `
+              <div class="board-column" data-stage-id="${stage.id}">
+                <div class="board-column-head">
+                  <span class="board-column-title">${escapeHtml(stage.nome)}</span>
+                  <span class="board-column-count">${stageItems.length}</span>
+                </div>
+                <div class="board-column-body">
+                  ${stageItems.length
+                    ? stageItems.map(renderKCard).join("")
+                    : `<div class="board-empty">Vazio</div>`}
+                </div>
+              </div>
+            `;
+          }).join("")}
+        </div>
+      `;
 
       contentEl.querySelectorAll(".certificate-btn").forEach(btn => {
         btn.addEventListener("click", onDownloadCertificate);
       });
-
       contentEl.querySelectorAll(".responded-checkbox").forEach(checkbox => {
         checkbox.addEventListener("change", onToggleResponded);
       });
-
       contentEl.querySelectorAll(".approach-select").forEach(select => {
         select.addEventListener("change", onApproachChange);
       });
-    }
-
-    async function onToggleContacted(event) {
-      const checkbox = event.target;
-      const { trail, trigger, email } = checkbox.dataset;
-      const contacted = checkbox.checked;
-      checkbox.disabled = true;
-
-      const { data, error } = await db.rpc("mark_sdr_lead_contacted", {
-        p_trail_slug: trail,
-        p_trigger_type: trigger,
-        p_lead_email: email,
-        p_contacted: contacted
+      contentEl.querySelectorAll(".kcard-move").forEach(select => {
+        select.addEventListener("change", onMoveLeadSelect);
       });
 
-      checkbox.disabled = false;
+      contentEl.querySelectorAll(".kcard").forEach(card => {
+        card.addEventListener("dragstart", () => {
+          draggedKey = card.dataset.key;
+          card.classList.add("dragging");
+        });
+        card.addEventListener("dragend", () => {
+          card.classList.remove("dragging");
+          draggedKey = null;
+        });
+      });
+
+      contentEl.querySelectorAll(".board-column").forEach(column => {
+        column.addEventListener("dragover", event => {
+          event.preventDefault();
+          column.classList.add("drag-over");
+        });
+        column.addEventListener("dragleave", () => column.classList.remove("drag-over"));
+        column.addEventListener("drop", event => {
+          event.preventDefault();
+          column.classList.remove("drag-over");
+          if (!draggedKey) return;
+          const stageId = Number(column.dataset.stageId);
+          const item = queue.find(q => itemKey(q) === draggedKey);
+          if (item && item.stage_id !== stageId) {
+            moveLeadStage(item, stageId);
+          }
+        });
+      });
+    }
+
+    async function onMoveLeadSelect(event) {
+      const select = event.target;
+      const stageId = Number(select.value);
+      if (!stageId) return;
+      const { trail, trigger, email } = select.dataset;
+      const item = queue.find(q => q.trigger_type === trigger && q.lead_email.toLowerCase() === email.toLowerCase());
+      if (item) await moveLeadStage(item, stageId);
+    }
+
+    async function moveLeadStage(item, stageId) {
+      const { data, error } = await db.rpc("move_sdr_lead_stage", {
+        p_trail_slug: item.trail_slug || TRILHA_SLUG,
+        p_trigger_type: item.trigger_type,
+        p_lead_email: item.lead_email,
+        p_stage_id: stageId
+      });
 
       if (error) {
-        checkbox.checked = !contacted;
-        alert("Não foi possível salvar. Tente novamente.");
+        alert("Não foi possível mover o lead agora. Tente novamente.");
         return;
       }
 
-      const item = queue.find(q => q.trigger_type === trigger && q.lead_email.toLowerCase() === email.toLowerCase());
-      if (item) {
-        item.contatado_em = data.contacted_at;
-        item.contatado_por = data.contacted_by;
-        item.respondeu = data.responded;
-        item.abordagem = data.approach_tag;
-      }
-      render();
+      const stage = (stagesByFunil.A.concat(stagesByFunil.B)).find(s => s.id === stageId);
+      item.stage_id = data.stage_id;
+      item.stage_nome = stage ? stage.nome : item.stage_nome;
+      item.stage_ordem = stage ? stage.ordem : item.stage_ordem;
+      item.stage_is_default = stage ? stage.is_default : item.stage_is_default;
+      item.stage_desde = data.stage_changed_at;
+      item.contatado_em = data.contacted_at;
+      item.contatado_por = data.contacted_by;
+      item.respondeu = data.responded;
+      item.abordagem = data.approach_tag;
+
+      renderBoard();
       loadMetrics();
     }
 
@@ -824,16 +1050,16 @@
     }
 
     function tickReorder() {
-      // Só recalcula/rerenderiza a view atual, sem novo request — deadlines mudam com o tempo.
-      render();
+      // Só recalcula/rerenderiza o board atual, sem novo request — prazos e "há Xh nesta etapa" mudam com o tempo.
+      renderBoard();
     }
 
     viewButtons.forEach(btn => {
       btn.addEventListener("click", () => {
         viewButtons.forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
-        currentView = btn.dataset.view;
-        render();
+        currentFunil = btn.dataset.funil;
+        renderBoard();
       });
     });
 
@@ -895,6 +1121,36 @@
       }
     });
 
+    stageManageBtn.addEventListener("click", () => {
+      renderStageManageModal();
+      stageModalEl.hidden = false;
+    });
+    stageModalCloseBtn.addEventListener("click", () => { stageModalEl.hidden = true; });
+    stageModalEl.addEventListener("click", event => {
+      if (event.target === stageModalEl) stageModalEl.hidden = true;
+    });
+
+    stageFormEl.addEventListener("submit", async event => {
+      event.preventDefault();
+      const nome = stageNameInputEl.value.trim();
+      if (!nome) return;
+
+      const submitBtn = stageFormEl.querySelector("button[type=submit]");
+      submitBtn.disabled = true;
+      try {
+        const { error } = await db.rpc("create_sdr_pipeline_stage", { p_funil: FUNIS[currentFunil], p_nome: nome });
+        if (error) throw error;
+        stageFormEl.reset();
+        await loadStages();
+        renderBoard();
+      } catch (error) {
+        console.error("[admin-sdr-marketing] Falha ao criar etapa:", error);
+        alert("Não foi possível criar a etapa agora.");
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
     logoutButton.addEventListener("click", async () => {
       await db.auth.signOut();
       window.location.href = "/admin-login.html";
@@ -911,7 +1167,7 @@
         return;
       }
 
-      await loadTemplates();
+      await Promise.all([loadTemplates(), loadStages()]);
       await Promise.all([loadQueue(), loadMetrics()]);
 
       refreshTimer = setInterval(() => { loadQueue(); loadMetrics(); }, 5 * 60 * 1000); // busca de novo a cada 5min
