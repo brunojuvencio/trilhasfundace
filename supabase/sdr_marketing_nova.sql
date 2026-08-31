@@ -184,6 +184,21 @@ $$;
 revoke all on function public.delete_sdr_approach_template(text, text) from public;
 grant execute on function public.delete_sdr_approach_template(text, text) to authenticated;
 
+-- Empurra um timestamp pra segunda-feira 00:00 (America/Sao_Paulo) se ele cair
+-- num fim de semana (sábado ou domingo); nos demais dias devolve sem alterar.
+-- Usada pra calcular prazo de contato sem contar sábado/domingo como tempo útil.
+create or replace function public.sdr_skip_weekend(p_ts timestamptz)
+returns timestamptz
+language sql
+immutable
+as $$
+  select case extract(dow from (p_ts at time zone 'America/Sao_Paulo'))
+    when 6 then (date_trunc('day', p_ts at time zone 'America/Sao_Paulo') + interval '2 days') at time zone 'America/Sao_Paulo'
+    when 0 then (date_trunc('day', p_ts at time zone 'America/Sao_Paulo') + interval '1 day') at time zone 'America/Sao_Paulo'
+    else p_ts
+  end;
+$$;
+
 -- Universo completo de gatilhos da trilha nova de Marketing (situações A e B),
 -- SEM corte por data — usado tanto pela fila (que aplica o corte) quanto pelas
 -- métricas (que precisam do histórico inteiro). Função interna, não exposta.
@@ -240,7 +255,7 @@ begin
     l.telefone,
     l.created_at,
     (
-      (date_trunc('day', l.created_at at time zone 'America/Sao_Paulo') + interval '1 day' - interval '1 second')
+      (date_trunc('day', public.sdr_skip_weekend(l.created_at) at time zone 'America/Sao_Paulo') + interval '1 day' - interval '1 second')
       at time zone 'America/Sao_Paulo'
     ),
     t.contacted_at,
@@ -267,7 +282,13 @@ begin
     coalesce(l.email::text, u.email)::citext,
     l.telefone,
     p.gatilho_em,
-    p.gatilho_em + interval '24 hours',
+    (
+      case
+        when extract(dow from ((public.sdr_skip_weekend(p.gatilho_em) + interval '24 hours') at time zone 'America/Sao_Paulo')) in (0, 6)
+          then public.sdr_skip_weekend(p.gatilho_em) + interval '24 hours' + interval '48 hours'
+        else public.sdr_skip_weekend(p.gatilho_em) + interval '24 hours'
+      end
+    ),
     t.contacted_at,
     t.contacted_by,
     t.responded,
