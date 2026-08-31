@@ -339,6 +339,12 @@ to authenticated
 using (public.is_admin())
 with check (public.is_admin());
 
+-- As políticas acima não bastam sozinhas: capture_lead.sql revoga todo
+-- privilégio de tabela de "leads" para authenticated (leads só deviam ser
+-- acessados via RPC), o que também bloqueava esse acesso de admin baseado em
+-- RLS. Sem esse grant, o Postgres nega antes mesmo de avaliar a policy.
+grant select, update on public.leads to authenticated;
+
 drop policy if exists "Admins can read all lesson progress" on public.user_lesson_progress;
 create policy "Admins can read all lesson progress"
 on public.user_lesson_progress
