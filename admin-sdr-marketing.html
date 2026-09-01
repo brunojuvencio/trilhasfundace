@@ -646,8 +646,14 @@
         page.drawText(line, { x: (width - lw) / 2, y: lessonStartY - (i * lineGap), size: lessonListSize, font, color: inkSoft });
       });
 
+      // Data de emissão — respeita um espaçamento mínimo abaixo da última
+      // linha da lista de aulas, empurrando a data pra baixo quando a lista
+      // é longa (senão a data ficava colada/sobreposta no conteúdo).
       const dateStr = new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
-      drawCentered(dateStr, height * 0.335, bodySize, font, inkSoft);
+      const contentLastLineY = lessonStartY - ((lessonLines.length - 1) * lineGap);
+      const minGapAfterContent = lineGap * 2;
+      const dateY = Math.min(height * 0.335, contentLastLineY - minGapAfterContent);
+      drawCentered(dateStr, dateY, bodySize, font, inkSoft);
 
       const output = await pdfDoc.save();
       const blob = new Blob([output], { type: "application/pdf" });

@@ -1179,6 +1179,7 @@
       }
 
       // Lista de aulas ou temas concluídos
+      let contentLastLineY = height * 0.42;
       const isDynamicTrail = currentCourse?.id !== "ifrs" && currentCourse?.id !== "gestao";
       if (isDynamicTrail && lessons.length > 0) {
         const lessonListSize = width > height ? 7.5 : 6;
@@ -1195,6 +1196,7 @@
           const lw = font.widthOfTextAtSize(line, lessonListSize);
           page.drawText(line, { x: (width - lw) / 2, y: lessonStartY - (i * lineGap), size: lessonListSize, font, color: inkSoft });
         });
+        contentLastLineY = lessonStartY - ((lessonLines.length - 1) * lineGap);
       } else {
         const themes      = completedThemes();
         const themesLabel = themes.length ? themes.join(" • ") : "Trilha completa";
@@ -1205,11 +1207,16 @@
           const lw = font.widthOfTextAtSize(line, topicsSize);
           page.drawText(line, { x: (width - lw) / 2, y: topicsStartY - (i * lineGap), size: topicsSize, font, color: inkSoft });
         });
+        contentLastLineY = topicsStartY - ((topicLines.length - 1) * lineGap);
       }
 
-      // Data de emissão
+      // Data de emissão — respeita um espaçamento mínimo abaixo da última
+      // linha do conteúdo cursado, empurrando a data pra baixo quando a
+      // lista de aulas é longa (senão a data ficava colada/sobreposta).
       const dateStr = new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
-      drawCentered(dateStr, height * 0.335, bodySize, font, inkSoft);
+      const minGapAfterContent = lineGap * 2;
+      const dateY = Math.min(height * 0.335, contentLastLineY - minGapAfterContent);
+      drawCentered(dateStr, dateY, bodySize, font, inkSoft);
 
       const output = await pdfDoc.save();
       const blob = new Blob([output], { type: "application/pdf" });
