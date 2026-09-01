@@ -166,6 +166,19 @@ values
   ('trilha_concluida', 'primeira_abordagem', 'Primeira abordagem', 2, false)
 on conflict (funil, stage_key) do nothing;
 
+-- Situação C: confirmou "Quero conhecer o programa" no popup de oferta do
+-- MBA. Já nasce com o mesmo conjunto de etapas da Situação A, pra ficar
+-- pronto pra uso imediato (o time pode ajustar depois pela tela).
+insert into public.sdr_pipeline_stages (funil, stage_key, nome, ordem, is_default, is_loss_stage, auto_responded)
+values
+  ('quer_conhecer_programa', 'lead', 'Lead', 1, true, false, false),
+  ('quer_conhecer_programa', 'primeira_abordagem', 'Primeira abordagem', 2, false, false, false),
+  ('quer_conhecer_programa', 'respondeu_em_atendimento', 'Respondeu - Em Atendimento', 3, false, false, true),
+  ('quer_conhecer_programa', 'qualificado', 'Qualificado', 4, false, false, false),
+  ('quer_conhecer_programa', 'enviado_para_comercial', 'Enviado para Comercial', 5, false, false, false),
+  ('quer_conhecer_programa', 'perdido', 'Perdido', 6, false, true, false)
+on conflict (funil, stage_key) do nothing;
+
 create or replace function public.list_sdr_pipeline_stages(p_funil text)
 returns setof public.sdr_pipeline_stages
 language sql
@@ -1249,6 +1262,9 @@ begin
     -- Formacao superior so bloqueia gente nova (sem nenhum registro em
     -- sdr_contact_triggers ainda); quem ja tinha historico continua visivel.
     and (l.possui_formacao_superior = true or t.id is not null)
+    -- Quem confirmou "Quero conhecer o programa" migra pra Situação C e sai
+    -- daqui, pra não duplicar o mesmo lead em dois quadros ao mesmo tempo.
+    and coalesce(l.consultor_contact_opt_in, false) = false
 
   union all
 
@@ -1315,7 +1331,65 @@ begin
     order by ft.due_at asc
     limit 1
   ) fu on true
-  where (l.possui_formacao_superior = true or t.id is not null);
+  where (l.possui_formacao_superior = true or t.id is not null)
+
+  union all
+
+  -- Situação C: confirmou "Quero conhecer o programa" no popup de oferta do
+  -- MBA (exibido só pra quem já era Situação A). Sai da Situação A ao
+  -- responder "sim" e passa a ser trabalhado só aqui.
+  select
+    'C'::text,
+    'quer_conhecer_programa'::text,
+    'Confirmou interesse: "Quero conhecer o programa"'::text,
+    l.nome,
+    l.email::citext,
+    l.telefone,
+    l.consultor_contact_answered_at,
+    (
+      (date_trunc('day', public.sdr_skip_weekend(l.consultor_contact_answered_at) at time zone 'America/Sao_Paulo') + interval '1 day' - interval '1 second')
+      at time zone 'America/Sao_Paulo'
+    ),
+    t.contacted_at,
+    t.contacted_by,
+    t.responded,
+    t.responded_at,
+    t.approach_tag,
+    coalesce(st.id, ds.id),
+    coalesce(st.nome, ds.nome),
+    coalesce(st.ordem, ds.ordem),
+    coalesce(st.is_default, ds.is_default, true),
+    coalesce(st.is_loss_stage, ds.is_loss_stage, false),
+    coalesce(t.stage_changed_at, l.consultor_contact_answered_at),
+    t.loss_reason,
+    t.id,
+    t.notes,
+    t.ploomes_status,
+    fu.id,
+    fu.nome,
+    fu.due_at,
+    fu.pendentes
+  from public.leads l
+  left join public.sdr_contact_triggers t
+    on t.trail_slug = v_trail_slug
+    and t.trigger_type = 'quer_conhecer_programa'
+    and t.lead_email = l.email
+  left join public.sdr_pipeline_stages st on st.id = t.stage_id
+  left join public.sdr_pipeline_stages ds on ds.funil = 'quer_conhecer_programa' and ds.is_default = true
+  left join lateral (
+    select ft.id, ft.nome, ft.due_at, cnt.pendentes
+    from public.sdr_followup_tasks ft
+    cross join lateral (
+      select count(*)::int as pendentes
+      from public.sdr_followup_tasks ft2
+      where ft2.trigger_id = t.id and ft2.done_at is null
+    ) cnt
+    where ft.trigger_id = t.id and ft.done_at is null
+    order by ft.due_at asc
+    limit 1
+  ) fu on true
+  where l.nome_trilha = v_trail_nome
+    and l.consultor_contact_opt_in = true;
 end;
 $$;
 
@@ -1569,3 +1643,92 @@ $$;
 
 revoke all on function public.get_marketing_nova_sdr_metrics() from public;
 grant execute on function public.get_marketing_nova_sdr_metrics() to authenticated;
+
+-- Relatório por funil (A, B ou C): uma linha por lead do funil, com cargo e
+-- cidade do cadastro pra segmentação no front (cargo é texto livre e a
+-- região é derivada da cidade no cliente, então aqui só devolvemos os
+-- dados crus por lead — a agregação/segmentação acontece na tela).
+drop function if exists public.get_marketing_nova_sdr_funil_report(text);
+create or replace function public.get_marketing_nova_sdr_funil_report(p_trigger_type text)
+returns table (
+  lead_email citext,
+  cargo text,
+  cidade text,
+  stage_nome text,
+  contatado boolean,
+  respondeu boolean
+)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_trigger_type text := trim(coalesce(p_trigger_type, ''));
+begin
+  if not public.is_admin() then
+    raise exception 'Acesso negado.';
+  end if;
+
+  if v_trigger_type = '' then
+    raise exception 'trigger_type é obrigatório.';
+  end if;
+
+  return query
+  select
+    a.lead_email,
+    l.cargo,
+    l.cidade,
+    a.stage_nome,
+    (a.contatado_em is not null),
+    coalesce(a.respondeu, false)
+  from public.get_marketing_nova_sdr_all() a
+  left join public.leads l on lower(l.email::text) = lower(a.lead_email::text)
+  where a.trigger_type = v_trigger_type;
+end;
+$$;
+
+revoke all on function public.get_marketing_nova_sdr_funil_report(text) from public;
+grant execute on function public.get_marketing_nova_sdr_funil_report(text) to authenticated;
+
+-- Relatório específico do popup de oferta do MBA (o "gatilho" da Situação C):
+-- uma linha por lead elegível pro popup (mesmo critério de quem chega a ver
+-- a tela — formação superior + "quero começar agora"), com a resposta dada
+-- (sim / não / ainda não respondeu).
+drop function if exists public.get_marketing_nova_mba_offer_report();
+create or replace function public.get_marketing_nova_mba_offer_report()
+returns table (
+  lead_email citext,
+  cargo text,
+  cidade text,
+  resposta text
+)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_trail_nome constant text := 'Mini Curso Estratégias de Marketing para o Mercado em Transformação';
+begin
+  if not public.is_admin() then
+    raise exception 'Acesso negado.';
+  end if;
+
+  return query
+  select
+    l.email::citext,
+    l.cargo,
+    l.cidade,
+    case
+      when l.consultor_contact_answered_at is null then 'pendente'
+      when l.consultor_contact_opt_in is true then 'sim'
+      else 'nao'
+    end
+  from public.leads l
+  where l.nome_trilha = v_trail_nome
+    and l.possui_formacao_superior = true
+    and l.pretende_pos = 'sim_agora';
+end;
+$$;
+
+revoke all on function public.get_marketing_nova_mba_offer_report() from public;
+grant execute on function public.get_marketing_nova_mba_offer_report() to authenticated;

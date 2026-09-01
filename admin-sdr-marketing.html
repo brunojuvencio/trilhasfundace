@@ -83,6 +83,10 @@
     .view-toggle .count { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; font-size: 0.68rem; font-weight: 800; background: var(--accent-soft); color: var(--accent); }
     .view-toggle button.active .count { background: rgba(255,255,255,0.22); color: #fff; }
 
+    .mode-toggle { display: flex; gap: 8px; flex-wrap: wrap; }
+    .mode-toggle button { background: var(--panel); border: 1px solid var(--line); color: var(--muted); }
+    .mode-toggle button.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+
     .board { display: flex; gap: 16px; align-items: flex-start; overflow-x: auto; padding-bottom: 12px; }
     .board-column {
       background: var(--panel); border: 1px solid var(--line); border-radius: 18px;
@@ -306,6 +310,20 @@
     .followup-task-item.is-done .followup-task-name { text-decoration: line-through; color: var(--muted); }
     .followup-task-item .followup-task-due { font-size: 0.72rem; margin-top: 2px; }
     .followup-task-item .followup-task-msg { font-size: 0.78rem; color: var(--muted); margin-top: 4px; white-space: pre-wrap; }
+
+    .report-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 22px; }
+    .report-section { margin-bottom: 28px; }
+    .report-section h2 { font-family: "Fraunces", serif; font-size: 1.15rem; margin-bottom: 4px; }
+    .report-section .report-section-sub { color: var(--muted); font-size: 0.82rem; margin-bottom: 12px; }
+    .report-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    @media (max-width: 780px) { .report-grid-2 { grid-template-columns: 1fr; } }
+    .report-table-card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; }
+    .report-table-card h3 { font-size: 0.86rem; font-weight: 800; margin-bottom: 10px; }
+    .report-bar-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 0.82rem; }
+    .report-bar-row .report-bar-label { flex: 0 0 auto; min-width: 140px; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .report-bar-row .report-bar-track { flex: 1; height: 8px; border-radius: 999px; background: rgba(24,20,17,0.06); overflow: hidden; }
+    .report-bar-row .report-bar-fill { height: 100%; background: var(--ink); border-radius: 999px; }
+    .report-bar-row .report-bar-value { flex: 0 0 auto; min-width: 64px; text-align: right; color: var(--muted); font-size: 0.76rem; }
   </style>
 </head>
 <body>
@@ -327,9 +345,14 @@
   <main class="shell">
     <div class="page-head">
       <h1>Contato ativo</h1>
-      <p>Dois funis separados — intenção imediata no formulário (Situação A) e conclusão da trilha (Situação B). Arraste o card ou use o menu "mover" pra avançar de etapa; as etapas de cada funil são configuráveis.</p>
+      <p>Três funis separados — intenção imediata no formulário (Situação A), conclusão da trilha (Situação B) e confirmação de interesse no popup do MBA (Situação C). Arraste o card ou use o menu "mover" pra avançar de etapa; as etapas de cada funil são configuráveis.</p>
+      <div class="mode-toggle" id="page-mode-toggle" style="margin-top: 14px;">
+        <button type="button" class="active" data-mode="kanban">Kanban</button>
+        <button type="button" data-mode="reports">Relatórios</button>
+      </div>
     </div>
 
+    <div id="kanban-view">
     <div class="metrics-bar" id="metrics-bar" hidden>
       <div class="stat-card">
         <div class="stat-value" id="metric-respondidos">—</div>
@@ -356,12 +379,27 @@
       <div class="view-toggle">
         <button type="button" class="active" data-funil="A">Situação A · Intenção imediata <span class="count" id="count-funil-a">0</span></button>
         <button type="button" data-funil="B">Situação B · Certificado <span class="count" id="count-funil-b">0</span></button>
+        <button type="button" data-funil="C">Situação C · Quero conhecer o programa <span class="count" id="count-funil-c">0</span></button>
       </div>
       <button type="button" class="button button-secondary" id="stage-manage-btn">Configurar etapas</button>
     </div>
 
     <div id="content">
       <div class="loading-state">Carregando fila...</div>
+    </div>
+    </div>
+
+    <div id="reports-view" hidden>
+      <div class="funil-bar">
+        <div class="mode-toggle" id="report-funil-toggle">
+          <button type="button" class="active" data-report-funil="A">Situação A · Intenção imediata</button>
+          <button type="button" data-report-funil="B">Situação B · Certificado</button>
+          <button type="button" data-report-funil="C">Situação C · Quero conhecer o programa</button>
+        </div>
+      </div>
+      <div id="report-content">
+        <div class="loading-state">Carregando relatório...</div>
+      </div>
     </div>
   </main>
 
@@ -536,14 +574,15 @@
     const viewButtons = document.querySelectorAll(".view-toggle button");
     const countFunilAEl = document.getElementById("count-funil-a");
     const countFunilBEl = document.getElementById("count-funil-b");
+    const countFunilCEl = document.getElementById("count-funil-c");
 
-    const FUNIS = { A: "intencao_imediata", B: "trilha_concluida" };
+    const FUNIS = { A: "intencao_imediata", B: "trilha_concluida", C: "quer_conhecer_programa" };
 
     let queue = [];
     let metrics = null;
     let templates = [];
     let lossReasonTemplates = [];
-    let stagesByFunil = { A: [], B: [] };
+    let stagesByFunil = { A: [], B: [], C: [] };
     let currentFunil = "A";
     let refreshTimer = null;
     let tickTimer = null;
@@ -965,15 +1004,16 @@
 
     async function loadStages() {
       try {
-        const [resA, resB] = await Promise.all([
+        const [resA, resB, resC] = await Promise.all([
           db.rpc("list_sdr_pipeline_stages", { p_funil: FUNIS.A }),
-          db.rpc("list_sdr_pipeline_stages", { p_funil: FUNIS.B })
+          db.rpc("list_sdr_pipeline_stages", { p_funil: FUNIS.B }),
+          db.rpc("list_sdr_pipeline_stages", { p_funil: FUNIS.C })
         ]);
-        if (resA.error || resB.error) {
-          console.error("[admin-sdr-marketing] Falha ao carregar etapas:", resA.error || resB.error);
+        if (resA.error || resB.error || resC.error) {
+          console.error("[admin-sdr-marketing] Falha ao carregar etapas:", resA.error || resB.error || resC.error);
           return;
         }
-        stagesByFunil = { A: resA.data || [], B: resB.data || [] };
+        stagesByFunil = { A: resA.data || [], B: resB.data || [], C: resC.data || [] };
         renderStageManageModal();
       } catch (error) {
         console.error("[admin-sdr-marketing] Falha ao carregar etapas:", error);
@@ -1100,7 +1140,256 @@
       await loadTemplates();
     }
 
-    const FUNIL_LABELS = { A: "Situação A · Intenção imediata", B: "Situação B · Certificado" };
+    const FUNIL_LABELS = { A: "Situação A · Intenção imediata", B: "Situação B · Certificado", C: "Situação C · Quero conhecer o programa" };
+
+    // ---------- Relatórios ----------
+
+    const pageModeToggle = document.getElementById("page-mode-toggle");
+    const kanbanViewEl = document.getElementById("kanban-view");
+    const reportsViewEl = document.getElementById("reports-view");
+    const reportFunilToggle = document.getElementById("report-funil-toggle");
+    const reportContentEl = document.getElementById("report-content");
+
+    let currentMode = "kanban";
+    let currentReportFunil = "A";
+
+    const UF_REGIAO = {
+      AC: "Norte", AP: "Norte", AM: "Norte", PA: "Norte", RO: "Norte", RR: "Norte", TO: "Norte",
+      AL: "Nordeste", BA: "Nordeste", CE: "Nordeste", MA: "Nordeste", PB: "Nordeste", PE: "Nordeste", PI: "Nordeste", RN: "Nordeste", SE: "Nordeste",
+      DF: "Centro-Oeste", GO: "Centro-Oeste", MT: "Centro-Oeste", MS: "Centro-Oeste",
+      ES: "Sudeste", MG: "Sudeste", RJ: "Sudeste", SP: "Sudeste",
+      PR: "Sul", RS: "Sul", SC: "Sul"
+    };
+
+    // Mapa cidade → UF construído a partir das cidades mais comuns na base
+    // (best-effort: nomes ambíguos entre estados usam o mais provável).
+    const CITY_UF = {
+      "sao paulo": "SP", "sp": "SP", "ribeirao preto": "SP", "goiania": "GO", "belo horizonte": "MG",
+      "belem": "PA", "curitiba": "PR", "manaus": "AM", "rio de janeiro": "RJ", "recife": "PE",
+      "santo andre": "SP", "diadema": "SP", "brasilia": "DF", "maceio": "AL", "palhoca": "SC",
+      "sao luis": "MA", "limeira": "SP", "caruaru": "PE", "jaboticabal": "SP", "barueri": "SP",
+      "osasco": "SP", "chapeco": "SC", "sertaozinho": "SP", "sao jose dos campos": "SP",
+      "paulista": "PE", "sao jose dos pinhais": "PR", "sao carlos": "SP", "ribeirao pires": "SP",
+      "sete lagoas": "MG", "pindamonhangaba": "SP", "salvador": "BA", "taboao da serra": "SP",
+      "pocos de caldas": "MG", "sapucaia do sul": "RS", "santana de parnaiba": "SP",
+      "fernandopolis": "SP", "campos dos goytacazes": "RJ", "castro": "PR", "ponta grossa": "PR",
+      "pinta grossa": "PR", "cafelandia": "SP", "mogi das cruzes": "SP", "maua": "SP",
+      "sarandi": "PR", "jaboatao dos guararapes": "PE", "fortaleza": "CE", "volta redonda": "RJ",
+      "olinda": "PE", "natal": "RN", "blumenau": "SC", "dourados": "MS", "campinas": "SP",
+      "rincao": "SP", "santa cruz do capibaribe": "PE", "nanuque": "MG", "montes claros": "MG",
+      "sao bernardo do campo": "SP", "sao pedro das missoes": "RS", "lajeado": "RS",
+      "capao da canoa": "RS", "campina grande": "PB", "ribeirao preto e regiao": "SP",
+      "lorena": "SP", "taubate": "SP", "juiz de fora": "MG", "coronel fabriciano": "MG",
+      "capivari": "SP", "mantena": "MG", "sao caetano do sul": "SP", "nova uniao": "MG",
+      "feira de santana": "BA", "itapema": "SC", "irece": "BA", "teresina": "PI",
+      "bady bassitt": "SP", "capanema": "PR", "indaiatuba": "SP", "nova iguacu": "RJ",
+      "assis": "SP", "lavras": "MG", "jundiai": "SP", "joao pessoa": "PB", "batatais": "SP",
+      "guarapuava": "PR", "guaramirim": "SC", "paranagua": "PR", "cedral": "SP", "campos": "RJ",
+      "novo hamburgo": "RS", "foz do jordao": "PR", "ribeirao das neves": "MG",
+      "luis eduardo magalhaes": "BA", "brusque": "SC", "anapolis": "GO", "santa cruz do sul": "RS",
+      "parobe": "RS", "icara": "SC", "conceicao do jacuipe": "BA", "campo grande": "MS",
+      "pinhais": "PR", "joacaba": "SC", "boa vista": "RR", "sao mateus": "ES", "nova aurora": "PR",
+      "cabo frio": "RJ", "juazeiro": "BA", "barra mansa": "RJ", "conselheiro lafaiete": "MG",
+      "hortolandia": "SP", "cambe": "PR", "teixeiras": "MG", "serra": "ES",
+      "belford roxo": "RJ", "duque de caxias": "RJ", "niteroi": "RJ", "sorocaba": "SP",
+      "florianopolis": "SC", "vitoria": "ES", "aracaju": "SE", "joinville": "SC", "cuiaba": "MT",
+      "porto alegre": "RS", "uberlandia": "MG", "contagem": "MG", "londrina": "PR",
+      "aparecida de goiania": "GO", "sao goncalo": "RJ", "macapa": "AP", "santos": "SP"
+    };
+
+    const UF_SET = new Set(Object.keys(UF_REGIAO));
+
+    function stripAccents(value) {
+      return String(value || "").normalize("NFD").replace(/[̀-ͯ]/g, "");
+    }
+
+    function normalizeCityKey(value) {
+      return stripAccents(String(value || "")).toLowerCase().trim();
+    }
+
+    function extractExplicitUf(raw) {
+      const match = String(raw || "").trim().match(/(?:^|[\s\/\-,])([A-Za-z]{2})$/);
+      if (!match) return null;
+      const uf = match[1].toUpperCase();
+      return UF_SET.has(uf) ? uf : null;
+    }
+
+    function cidadeToRegiao(cidadeRaw) {
+      const raw = String(cidadeRaw || "").trim();
+      if (!raw || /selecione/i.test(raw)) return "Não identificada";
+
+      const explicitUf = extractExplicitUf(raw);
+      if (explicitUf) return UF_REGIAO[explicitUf];
+
+      const key = normalizeCityKey(raw)
+        .replace(/\s*[\/\-]\s*[a-z]{2}$/i, "")
+        .replace(/\s+e\s+regiao$/i, "")
+        .trim();
+
+      const uf = CITY_UF[key];
+      return uf ? UF_REGIAO[uf] : "Não identificada";
+    }
+
+    function normalizeCargoLabel(raw) {
+      const value = String(raw || "").trim().replace(/\s+/g, " ");
+      return value || "Não informado";
+    }
+
+    // Agrupa por uma chave (case-insensitive), mantém o primeiro rótulo visto,
+    // ordena por contagem desc e junta a cauda longa num bucket "Outros".
+    function aggregateByLabel(items, labelFn, limit) {
+      const counts = new Map();
+      items.forEach(item => {
+        const label = labelFn(item);
+        const key = label.toLowerCase();
+        if (!counts.has(key)) counts.set(key, { label, count: 0 });
+        counts.get(key).count++;
+      });
+      const sorted = [...counts.values()].sort((a, b) => b.count - a.count);
+      if (!limit || sorted.length <= limit) return sorted;
+      const top = sorted.slice(0, limit);
+      const restCount = sorted.slice(limit).reduce((sum, x) => sum + x.count, 0);
+      if (restCount > 0) top.push({ label: "Outros", count: restCount });
+      return top;
+    }
+
+    function renderBarTable(rows, total) {
+      if (!rows.length) return `<div class="board-empty">Sem dados.</div>`;
+      const max = Math.max(...rows.map(r => r.count), 1);
+      return rows.map(row => {
+        const pct = total > 0 ? (100 * row.count / total) : 0;
+        const widthPct = 100 * row.count / max;
+        return `
+          <div class="report-bar-row">
+            <span class="report-bar-label" title="${escapeHtml(row.label)}">${escapeHtml(row.label)}</span>
+            <span class="report-bar-track"><span class="report-bar-fill" style="width:${widthPct}%"></span></span>
+            <span class="report-bar-value">${row.count} (${pct.toFixed(1)}%)</span>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderReportStatCard(value, label, sub) {
+      return `
+        <div class="stat-card">
+          <div class="stat-value">${value}</div>
+          <div class="stat-label">${label}</div>
+          ${sub ? `<div class="stat-sub">${sub}</div>` : ""}
+        </div>
+      `;
+    }
+
+    function renderSegmentationBlock(title, rows) {
+      const total = rows.reduce((sum, r) => sum + r.count, 0);
+      const cargoRows = aggregateByLabel(rows, r => normalizeCargoLabel(r.cargo), 8);
+      const regiaoRows = aggregateByLabel(rows, r => cidadeToRegiao(r.cidade), 10);
+      return `
+        <div class="report-section">
+          ${title ? `<h2>${escapeHtml(title)}</h2><p class="report-section-sub">${total} lead${total === 1 ? "" : "s"}</p>` : ""}
+          <div class="report-grid-2">
+            <div class="report-table-card">
+              <h3>Por cargo</h3>
+              ${renderBarTable(cargoRows, total)}
+            </div>
+            <div class="report-table-card">
+              <h3>Por região</h3>
+              ${renderBarTable(regiaoRows, total)}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    async function loadReport(funilKey) {
+      reportContentEl.innerHTML = `<div class="loading-state">Carregando relatório...</div>`;
+      try {
+        const { data: funilRows, error: funilError } = await db.rpc("get_marketing_nova_sdr_funil_report", {
+          p_trigger_type: FUNIS[funilKey]
+        });
+        if (funilError) throw funilError;
+
+        let offerRows = null;
+        if (funilKey === "C") {
+          const { data, error } = await db.rpc("get_marketing_nova_mba_offer_report");
+          if (error) throw error;
+          offerRows = data || [];
+        }
+
+        renderReport(funilKey, funilRows || [], offerRows);
+      } catch (error) {
+        console.error("[admin-sdr-marketing] Falha ao carregar relatório:", error);
+        reportContentEl.innerHTML = `<div class="empty-state">Não foi possível carregar o relatório agora.<br><small>${escapeHtml(error && error.message ? error.message : String(error))}</small></div>`;
+      }
+    }
+
+    function renderReport(funilKey, funilRows, offerRows) {
+      const total = funilRows.length;
+      const contatados = funilRows.filter(r => r.contatado).length;
+      const respondidos = funilRows.filter(r => r.respondeu).length;
+      const stageRows = aggregateByLabel(funilRows, r => r.stage_nome || "—", null);
+
+      let offerHtml = "";
+      if (funilKey === "C" && offerRows) {
+        const offerTotal = offerRows.length;
+        const sim = offerRows.filter(r => r.resposta === "sim");
+        const nao = offerRows.filter(r => r.resposta === "nao");
+        const pendente = offerRows.filter(r => r.resposta === "pendente");
+        const pct = n => offerTotal > 0 ? (100 * n / offerTotal).toFixed(1) : "0.0";
+
+        offerHtml = `
+          <div class="report-section">
+            <h2>Popup "Quero conhecer o programa"</h2>
+            <p class="report-section-sub">Leads elegíveis pro popup do MBA (formação superior + "quero começar agora") na trilha nova de marketing.</p>
+            <div class="report-stats">
+              ${renderReportStatCard(offerTotal, "Chegaram na tela", "elegíveis pro popup")}
+              ${renderReportStatCard(`${sim.length} (${pct(sim.length)}%)`, "Quero conhecer o programa")}
+              ${renderReportStatCard(`${nao.length} (${pct(nao.length)}%)`, "Agora não, obrigado")}
+              ${renderReportStatCard(`${pendente.length} (${pct(pendente.length)}%)`, "Ainda não respondeu")}
+            </div>
+            ${renderSegmentationBlock("Quem marcou \"Quero conhecer o programa\"", sim)}
+            ${renderSegmentationBlock("Quem marcou \"Agora não, obrigado\"", nao)}
+          </div>
+        `;
+      }
+
+      reportContentEl.innerHTML = `
+        ${offerHtml}
+        <div class="report-section">
+          <h2>Funil ${funilKey} · ${FUNIL_LABELS[funilKey]}</h2>
+          <p class="report-section-sub">Todo o histórico do funil (sem corte de data).</p>
+          <div class="report-stats">
+            ${renderReportStatCard(total, "Total no funil")}
+            ${renderReportStatCard(`${contatados} (${total > 0 ? (100 * contatados / total).toFixed(1) : "0.0"}%)`, "Contatados")}
+            ${renderReportStatCard(`${respondidos} (${total > 0 ? (100 * respondidos / total).toFixed(1) : "0.0"}%)`, "Responderam")}
+          </div>
+          <div class="report-table-card" style="margin-bottom:18px;">
+            <h3>Por etapa</h3>
+            ${renderBarTable(stageRows, total)}
+          </div>
+        </div>
+        ${renderSegmentationBlock("Segmentação geral do funil", funilRows)}
+      `;
+    }
+
+    pageModeToggle.addEventListener("click", event => {
+      const btn = event.target.closest("button[data-mode]");
+      if (!btn) return;
+      currentMode = btn.dataset.mode;
+      pageModeToggle.querySelectorAll("button").forEach(b => b.classList.toggle("active", b === btn));
+      kanbanViewEl.hidden = currentMode !== "kanban";
+      reportsViewEl.hidden = currentMode !== "reports";
+      if (currentMode === "reports") loadReport(currentReportFunil);
+    });
+
+    reportFunilToggle.addEventListener("click", event => {
+      const btn = event.target.closest("button[data-report-funil]");
+      if (!btn) return;
+      currentReportFunil = btn.dataset.reportFunil;
+      reportFunilToggle.querySelectorAll("button").forEach(b => b.classList.toggle("active", b === btn));
+      loadReport(currentReportFunil);
+    });
+
+    // ---------- Fim relatórios ----------
 
     function renderStageManageModal() {
       stageModalSubEl.textContent = `Funil: ${FUNIL_LABELS[currentFunil]}. A primeira etapa é fixa (é onde um lead novo entra) — as demais você pode renomear, reordenar ou excluir.`;
@@ -1414,6 +1703,7 @@
 
       countFunilAEl.textContent = queue.filter(item => item.trigger_type === FUNIS.A).length;
       countFunilBEl.textContent = queue.filter(item => item.trigger_type === FUNIS.B).length;
+      countFunilCEl.textContent = queue.filter(item => item.trigger_type === FUNIS.C).length;
 
       if (!stages.length) {
         contentEl.innerHTML = `<div class="empty-state">Nenhuma etapa configurada pra esse funil ainda.</div>`;
@@ -1504,7 +1794,7 @@
     }
 
     async function moveLeadStage(item, stageId) {
-      const stage = (stagesByFunil.A.concat(stagesByFunil.B)).find(s => s.id === stageId);
+      const stage = (stagesByFunil.A.concat(stagesByFunil.B, stagesByFunil.C)).find(s => s.id === stageId);
 
       let lossReason;
       if (stage && stage.is_loss_stage) {
