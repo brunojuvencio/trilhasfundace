@@ -649,6 +649,7 @@ begin
   left join public.sdr_pipeline_stages ds on ds.funil = 'intencao_imediata' and ds.is_default = true
   where l.nome_trilha = v_trail_nome
     and l.pretende_pos = 'sim_agora'
+    and l.possui_formacao_superior = true
 
   union all
 
@@ -695,7 +696,8 @@ begin
     and t.trigger_type = 'trilha_concluida'
     and t.lead_email = coalesce(l.email, u.email::citext)
   left join public.sdr_pipeline_stages st on st.id = t.stage_id
-  left join public.sdr_pipeline_stages ds on ds.funil = 'trilha_concluida' and ds.is_default = true;
+  left join public.sdr_pipeline_stages ds on ds.funil = 'trilha_concluida' and ds.is_default = true
+  where l.possui_formacao_superior = true;
 end;
 $$;
 
