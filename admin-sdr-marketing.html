@@ -666,10 +666,15 @@
         page.drawText(text, { x: (width - tw) / 2, y, size: sz, font: fnt, color });
       };
 
-      drawCentered("A FUNDACE certifica que", height * 0.65, bodySize, font, inkSoft);
-      drawCentered(name, height * 0.575, nameSize, fontBold, ink);
-      drawCentered("cumpriu a grade do curso", height * 0.51, bodySize, fontItalic, inkSoft);
-      drawCentered(TRILHA_TITLE, height * 0.47, width > height ? 13 : 10, fontBold, ink);
+      // Sobe o bloco inteiro de texto (não dá pra mexer no "CERTIFICADO" nem
+      // na assinatura/logo, que são fixos no template) pra equilibrar a
+      // margem entre o título e a assinatura no rodapé.
+      const contentShiftY = height * 0.06;
+
+      drawCentered("A FUNDACE certifica que", height * 0.65 + contentShiftY, bodySize, font, inkSoft);
+      drawCentered(name, height * 0.575 + contentShiftY, nameSize, fontBold, ink);
+      drawCentered("cumpriu a grade do curso", height * 0.51 + contentShiftY, bodySize, fontItalic, inkSoft);
+      drawCentered(TRILHA_TITLE, height * 0.47 + contentShiftY, width > height ? 13 : 10, fontBold, ink);
 
       const lessonListSize = width > height ? 7.5 : 6;
       const cleanTitle = t => t
@@ -681,7 +686,7 @@
 
       // "Programa cursado:" como cabeçalho, e cada aula em uma linha com
       // checkmark — em vez do parágrafo corrido de antes.
-      const headingY = height * 0.42;
+      const headingY = height * 0.42 + contentShiftY;
       drawCentered("Programa cursado:", headingY, bodySize, fontItalic, inkSoft);
 
       const bulletIndent = lessonListSize * 1.5;
@@ -707,7 +712,7 @@
       const dateStr = new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
       const contentLastLineY = lessonStartY - ((bulletLines.length - 1) * lineGap);
       const minGapAfterContent = lineGap * 2;
-      const dateY = Math.min(height * 0.335, contentLastLineY - minGapAfterContent);
+      const dateY = Math.min(height * 0.335 + contentShiftY, contentLastLineY - minGapAfterContent);
       drawCentered(dateStr, dateY, bodySize, font, inkSoft);
 
       const output = await pdfDoc.save();
