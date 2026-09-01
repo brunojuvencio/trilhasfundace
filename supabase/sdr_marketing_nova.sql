@@ -17,6 +17,8 @@ create table if not exists public.sdr_contact_triggers (
   approach_tag text,
   stage_id bigint,
   stage_changed_at timestamptz,
+  notes text,
+  ploomes_status text,
   created_at timestamptz not null default now()
 );
 
@@ -33,7 +35,22 @@ alter table public.sdr_contact_triggers
   add column if not exists responded boolean,
   add column if not exists responded_at timestamptz,
   add column if not exists approach_tag text,
+  add column if not exists notes text,
+  add column if not exists ploomes_status text,
   add column if not exists created_at timestamptz not null default now();
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'sdr_contact_triggers_ploomes_status_check'
+      and conrelid = 'public.sdr_contact_triggers'::regclass
+  ) then
+    alter table public.sdr_contact_triggers
+      add constraint sdr_contact_triggers_ploomes_status_check
+      check (ploomes_status is null or ploomes_status in ('sim', 'nao'));
+  end if;
+end $$;
 
 do $$
 begin
@@ -407,6 +424,7 @@ declare
   v_is_loss boolean;
   v_auto_responded boolean;
   v_loss_reason text := nullif(trim(coalesce(p_loss_reason, '')), '');
+  v_old_stage_id bigint;
   v_row public.sdr_contact_triggers;
 begin
   if not public.is_admin() then
@@ -420,6 +438,10 @@ begin
   select is_default, is_loss_stage, auto_responded into v_is_default, v_is_loss, v_auto_responded
   from public.sdr_pipeline_stages
   where id = p_stage_id and funil = v_trigger_type;
+
+  select stage_id into v_old_stage_id
+  from public.sdr_contact_triggers
+  where trail_slug = v_trail_slug and trigger_type = v_trigger_type and lead_email = v_email;
 
   if v_is_default is null then
     raise exception 'Etapa inválida para esse funil.';
@@ -462,6 +484,10 @@ begin
       else public.sdr_contact_triggers.responded_at
     end
   returning * into v_row;
+
+  if v_old_stage_id is distinct from v_row.stage_id then
+    perform public.regenerate_sdr_followup_tasks(v_row.id);
+  end if;
 
   return v_row;
 end;
@@ -721,6 +747,376 @@ $$;
 revoke all on function public.delete_sdr_loss_reason_template(text, text) from public;
 grant execute on function public.delete_sdr_loss_reason_template(text, text) to authenticated;
 
+-- ═══════════════════════════════════════════════════════════════════════
+-- FOLLOW-UP: sequência configurável por etapa (ex.: quem entra em
+-- "Respondeu - Em Atendimento" ganha automaticamente uma lista de
+-- follow-ups — cada um com texto sugerido e prazo relativo ao anterior).
+-- ═══════════════════════════════════════════════════════════════════════
+
+create table if not exists public.sdr_followup_templates (
+  id bigint generated always as identity primary key,
+  stage_id bigint not null references public.sdr_pipeline_stages (id) on delete cascade,
+  ordem integer not null default 1,
+  nome text not null,
+  mensagem text not null default '',
+  dias_apos_anterior numeric not null default 1,
+  created_at timestamptz not null default now()
+);
+
+alter table public.sdr_followup_templates enable row level security;
+
+drop policy if exists "Admins can read sdr followup templates" on public.sdr_followup_templates;
+create policy "Admins can read sdr followup templates"
+on public.sdr_followup_templates for select to authenticated
+using (public.is_admin());
+
+drop policy if exists "Admins can write sdr followup templates" on public.sdr_followup_templates;
+create policy "Admins can write sdr followup templates"
+on public.sdr_followup_templates for all to authenticated
+using (public.is_admin()) with check (public.is_admin());
+
+create index if not exists sdr_followup_templates_stage_idx on public.sdr_followup_templates (stage_id, ordem);
+
+create or replace function public.list_sdr_followup_templates(p_stage_id bigint)
+returns setof public.sdr_followup_templates
+language sql
+security definer
+set search_path = public
+as $$
+  select * from public.sdr_followup_templates
+  where stage_id = p_stage_id and public.is_admin()
+  order by ordem asc;
+$$;
+
+revoke all on function public.list_sdr_followup_templates(bigint) from public;
+grant execute on function public.list_sdr_followup_templates(bigint) to authenticated;
+
+create or replace function public.upsert_sdr_followup_template(
+  p_id bigint,
+  p_stage_id bigint,
+  p_nome text,
+  p_mensagem text,
+  p_dias_apos_anterior numeric
+)
+returns public.sdr_followup_templates
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_nome text := trim(coalesce(p_nome, ''));
+  v_next_ordem integer;
+  v_row public.sdr_followup_templates;
+begin
+  if not public.is_admin() then
+    raise exception 'Acesso negado.';
+  end if;
+
+  if v_nome = '' then
+    raise exception 'Nome do follow-up é obrigatório.';
+  end if;
+
+  if p_id is not null then
+    update public.sdr_followup_templates
+    set nome = v_nome, mensagem = coalesce(p_mensagem, ''), dias_apos_anterior = coalesce(p_dias_apos_anterior, 1)
+    where id = p_id
+    returning * into v_row;
+
+    if v_row.id is null then
+      raise exception 'Follow-up não encontrado.';
+    end if;
+    return v_row;
+  end if;
+
+  select coalesce(max(ordem), 0) + 1 into v_next_ordem
+  from public.sdr_followup_templates where stage_id = p_stage_id;
+
+  insert into public.sdr_followup_templates (stage_id, ordem, nome, mensagem, dias_apos_anterior)
+  values (p_stage_id, v_next_ordem, v_nome, coalesce(p_mensagem, ''), coalesce(p_dias_apos_anterior, 1))
+  returning * into v_row;
+
+  return v_row;
+end;
+$$;
+
+revoke all on function public.upsert_sdr_followup_template(bigint, bigint, text, text, numeric) from public;
+grant execute on function public.upsert_sdr_followup_template(bigint, bigint, text, text, numeric) to authenticated;
+
+create or replace function public.delete_sdr_followup_template(p_id bigint)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not public.is_admin() then
+    raise exception 'Acesso negado.';
+  end if;
+  delete from public.sdr_followup_templates where id = p_id;
+end;
+$$;
+
+revoke all on function public.delete_sdr_followup_template(bigint) from public;
+grant execute on function public.delete_sdr_followup_template(bigint) to authenticated;
+
+create or replace function public.reorder_sdr_followup_templates(p_stage_id bigint, p_ids bigint[])
+returns setof public.sdr_followup_templates
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_id bigint;
+  v_pos integer := 1;
+begin
+  if not public.is_admin() then
+    raise exception 'Acesso negado.';
+  end if;
+
+  foreach v_id in array p_ids loop
+    update public.sdr_followup_templates set ordem = v_pos where id = v_id and stage_id = p_stage_id;
+    v_pos := v_pos + 1;
+  end loop;
+
+  return query select * from public.sdr_followup_templates where stage_id = p_stage_id order by ordem asc;
+end;
+$$;
+
+revoke all on function public.reorder_sdr_followup_templates(bigint, bigint[]) from public;
+grant execute on function public.reorder_sdr_followup_templates(bigint, bigint[]) to authenticated;
+
+-- Instâncias de follow-up geradas por lead, a partir dos templates da
+-- etapa em que ele está. Recalculadas toda vez que o lead muda de etapa.
+create table if not exists public.sdr_followup_tasks (
+  id bigint generated always as identity primary key,
+  trigger_id bigint not null references public.sdr_contact_triggers (id) on delete cascade,
+  template_id bigint references public.sdr_followup_templates (id) on delete set null,
+  nome text not null,
+  mensagem text not null default '',
+  due_at timestamptz not null,
+  done_at timestamptz,
+  done_by text,
+  created_at timestamptz not null default now()
+);
+
+alter table public.sdr_followup_tasks enable row level security;
+
+drop policy if exists "Admins can read sdr followup tasks" on public.sdr_followup_tasks;
+create policy "Admins can read sdr followup tasks"
+on public.sdr_followup_tasks for select to authenticated
+using (public.is_admin());
+
+drop policy if exists "Admins can write sdr followup tasks" on public.sdr_followup_tasks;
+create policy "Admins can write sdr followup tasks"
+on public.sdr_followup_tasks for all to authenticated
+using (public.is_admin()) with check (public.is_admin());
+
+create index if not exists sdr_followup_tasks_trigger_idx on public.sdr_followup_tasks (trigger_id);
+
+-- Apaga os follow-ups pendentes (não concluídos) de um trigger e recria a
+-- partir dos templates da etapa atual dele, ancorados em stage_changed_at.
+create or replace function public.regenerate_sdr_followup_tasks(p_trigger_id bigint)
+returns setof public.sdr_followup_tasks
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_stage_id bigint;
+  v_anchor timestamptz;
+  v_cursor timestamptz;
+  v_tpl record;
+begin
+  if not public.is_admin() then
+    raise exception 'Acesso negado.';
+  end if;
+
+  select stage_id, stage_changed_at into v_stage_id, v_anchor
+  from public.sdr_contact_triggers where id = p_trigger_id;
+
+  delete from public.sdr_followup_tasks where trigger_id = p_trigger_id and done_at is null;
+
+  if v_stage_id is null then
+    return query select * from public.sdr_followup_tasks where trigger_id = p_trigger_id order by due_at asc;
+    return;
+  end if;
+
+  v_cursor := coalesce(v_anchor, now());
+
+  for v_tpl in
+    select * from public.sdr_followup_templates where stage_id = v_stage_id order by ordem asc
+  loop
+    v_cursor := v_cursor + make_interval(secs => v_tpl.dias_apos_anterior * 86400);
+    insert into public.sdr_followup_tasks (trigger_id, template_id, nome, mensagem, due_at)
+    values (p_trigger_id, v_tpl.id, v_tpl.nome, v_tpl.mensagem, v_cursor);
+  end loop;
+
+  return query select * from public.sdr_followup_tasks where trigger_id = p_trigger_id order by due_at asc;
+end;
+$$;
+
+revoke all on function public.regenerate_sdr_followup_tasks(bigint) from public;
+grant execute on function public.regenerate_sdr_followup_tasks(bigint) to authenticated;
+
+create or replace function public.list_sdr_followup_tasks(p_trigger_id bigint)
+returns setof public.sdr_followup_tasks
+language sql
+security definer
+set search_path = public
+as $$
+  select * from public.sdr_followup_tasks
+  where trigger_id = p_trigger_id and public.is_admin()
+  order by due_at asc;
+$$;
+
+revoke all on function public.list_sdr_followup_tasks(bigint) from public;
+grant execute on function public.list_sdr_followup_tasks(bigint) to authenticated;
+
+create or replace function public.toggle_sdr_followup_task(p_task_id bigint, p_done boolean)
+returns public.sdr_followup_tasks
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_row public.sdr_followup_tasks;
+begin
+  if not public.is_admin() then
+    raise exception 'Acesso negado.';
+  end if;
+
+  update public.sdr_followup_tasks
+  set done_at = case when p_done then now() else null end,
+      done_by = case when p_done then coalesce(auth.jwt() ->> 'email', 'admin') else null end
+  where id = p_task_id
+  returning * into v_row;
+
+  if v_row.id is null then
+    raise exception 'Follow-up não encontrado.';
+  end if;
+
+  return v_row;
+end;
+$$;
+
+revoke all on function public.toggle_sdr_followup_task(bigint, boolean) from public;
+grant execute on function public.toggle_sdr_followup_task(bigint, boolean) to authenticated;
+
+-- Salva a anotação livre do lead.
+create or replace function public.set_sdr_lead_notes(
+  p_trail_slug text, p_trigger_type text, p_lead_email text, p_notes text
+)
+returns public.sdr_contact_triggers
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_row public.sdr_contact_triggers;
+begin
+  if not public.is_admin() then
+    raise exception 'Acesso negado.';
+  end if;
+
+  update public.sdr_contact_triggers
+  set notes = nullif(trim(coalesce(p_notes, '')), '')
+  where trail_slug = trim(coalesce(p_trail_slug, ''))
+    and trigger_type = trim(coalesce(p_trigger_type, ''))
+    and lead_email = lower(trim(coalesce(p_lead_email, '')))
+  returning * into v_row;
+
+  if v_row.id is null then
+    raise exception 'Registro não encontrado — mova o lead de etapa antes de anotar.';
+  end if;
+
+  return v_row;
+end;
+$$;
+
+revoke all on function public.set_sdr_lead_notes(text, text, text, text) from public;
+grant execute on function public.set_sdr_lead_notes(text, text, text, text) to authenticated;
+
+-- Marca se o lead já existe (ou não) no funil comercial do Ploomes.
+create or replace function public.set_sdr_lead_ploomes_status(
+  p_trail_slug text, p_trigger_type text, p_lead_email text, p_status text
+)
+returns public.sdr_contact_triggers
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_status text := nullif(trim(coalesce(p_status, '')), '');
+  v_row public.sdr_contact_triggers;
+begin
+  if not public.is_admin() then
+    raise exception 'Acesso negado.';
+  end if;
+
+  if v_status is not null and v_status not in ('sim', 'nao') then
+    raise exception 'Status inválido.';
+  end if;
+
+  update public.sdr_contact_triggers
+  set ploomes_status = v_status
+  where trail_slug = trim(coalesce(p_trail_slug, ''))
+    and trigger_type = trim(coalesce(p_trigger_type, ''))
+    and lead_email = lower(trim(coalesce(p_lead_email, '')))
+  returning * into v_row;
+
+  if v_row.id is null then
+    raise exception 'Registro não encontrado.';
+  end if;
+
+  return v_row;
+end;
+$$;
+
+revoke all on function public.set_sdr_lead_ploomes_status(text, text, text, text) from public;
+grant execute on function public.set_sdr_lead_ploomes_status(text, text, text, text) to authenticated;
+
+-- Detalhes completos de um lead (respostas do formulário) + estado atual no
+-- painel do SDR — usado pelo popup de detalhe do card.
+create or replace function public.get_sdr_lead_full_details(
+  p_trail_slug text, p_trigger_type text, p_lead_email text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_email citext := lower(trim(coalesce(p_lead_email, '')));
+  v_result jsonb;
+begin
+  if not public.is_admin() then
+    raise exception 'Acesso negado.';
+  end if;
+
+  select jsonb_build_object(
+    'lead', (
+      select to_jsonb(l) - 'activecampaign_contact_id' - 'ploomes_contact_id' - 'ploomes_deal_id'
+        - 'fbclid' - 'gclid' - 'landing_page_url'
+      from public.leads l
+      where l.email = v_email
+      limit 1
+    ),
+    'trigger', (
+      select to_jsonb(t) from public.sdr_contact_triggers t
+      where t.trail_slug = trim(coalesce(p_trail_slug, ''))
+        and t.trigger_type = trim(coalesce(p_trigger_type, ''))
+        and t.lead_email = v_email
+      limit 1
+    )
+  ) into v_result;
+
+  return v_result;
+end;
+$$;
+
+revoke all on function public.get_sdr_lead_full_details(text, text, text) from public;
+grant execute on function public.get_sdr_lead_full_details(text, text, text) to authenticated;
+
 -- Empurra um timestamp pra segunda-feira 00:00 (America/Sao_Paulo) se ele cair
 -- num fim de semana (sábado ou domingo); nos demais dias devolve sem alterar.
 -- Usada pra calcular prazo de contato sem contar sábado/domingo como tempo útil.
@@ -761,7 +1157,14 @@ returns table (
   stage_is_default boolean,
   stage_is_loss boolean,
   stage_desde timestamptz,
-  motivo_perda text
+  motivo_perda text,
+  trigger_id bigint,
+  notes text,
+  ploomes_status text,
+  proximo_followup_id bigint,
+  proximo_followup_nome text,
+  proximo_followup_vence timestamptz,
+  followups_pendentes integer
 )
 language plpgsql
 security definer
@@ -814,7 +1217,14 @@ begin
     coalesce(st.is_default, ds.is_default, true),
     coalesce(st.is_loss_stage, ds.is_loss_stage, false),
     coalesce(t.stage_changed_at, l.created_at),
-    t.loss_reason
+    t.loss_reason,
+    t.id,
+    t.notes,
+    t.ploomes_status,
+    fu.id,
+    fu.nome,
+    fu.due_at,
+    fu.pendentes
   from public.leads l
   left join public.sdr_contact_triggers t
     on t.trail_slug = v_trail_slug
@@ -822,6 +1232,18 @@ begin
     and t.lead_email = l.email
   left join public.sdr_pipeline_stages st on st.id = t.stage_id
   left join public.sdr_pipeline_stages ds on ds.funil = 'intencao_imediata' and ds.is_default = true
+  left join lateral (
+    select ft.id, ft.nome, ft.due_at, cnt.pendentes
+    from public.sdr_followup_tasks ft
+    cross join lateral (
+      select count(*)::int as pendentes
+      from public.sdr_followup_tasks ft2
+      where ft2.trigger_id = t.id and ft2.done_at is null
+    ) cnt
+    where ft.trigger_id = t.id and ft.done_at is null
+    order by ft.due_at asc
+    limit 1
+  ) fu on true
   where l.nome_trilha = v_trail_nome
     and l.pretende_pos = 'sim_agora'
     -- Formacao superior so bloqueia gente nova (sem nenhum registro em
@@ -857,7 +1279,14 @@ begin
     coalesce(st.is_default, ds.is_default, true),
     coalesce(st.is_loss_stage, ds.is_loss_stage, false),
     coalesce(t.stage_changed_at, p.gatilho_em),
-    t.loss_reason
+    t.loss_reason,
+    t.id,
+    t.notes,
+    t.ploomes_status,
+    fu.id,
+    fu.nome,
+    fu.due_at,
+    fu.pendentes
   from (
     select ulp.user_id, max(ulp.completed_at) as gatilho_em
     from public.user_lesson_progress ulp
@@ -874,6 +1303,18 @@ begin
     and t.lead_email = coalesce(l.email, u.email::citext)
   left join public.sdr_pipeline_stages st on st.id = t.stage_id
   left join public.sdr_pipeline_stages ds on ds.funil = 'trilha_concluida' and ds.is_default = true
+  left join lateral (
+    select ft.id, ft.nome, ft.due_at, cnt.pendentes
+    from public.sdr_followup_tasks ft
+    cross join lateral (
+      select count(*)::int as pendentes
+      from public.sdr_followup_tasks ft2
+      where ft2.trigger_id = t.id and ft2.done_at is null
+    ) cnt
+    where ft.trigger_id = t.id and ft.done_at is null
+    order by ft.due_at asc
+    limit 1
+  ) fu on true
   where (l.possui_formacao_superior = true or t.id is not null);
 end;
 $$;
@@ -905,7 +1346,14 @@ returns table (
   stage_is_default boolean,
   stage_is_loss boolean,
   stage_desde timestamptz,
-  motivo_perda text
+  motivo_perda text,
+  trigger_id bigint,
+  notes text,
+  ploomes_status text,
+  proximo_followup_id bigint,
+  proximo_followup_nome text,
+  proximo_followup_vence timestamptz,
+  followups_pendentes integer
 )
 language sql
 security definer

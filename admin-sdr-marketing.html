@@ -241,6 +241,45 @@
       min-width: 200px;
     }
     .approach-select:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+
+    .kcard { cursor: pointer; }
+    .kcard-followup-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 0.68rem; font-weight: 700; padding: 3px 9px; border-radius: 999px;
+      background: rgba(24,20,17,0.06); color: var(--muted); width: fit-content;
+    }
+    .kcard-followup-badge.fu-overdue { background: var(--danger-soft); color: var(--danger); }
+    .kcard-followup-badge.fu-soon { background: var(--warn-soft); color: var(--warn); }
+    .kcard-followup-badge.fu-ok { background: var(--ok-soft); color: var(--ok); }
+
+    .lead-detail-card { width: min(900px, 100%); }
+    .lead-detail-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+    .lead-detail-head h2 { font-family: "Fraunces", serif; font-size: 1.3rem; }
+    .lead-detail-body { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+    @media (max-width: 720px) { .lead-detail-body { grid-template-columns: 1fr; } }
+
+    .lead-detail-field { display: grid; gap: 2px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+    .lead-detail-field .label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+    .lead-detail-field .value { font-size: 0.86rem; color: var(--ink); }
+
+    .lead-detail-section { margin-bottom: 22px; }
+    .lead-detail-section h3 { font-size: 0.8rem; font-weight: 800; margin-bottom: 8px; color: var(--ink); }
+    .lead-detail-section textarea, .lead-detail-section select {
+      width: 100%; font: inherit; font-size: 0.86rem; padding: 10px 12px;
+      border-radius: 10px; border: 1px solid var(--line); background: #fff; color: var(--ink);
+    }
+    .lead-detail-section .approach-saved { display: block; margin-top: 6px; }
+
+    .followup-task-item {
+      display: flex; align-items: flex-start; gap: 10px; padding: 10px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .followup-task-item input[type="checkbox"] { width: 17px; height: 17px; margin-top: 2px; accent-color: var(--ok); cursor: pointer; flex-shrink: 0; }
+    .followup-task-item .followup-task-body { flex: 1; min-width: 0; }
+    .followup-task-item .followup-task-name { font-weight: 700; font-size: 0.86rem; }
+    .followup-task-item.is-done .followup-task-name { text-decoration: line-through; color: var(--muted); }
+    .followup-task-item .followup-task-due { font-size: 0.72rem; margin-top: 2px; }
+    .followup-task-item .followup-task-msg { font-size: 0.78rem; color: var(--muted); margin-top: 4px; white-space: pre-wrap; }
   </style>
 </head>
 <body>
@@ -318,6 +357,68 @@
       <div id="stage-list-body"></div>
 
       <button type="button" class="button button-secondary modal-close" id="stage-modal-close">Fechar</button>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="followup-config-modal" hidden>
+    <div class="modal-card">
+      <h2>Follow-up automático</h2>
+      <p class="modal-sub" id="followup-config-sub"></p>
+
+      <form id="followup-form" class="template-form">
+        <input type="hidden" id="followup-form-id" value="">
+        <div class="template-form-row">
+          <label for="followup-name-input">Nome</label>
+          <input type="text" id="followup-name-input" placeholder="Ex: Follow-up 1" required maxlength="60">
+        </div>
+        <div class="template-form-row">
+          <label for="followup-days-input">Dias após o anterior (ou após entrar na etapa, se for o 1º)</label>
+          <input type="number" id="followup-days-input" min="0" step="0.5" value="1" required>
+        </div>
+        <div class="template-form-row">
+          <label for="followup-message-input">Mensagem sugerida</label>
+          <textarea id="followup-message-input" rows="3" placeholder="Texto de referência para essa abordagem"></textarea>
+        </div>
+        <div class="template-form-actions">
+          <button type="button" class="button button-ghost" id="followup-form-cancel" hidden>Cancelar edição</button>
+          <button type="submit" class="button button-primary">Salvar follow-up</button>
+        </div>
+      </form>
+
+      <div id="followup-list-body"></div>
+
+      <button type="button" class="button button-secondary modal-close" id="followup-config-modal-close">Fechar</button>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="lead-detail-modal" hidden>
+    <div class="modal-card lead-detail-card">
+      <div class="lead-detail-head">
+        <h2 id="lead-detail-name">—</h2>
+        <button type="button" class="button button-ghost modal-close" id="lead-detail-close">Fechar</button>
+      </div>
+      <div class="lead-detail-body">
+        <div class="lead-detail-col" id="lead-detail-contact"></div>
+        <div class="lead-detail-col">
+          <div class="lead-detail-section">
+            <h3>Anotações</h3>
+            <textarea id="lead-detail-notes" rows="5" placeholder="Anote aqui o que conversou, contexto, próximos passos..."></textarea>
+            <span class="approach-saved" id="lead-detail-notes-saved">Salvo ✓</span>
+          </div>
+          <div class="lead-detail-section">
+            <h3>Já existe no funil comercial (Ploomes)?</h3>
+            <select id="lead-detail-ploomes">
+              <option value="">Não verificado</option>
+              <option value="sim">Sim, já existe</option>
+              <option value="nao">Não existe</option>
+            </select>
+          </div>
+          <div class="lead-detail-section">
+            <h3>Follow-up</h3>
+            <div id="lead-detail-followups"></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -432,6 +533,29 @@
     const stageListBodyEl = document.getElementById("stage-list-body");
     const stageFormEl = document.getElementById("stage-form");
     const stageNameInputEl = document.getElementById("stage-name-input");
+
+    const followupConfigModalEl = document.getElementById("followup-config-modal");
+    const followupConfigSubEl = document.getElementById("followup-config-sub");
+    const followupConfigModalCloseBtn = document.getElementById("followup-config-modal-close");
+    const followupFormEl = document.getElementById("followup-form");
+    const followupFormIdEl = document.getElementById("followup-form-id");
+    const followupNameInputEl = document.getElementById("followup-name-input");
+    const followupDaysInputEl = document.getElementById("followup-days-input");
+    const followupMessageInputEl = document.getElementById("followup-message-input");
+    const followupFormCancelBtn = document.getElementById("followup-form-cancel");
+    const followupListBodyEl = document.getElementById("followup-list-body");
+    let currentFollowupStageId = null;
+    let followupTemplatesCache = [];
+
+    const leadDetailModalEl = document.getElementById("lead-detail-modal");
+    const leadDetailNameEl = document.getElementById("lead-detail-name");
+    const leadDetailCloseBtn = document.getElementById("lead-detail-close");
+    const leadDetailContactEl = document.getElementById("lead-detail-contact");
+    const leadDetailNotesEl = document.getElementById("lead-detail-notes");
+    const leadDetailNotesSavedEl = document.getElementById("lead-detail-notes-saved");
+    const leadDetailPloomesEl = document.getElementById("lead-detail-ploomes");
+    const leadDetailFollowupsEl = document.getElementById("lead-detail-followups");
+    let currentDetailItem = null;
 
     const lossReasonModalEl = document.getElementById("loss-reason-modal");
     const lossReasonSubEl = document.getElementById("loss-reason-sub");
@@ -756,6 +880,26 @@
       return `há ${days} dia${days > 1 ? "s" : ""} nesta etapa`;
     }
 
+    function followupUrgency(item) {
+      if (!item.proximo_followup_vence) return null;
+      const diffMs = new Date(item.proximo_followup_vence).getTime() - Date.now();
+      if (diffMs < 0) return "overdue";
+      if (diffMs < SOON_THRESHOLD_MS) return "soon";
+      return "ok";
+    }
+
+    function renderFollowupBadge(item) {
+      if (!item.proximo_followup_nome) return "";
+      const state = followupUrgency(item);
+      const diffMs = new Date(item.proximo_followup_vence).getTime() - Date.now();
+      const abs = Math.abs(diffMs);
+      const hours = Math.floor(abs / (60 * 60 * 1000));
+      const label = hours < 24 ? `${hours}h` : `${Math.floor(hours / 24)}d`;
+      const relText = diffMs < 0 ? `atrasado há ${label}` : `em ${label}`;
+      const extra = (item.followups_pendentes || 0) > 1 ? ` (+${item.followups_pendentes - 1})` : "";
+      return `<span class="kcard-followup-badge fu-${state}">📋 ${escapeHtml(item.proximo_followup_nome)} · ${relText}${extra}</span>`;
+    }
+
     function formatDateTime(value) {
       if (!value) return "—";
       return new Date(value).toLocaleString("pt-BR", {
@@ -958,6 +1102,7 @@
               <input type="checkbox" class="stage-auto-responded-toggle" data-stage-id="${stage.id}" ${stage.auto_responded ? "checked" : ""}>
               Marca "Lead respondeu" automaticamente ao mover pra cá
             </label>
+            <button type="button" class="button button-ghost stage-followup-btn" data-stage-id="${stage.id}" data-stage-nome="${escapeHtml(stage.nome)}">Configurar follow-up desta etapa</button>
           ` : ""}
         </div>
       `).join("");
@@ -973,6 +1118,9 @@
       });
       stageListBodyEl.querySelectorAll(".stage-delete-btn").forEach(btn => {
         btn.addEventListener("click", () => onDeleteStage(Number(btn.dataset.stageId), btn.dataset.stageNome));
+      });
+      stageListBodyEl.querySelectorAll(".stage-followup-btn").forEach(btn => {
+        btn.addEventListener("click", () => openFollowupConfig(Number(btn.dataset.stageId), btn.dataset.stageNome));
       });
       stageListBodyEl.querySelectorAll(".stage-loss-toggle").forEach(checkbox => {
         checkbox.addEventListener("change", () => onToggleStageLoss(Number(checkbox.dataset.stageId), checkbox.checked));
@@ -999,6 +1147,116 @@
       }
       await loadStages();
     }
+
+    async function openFollowupConfig(stageId, stageNome) {
+      currentFollowupStageId = stageId;
+      followupConfigSubEl.textContent = `Etapa "${stageNome}". Cada follow-up dispara "dias após o anterior" (o 1º conta a partir de quando o lead entra nessa etapa).`;
+      resetFollowupForm();
+      await loadFollowupTemplates();
+      followupConfigModalEl.hidden = false;
+    }
+
+    async function loadFollowupTemplates() {
+      const { data, error } = await db.rpc("list_sdr_followup_templates", { p_stage_id: currentFollowupStageId });
+      if (error) {
+        followupListBodyEl.innerHTML = `<p class="modal-sub">Não foi possível carregar.</p>`;
+        return;
+      }
+      followupTemplatesCache = data || [];
+      renderFollowupConfigList();
+    }
+
+    function renderFollowupConfigList() {
+      if (!followupTemplatesCache.length) {
+        followupListBodyEl.innerHTML = `<p class="modal-sub">Nenhum follow-up configurado ainda pra essa etapa.</p>`;
+        return;
+      }
+      followupListBodyEl.innerHTML = `
+        <div class="template-list">
+          ${followupTemplatesCache.map(t => `
+            <div class="template-item">
+              <div class="template-item-head">
+                <span class="template-item-tag">${escapeHtml(t.nome)} · ${t.dias_apos_anterior}d após o anterior</span>
+                <div class="template-item-actions">
+                  <button type="button" class="button button-ghost followup-edit-btn" data-id="${t.id}">Editar</button>
+                  <button type="button" class="button button-ghost followup-delete-btn" data-id="${t.id}">Excluir</button>
+                </div>
+              </div>
+              <div class="template-item-message">${escapeHtml(t.mensagem) || "<em>Sem mensagem</em>"}</div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+      followupListBodyEl.querySelectorAll(".followup-edit-btn").forEach(btn => {
+        btn.addEventListener("click", () => startEditFollowupTemplate(Number(btn.dataset.id)));
+      });
+      followupListBodyEl.querySelectorAll(".followup-delete-btn").forEach(btn => {
+        btn.addEventListener("click", () => onDeleteFollowupTemplate(Number(btn.dataset.id)));
+      });
+    }
+
+    function startEditFollowupTemplate(id) {
+      const t = followupTemplatesCache.find(x => x.id === id);
+      if (!t) return;
+      followupFormIdEl.value = t.id;
+      followupNameInputEl.value = t.nome;
+      followupDaysInputEl.value = t.dias_apos_anterior;
+      followupMessageInputEl.value = t.mensagem || "";
+      followupFormCancelBtn.hidden = false;
+      followupNameInputEl.focus();
+    }
+
+    function resetFollowupForm() {
+      followupFormEl.reset();
+      followupFormIdEl.value = "";
+      followupDaysInputEl.value = "1";
+      followupFormCancelBtn.hidden = true;
+    }
+
+    async function onDeleteFollowupTemplate(id) {
+      if (!confirm("Excluir esse follow-up da sequência?")) return;
+      const { error } = await db.rpc("delete_sdr_followup_template", { p_id: id });
+      if (error) {
+        alert("Não foi possível excluir agora.");
+        return;
+      }
+      await loadFollowupTemplates();
+    }
+
+    followupFormCancelBtn.addEventListener("click", resetFollowupForm);
+    followupConfigModalCloseBtn.addEventListener("click", () => { followupConfigModalEl.hidden = true; });
+    followupConfigModalEl.addEventListener("click", event => {
+      if (event.target === followupConfigModalEl) followupConfigModalEl.hidden = true;
+    });
+
+    followupFormEl.addEventListener("submit", async event => {
+      event.preventDefault();
+      const id = followupFormIdEl.value ? Number(followupFormIdEl.value) : null;
+      const nome = followupNameInputEl.value.trim();
+      const dias = Number(followupDaysInputEl.value);
+      const mensagem = followupMessageInputEl.value;
+      if (!nome) return;
+
+      const submitBtn = followupFormEl.querySelector("button[type=submit]");
+      submitBtn.disabled = true;
+      try {
+        const { error } = await db.rpc("upsert_sdr_followup_template", {
+          p_id: id,
+          p_stage_id: currentFollowupStageId,
+          p_nome: nome,
+          p_mensagem: mensagem,
+          p_dias_apos_anterior: dias
+        });
+        if (error) throw error;
+        resetFollowupForm();
+        await loadFollowupTemplates();
+      } catch (error) {
+        console.error("[admin-sdr-marketing] Falha ao salvar follow-up:", error);
+        alert("Não foi possível salvar agora.");
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
 
     async function onRenameStage(stageId, nome) {
       if (!nome.trim()) return;
@@ -1110,6 +1368,7 @@
           <div class="kcard-name">${escapeHtml(item.lead_nome || item.lead_email)}</div>
           <div class="kcard-badges">${urgencyBadge}${phoneBadge}</div>
           <div class="kcard-meta">${timeMeta}</div>
+          ${renderFollowupBadge(item)}
           ${lossReasonMeta}
           <div class="kcard-actions">
             ${waButton}
@@ -1185,6 +1444,11 @@
           card.classList.remove("dragging");
           draggedKey = null;
         });
+        card.addEventListener("click", event => {
+          if (event.target.closest("select, button, a, input, label")) return;
+          const item = queue.find(q => itemKey(q) === card.dataset.key);
+          if (item) openLeadDetail(item);
+        });
       });
 
       contentEl.querySelectorAll(".board-column").forEach(column => {
@@ -1251,6 +1515,7 @@
 
       renderBoard();
       loadMetrics();
+      loadQueue(); // recarrega pra pegar o follow-up recem-gerado na etapa nova
     }
 
     async function onToggleResponded(event) {
@@ -1325,6 +1590,144 @@
         btn.textContent = originalLabel;
       }
     }
+
+    const LEAD_FIELD_LABELS = [
+      ["email", "E-mail"],
+      ["telefone", "Telefone"],
+      ["cidade", "Cidade"],
+      ["empresa", "Empresa"],
+      ["cargo", "Cargo"],
+      ["area_formacao", "Área de formação"],
+      ["possui_formacao_superior", "Formação superior"],
+      ["pretende_pos", "Pretende pós/MBA"],
+      ["created_at", "Cadastro no formulário"],
+      ["utm_source", "Origem (UTM source)"],
+      ["utm_campaign", "Campanha (UTM campaign)"]
+    ];
+
+    function formatLeadFieldValue(key, value) {
+      if (value === null || value === undefined || value === "") return "—";
+      if (key === "possui_formacao_superior") return value ? "Sim" : "Não";
+      if (key === "pretende_pos") {
+        return { sim_agora: "Sim, imediatamente", sim_depois: "Sim, mas não agora", nao: "Não" }[value] || value;
+      }
+      if (key === "created_at") return formatDateTime(value);
+      return String(value);
+    }
+
+    async function openLeadDetail(item) {
+      currentDetailItem = item;
+      leadDetailNameEl.textContent = item.lead_nome || item.lead_email;
+      leadDetailContactEl.innerHTML = `<div class="loading-state">Carregando...</div>`;
+      leadDetailFollowupsEl.innerHTML = `<div class="loading-state">Carregando...</div>`;
+      leadDetailNotesEl.value = "";
+      leadDetailPloomesEl.value = "";
+      leadDetailModalEl.hidden = false;
+
+      const { data, error } = await db.rpc("get_sdr_lead_full_details", {
+        p_trail_slug: item.trail_slug || TRILHA_SLUG,
+        p_trigger_type: item.trigger_type,
+        p_lead_email: item.lead_email
+      });
+
+      if (error || !data) {
+        leadDetailContactEl.innerHTML = `<div class="empty-state">Não foi possível carregar os detalhes.</div>`;
+        return;
+      }
+
+      const lead = data.lead || {};
+      const trigger = data.trigger || {};
+
+      leadDetailContactEl.innerHTML = LEAD_FIELD_LABELS.map(([key, label]) => `
+        <div class="lead-detail-field">
+          <span class="label">${escapeHtml(label)}</span>
+          <span class="value">${escapeHtml(formatLeadFieldValue(key, lead[key]))}</span>
+        </div>
+      `).join("");
+
+      leadDetailNotesEl.value = trigger.notes || "";
+      leadDetailPloomesEl.value = trigger.ploomes_status || "";
+
+      if (item.trigger_id) {
+        const { data: tasks, error: tasksError } = await db.rpc("list_sdr_followup_tasks", { p_trigger_id: item.trigger_id });
+        renderLeadDetailFollowups(tasksError ? [] : (tasks || []));
+      } else {
+        leadDetailFollowupsEl.innerHTML = `<p class="modal-sub">Follow-up disponível depois que o lead sair da etapa inicial.</p>`;
+      }
+    }
+
+    function renderLeadDetailFollowups(tasks) {
+      if (!tasks.length) {
+        leadDetailFollowupsEl.innerHTML = `<p class="modal-sub">Nenhum follow-up configurado pra etapa atual desse lead.</p>`;
+        return;
+      }
+      leadDetailFollowupsEl.innerHTML = tasks.map(task => {
+        const isDone = Boolean(task.done_at);
+        const diffMs = new Date(task.due_at).getTime() - Date.now();
+        const dueClass = isDone ? "" : diffMs < 0 ? "badge-overdue" : diffMs < SOON_THRESHOLD_MS ? "badge-soon" : "badge-ok";
+        return `
+          <div class="followup-task-item ${isDone ? "is-done" : ""}">
+            <input type="checkbox" class="followup-task-toggle" data-task-id="${task.id}" ${isDone ? "checked" : ""}>
+            <div class="followup-task-body">
+              <div class="followup-task-name">${escapeHtml(task.nome)}</div>
+              <div class="followup-task-due ${dueClass ? "badge " + dueClass : ""}">${isDone ? `Concluído em ${formatDateTime(task.done_at)}` : `Vence em ${formatDateTime(task.due_at)}`}</div>
+              ${task.mensagem ? `<div class="followup-task-msg">${escapeHtml(task.mensagem)}</div>` : ""}
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      leadDetailFollowupsEl.querySelectorAll(".followup-task-toggle").forEach(checkbox => {
+        checkbox.addEventListener("change", async () => {
+          const taskId = Number(checkbox.dataset.taskId);
+          checkbox.disabled = true;
+          const { error } = await db.rpc("toggle_sdr_followup_task", { p_task_id: taskId, p_done: checkbox.checked });
+          checkbox.disabled = false;
+          if (error) {
+            checkbox.checked = !checkbox.checked;
+            alert("Não foi possível salvar agora.");
+            return;
+          }
+          if (currentDetailItem && currentDetailItem.trigger_id) {
+            const { data: tasks } = await db.rpc("list_sdr_followup_tasks", { p_trigger_id: currentDetailItem.trigger_id });
+            renderLeadDetailFollowups(tasks || []);
+          }
+          loadQueue();
+        });
+      });
+    }
+
+    leadDetailCloseBtn.addEventListener("click", () => { leadDetailModalEl.hidden = true; currentDetailItem = null; });
+    leadDetailModalEl.addEventListener("click", event => {
+      if (event.target === leadDetailModalEl) { leadDetailModalEl.hidden = true; currentDetailItem = null; }
+    });
+
+    leadDetailNotesEl.addEventListener("blur", async () => {
+      if (!currentDetailItem) return;
+      const { error } = await db.rpc("set_sdr_lead_notes", {
+        p_trail_slug: currentDetailItem.trail_slug || TRILHA_SLUG,
+        p_trigger_type: currentDetailItem.trigger_type,
+        p_lead_email: currentDetailItem.lead_email,
+        p_notes: leadDetailNotesEl.value
+      });
+      if (error) {
+        alert("Não foi possível salvar a anotação agora.");
+        return;
+      }
+      leadDetailNotesSavedEl.classList.add("show");
+      setTimeout(() => leadDetailNotesSavedEl.classList.remove("show"), 2000);
+    });
+
+    leadDetailPloomesEl.addEventListener("change", async () => {
+      if (!currentDetailItem) return;
+      const { error } = await db.rpc("set_sdr_lead_ploomes_status", {
+        p_trail_slug: currentDetailItem.trail_slug || TRILHA_SLUG,
+        p_trigger_type: currentDetailItem.trigger_type,
+        p_lead_email: currentDetailItem.lead_email,
+        p_status: leadDetailPloomesEl.value || null
+      });
+      if (error) alert("Não foi possível salvar agora.");
+    });
 
     function tickReorder() {
       // Só recalcula/rerenderiza o board atual, sem novo request — prazos e "há Xh nesta etapa" mudam com o tempo.
