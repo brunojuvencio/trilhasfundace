@@ -649,7 +649,9 @@ begin
   left join public.sdr_pipeline_stages ds on ds.funil = 'intencao_imediata' and ds.is_default = true
   where l.nome_trilha = v_trail_nome
     and l.pretende_pos = 'sim_agora'
-    and l.possui_formacao_superior = true
+    -- Formacao superior so bloqueia gente nova (sem nenhum registro em
+    -- sdr_contact_triggers ainda); quem ja tinha historico continua visivel.
+    and (l.possui_formacao_superior = true or t.id is not null)
 
   union all
 
@@ -697,7 +699,7 @@ begin
     and t.lead_email = coalesce(l.email, u.email::citext)
   left join public.sdr_pipeline_stages st on st.id = t.stage_id
   left join public.sdr_pipeline_stages ds on ds.funil = 'trilha_concluida' and ds.is_default = true
-  where l.possui_formacao_superior = true;
+  where (l.possui_formacao_superior = true or t.id is not null);
 end;
 $$;
 
