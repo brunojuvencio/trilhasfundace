@@ -596,6 +596,46 @@
       return lines;
     }
 
+    function wrapCertificateTextByWidth(text, maxWidthPt, font, size) {
+      const words = text.split(/\s+/).filter(Boolean);
+      const lines = [];
+      let current = "";
+      words.forEach(word => {
+        const candidate = current ? `${current} ${word}` : word;
+        if (font.widthOfTextAtSize(candidate, size) <= maxWidthPt) {
+          current = candidate;
+        } else {
+          if (current) lines.push(current);
+          current = word;
+        }
+      });
+      if (current) lines.push(current);
+      return lines;
+    }
+
+    const CERTIFICATE_SMALL_WORDS = new Set([
+      "de", "da", "do", "das", "dos", "e", "em", "na", "no", "nas", "nos",
+      "a", "o", "as", "os", "para", "com", "ou", "um", "uma", "à", "ao", "aos"
+    ]);
+
+    function toCertificateTitleCase(text) {
+      return text.split(" ").map((word, i) => {
+        if (!word) return word;
+        const lower = word.toLowerCase();
+        if (i > 0 && CERTIFICATE_SMALL_WORDS.has(lower)) return lower;
+        if (word === word.toUpperCase() && word.length <= 4 && /[A-ZÀ-Ý]/.test(word)) return word;
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+      }).join(" ");
+    }
+
+    // Desenha um "✓" vetorial — fontes padrão do pdf-lib (WinAnsi) não
+    // conseguem codificar o caractere Unicode de checkmark.
+    function drawCertificateCheckmark(page, x, y, size, color) {
+      const thickness = Math.max(0.6, size * 0.14);
+      page.drawLine({ start: { x, y: y + size * 0.28 }, end: { x: x + size * 0.32, y }, thickness, color });
+      page.drawLine({ start: { x: x + size * 0.32, y }, end: { x: x + size * 0.86, y: y + size * 0.62 }, thickness, color });
+    }
+
     // Mesma lógica de geração de certificado do portal do aluno (Index.html),
     // adaptada para gerar em nome de qualquer lead a partir do painel do SDR.
     async function generateCertificateFor(name) {
@@ -632,25 +672,40 @@
       drawCentered(TRILHA_TITLE, height * 0.47, width > height ? 13 : 10, fontBold, ink);
 
       const lessonListSize = width > height ? 7.5 : 6;
-      const maxChars = width > height ? 68 : 46;
       const cleanTitle = t => t
         .replace(/^Aula\s+\d+\s*[:\-–]\s*/i, "")
+        .replace(/^(?:[A-ZÀ-Ý][\wà-ÿ.]*\s+){1,5}[A-ZÀ-Ý][\wà-ÿ.]*\s-\s/, "") // remove prefixo "Nome do professor - "
         .replace(/\s*[-–]\s*Parte\s+\d+\s*$/i, "")
         .trim();
-      const uniqueTopics = [...new Set(TRILHA_LESSON_TITLES.map(cleanTitle))];
-      const lessonText = `composto pelas seguintes aulas: ${uniqueTopics.join(", ")}.`;
-      const lessonLines = wrapCertificateText(lessonText, maxChars).slice(0, 4);
-      const lessonStartY = height * 0.42;
-      lessonLines.forEach((line, i) => {
-        const lw = font.widthOfTextAtSize(line, lessonListSize);
-        page.drawText(line, { x: (width - lw) / 2, y: lessonStartY - (i * lineGap), size: lessonListSize, font, color: inkSoft });
+      const uniqueTopics = [...new Set(TRILHA_LESSON_TITLES.map(cleanTitle))].map(toCertificateTitleCase);
+
+      // "Programa cursado:" como cabeçalho, e cada aula em uma linha com
+      // checkmark — em vez do parágrafo corrido de antes.
+      const headingY = height * 0.42;
+      drawCentered("Programa cursado:", headingY, bodySize, fontItalic, inkSoft);
+
+      const bulletIndent = lessonListSize * 1.5;
+      const maxTextWidthPt = width * 0.62;
+      const bulletLines = [];
+      uniqueTopics.forEach(topic => {
+        wrapCertificateTextByWidth(topic, maxTextWidthPt, font, lessonListSize)
+          .forEach((line, idx) => bulletLines.push({ text: line, isFirst: idx === 0 }));
+      });
+
+      const blockWidth = bulletIndent + Math.max(...bulletLines.map(l => font.widthOfTextAtSize(l.text, lessonListSize)));
+      const blockLeftX = (width - blockWidth) / 2;
+      const lessonStartY = headingY - lineGap * 1.4;
+      bulletLines.forEach((line, i) => {
+        const y = lessonStartY - (i * lineGap);
+        if (line.isFirst) drawCertificateCheckmark(page, blockLeftX, y, lessonListSize, ink);
+        page.drawText(line.text, { x: blockLeftX + bulletIndent, y, size: lessonListSize, font, color: inkSoft });
       });
 
       // Data de emissão — respeita um espaçamento mínimo abaixo da última
       // linha da lista de aulas, empurrando a data pra baixo quando a lista
       // é longa (senão a data ficava colada/sobreposta no conteúdo).
       const dateStr = new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
-      const contentLastLineY = lessonStartY - ((lessonLines.length - 1) * lineGap);
+      const contentLastLineY = lessonStartY - ((bulletLines.length - 1) * lineGap);
       const minGapAfterContent = lineGap * 2;
       const dateY = Math.min(height * 0.335, contentLastLineY - minGapAfterContent);
       drawCentered(dateStr, dateY, bodySize, font, inkSoft);
