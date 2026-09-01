@@ -328,13 +328,37 @@
       <form id="loss-reason-form" class="template-form">
         <div class="template-form-row">
           <label for="loss-reason-input">Motivo</label>
-          <textarea id="loss-reason-input" rows="3" required placeholder="Ex: sem orçamento, escolheu concorrente, não respondeu mais..."></textarea>
+          <select id="loss-reason-input" required>
+            <option value="" disabled selected>Selecione o motivo...</option>
+          </select>
         </div>
         <div class="template-form-actions">
+          <button type="button" class="button button-ghost" id="loss-reason-manage-link">Gerenciar motivos</button>
           <button type="button" class="button button-ghost" id="loss-reason-cancel">Cancelar</button>
           <button type="submit" class="button button-primary">Confirmar</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="loss-reason-manage-modal" hidden>
+    <div class="modal-card">
+      <h2>Gerenciar motivos de perda</h2>
+      <p class="modal-sub">Tags fechadas que aparecem pra escolher ao mover um lead pra uma etapa de perda.</p>
+
+      <form id="loss-reason-template-form" class="template-form">
+        <div class="template-form-row">
+          <label for="loss-reason-template-input">Novo motivo</label>
+          <input type="text" id="loss-reason-template-input" placeholder="Ex: Sem orçamento" required maxlength="60">
+        </div>
+        <div class="template-form-actions">
+          <button type="submit" class="button button-primary">Adicionar motivo</button>
+        </div>
+      </form>
+
+      <div id="loss-reason-template-list-body"></div>
+
+      <button type="button" class="button button-secondary modal-close" id="loss-reason-manage-modal-close">Fechar</button>
     </div>
   </div>
 
@@ -394,6 +418,7 @@
     let queue = [];
     let metrics = null;
     let templates = [];
+    let lossReasonTemplates = [];
     let stagesByFunil = { A: [], B: [] };
     let currentFunil = "A";
     let refreshTimer = null;
@@ -413,11 +438,97 @@
     const lossReasonFormEl = document.getElementById("loss-reason-form");
     const lossReasonInputEl = document.getElementById("loss-reason-input");
     const lossReasonCancelBtn = document.getElementById("loss-reason-cancel");
+    const lossReasonManageLinkEl = document.getElementById("loss-reason-manage-link");
     let lossReasonResolver = null;
+
+    const lossReasonManageModalEl = document.getElementById("loss-reason-manage-modal");
+    const lossReasonManageModalCloseBtn = document.getElementById("loss-reason-manage-modal-close");
+    const lossReasonTemplateListBodyEl = document.getElementById("loss-reason-template-list-body");
+    const lossReasonTemplateFormEl = document.getElementById("loss-reason-template-form");
+    const lossReasonTemplateInputEl = document.getElementById("loss-reason-template-input");
+
+    async function loadLossReasonTemplates() {
+      try {
+        const { data, error } = await db.rpc("list_sdr_loss_reason_templates");
+        if (error) {
+          console.error("[admin-sdr-marketing] Falha ao carregar motivos de perda:", error);
+          return;
+        }
+        lossReasonTemplates = data || [];
+        renderLossReasonManageModal();
+      } catch (error) {
+        console.error("[admin-sdr-marketing] Falha ao carregar motivos de perda:", error);
+      }
+    }
+
+    function renderLossReasonManageModal() {
+      if (!lossReasonTemplates.length) {
+        lossReasonTemplateListBodyEl.innerHTML = `<p class="modal-sub">Nenhum motivo cadastrado ainda.</p>`;
+        return;
+      }
+      lossReasonTemplateListBodyEl.innerHTML = `
+        <div class="template-list">
+          ${lossReasonTemplates.map(t => `
+            <div class="template-item">
+              <div class="template-item-head">
+                <span class="template-item-tag">${escapeHtml(t.tag)}</span>
+                <div class="template-item-actions">
+                  <button type="button" class="button button-ghost loss-reason-delete-btn" data-tag="${escapeHtml(t.tag)}">Excluir</button>
+                </div>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+      lossReasonTemplateListBodyEl.querySelectorAll(".loss-reason-delete-btn").forEach(btn => {
+        btn.addEventListener("click", () => onDeleteLossReasonTemplate(btn.dataset.tag));
+      });
+    }
+
+    async function onDeleteLossReasonTemplate(tag) {
+      if (!confirm(`Excluir o motivo "${tag}"? Leads que já usam esse motivo mantêm o histórico.`)) return;
+      const { error } = await db.rpc("delete_sdr_loss_reason_template", { p_trail_slug: TRILHA_SLUG, p_tag: tag });
+      if (error) {
+        alert("Não foi possível excluir agora.");
+        return;
+      }
+      await loadLossReasonTemplates();
+    }
+
+    lossReasonTemplateFormEl.addEventListener("submit", async event => {
+      event.preventDefault();
+      const tag = lossReasonTemplateInputEl.value.trim();
+      if (!tag) return;
+      const submitBtn = lossReasonTemplateFormEl.querySelector("button[type=submit]");
+      submitBtn.disabled = true;
+      try {
+        const { error } = await db.rpc("create_sdr_loss_reason_template", { p_trail_slug: TRILHA_SLUG, p_tag: tag });
+        if (error) throw error;
+        lossReasonTemplateFormEl.reset();
+        await loadLossReasonTemplates();
+      } catch (error) {
+        console.error("[admin-sdr-marketing] Falha ao criar motivo:", error);
+        alert("Não foi possível criar o motivo agora.");
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
+    lossReasonManageLinkEl.addEventListener("click", () => {
+      renderLossReasonManageModal();
+      lossReasonManageModalEl.hidden = false;
+    });
+    lossReasonManageModalCloseBtn.addEventListener("click", () => { lossReasonManageModalEl.hidden = true; });
+    lossReasonManageModalEl.addEventListener("click", event => {
+      if (event.target === lossReasonManageModalEl) lossReasonManageModalEl.hidden = true;
+    });
 
     function askLossReason(stageName) {
       lossReasonSubEl.textContent = `Etapa "${stageName}" exige um motivo antes de mover o lead pra ela.`;
-      lossReasonInputEl.value = "";
+      lossReasonInputEl.innerHTML = `
+        <option value="" disabled selected>Selecione o motivo...</option>
+        ${lossReasonTemplates.map(t => `<option value="${escapeHtml(t.tag)}">${escapeHtml(t.tag)}</option>`).join("")}
+      `;
       lossReasonModalEl.hidden = false;
       lossReasonInputEl.focus();
       return new Promise(resolve => { lossReasonResolver = resolve; });
@@ -1251,7 +1362,7 @@
         return;
       }
 
-      await Promise.all([loadTemplates(), loadStages()]);
+      await Promise.all([loadTemplates(), loadStages(), loadLossReasonTemplates()]);
       await Promise.all([loadQueue(), loadMetrics()]);
 
       refreshTimer = setInterval(() => { loadQueue(); loadMetrics(); }, 5 * 60 * 1000); // busca de novo a cada 5min

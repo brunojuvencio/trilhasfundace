@@ -546,6 +546,134 @@ $$;
 revoke all on function public.delete_sdr_approach_template(text, text) from public;
 grant execute on function public.delete_sdr_approach_template(text, text) to authenticated;
 
+-- Biblioteca de motivos de perda: tags fechadas (nao texto livre) que
+-- aparecem no select do popup de "mover para etapa de perda".
+create table if not exists public.sdr_loss_reason_templates (
+  id bigint generated always as identity primary key,
+  trail_slug text not null default 'trilha-nova-de-marketing',
+  tag text not null,
+  created_at timestamptz not null default now()
+);
+
+alter table public.sdr_loss_reason_templates
+  add column if not exists trail_slug text not null default 'trilha-nova-de-marketing',
+  add column if not exists tag text,
+  add column if not exists created_at timestamptz not null default now();
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'sdr_loss_reason_templates_unique'
+      and conrelid = 'public.sdr_loss_reason_templates'::regclass
+  ) then
+    alter table public.sdr_loss_reason_templates
+      add constraint sdr_loss_reason_templates_unique unique (trail_slug, tag);
+  end if;
+end $$;
+
+alter table public.sdr_loss_reason_templates enable row level security;
+
+drop policy if exists "Admins can read sdr loss reason templates" on public.sdr_loss_reason_templates;
+create policy "Admins can read sdr loss reason templates"
+on public.sdr_loss_reason_templates
+for select
+to authenticated
+using (public.is_admin());
+
+drop policy if exists "Admins can write sdr loss reason templates" on public.sdr_loss_reason_templates;
+create policy "Admins can write sdr loss reason templates"
+on public.sdr_loss_reason_templates
+for all
+to authenticated
+using (public.is_admin())
+with check (public.is_admin());
+
+insert into public.sdr_loss_reason_templates (trail_slug, tag)
+values
+  ('trilha-nova-de-marketing', 'Sem graduação'),
+  ('trilha-nova-de-marketing', 'Sem orçamento'),
+  ('trilha-nova-de-marketing', 'Não respondeu mais'),
+  ('trilha-nova-de-marketing', 'Escolheu concorrente')
+on conflict (trail_slug, tag) do nothing;
+
+create or replace function public.list_sdr_loss_reason_templates(p_trail_slug text default 'trilha-nova-de-marketing')
+returns setof public.sdr_loss_reason_templates
+language sql
+security definer
+set search_path = public
+as $$
+  select *
+  from public.sdr_loss_reason_templates
+  where trail_slug = coalesce(nullif(trim(p_trail_slug), ''), 'trilha-nova-de-marketing')
+    and public.is_admin()
+  order by tag asc;
+$$;
+
+revoke all on function public.list_sdr_loss_reason_templates(text) from public;
+grant execute on function public.list_sdr_loss_reason_templates(text) to authenticated;
+
+create or replace function public.create_sdr_loss_reason_template(
+  p_trail_slug text,
+  p_tag text
+)
+returns public.sdr_loss_reason_templates
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_trail_slug text := coalesce(nullif(trim(p_trail_slug), ''), 'trilha-nova-de-marketing');
+  v_tag text := trim(coalesce(p_tag, ''));
+  v_row public.sdr_loss_reason_templates;
+begin
+  if not public.is_admin() then
+    raise exception 'Acesso negado.';
+  end if;
+
+  if v_tag = '' then
+    raise exception 'O motivo é obrigatório.';
+  end if;
+
+  insert into public.sdr_loss_reason_templates (trail_slug, tag)
+  values (v_trail_slug, v_tag)
+  on conflict (trail_slug, tag) do nothing
+  returning * into v_row;
+
+  if v_row.id is null then
+    select * into v_row from public.sdr_loss_reason_templates where trail_slug = v_trail_slug and tag = v_tag;
+  end if;
+
+  return v_row;
+end;
+$$;
+
+revoke all on function public.create_sdr_loss_reason_template(text, text) from public;
+grant execute on function public.create_sdr_loss_reason_template(text, text) to authenticated;
+
+create or replace function public.delete_sdr_loss_reason_template(
+  p_trail_slug text,
+  p_tag text
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not public.is_admin() then
+    raise exception 'Acesso negado.';
+  end if;
+
+  delete from public.sdr_loss_reason_templates
+  where trail_slug = coalesce(nullif(trim(p_trail_slug), ''), 'trilha-nova-de-marketing')
+    and tag = trim(coalesce(p_tag, ''));
+end;
+$$;
+
+revoke all on function public.delete_sdr_loss_reason_template(text, text) from public;
+grant execute on function public.delete_sdr_loss_reason_template(text, text) to authenticated;
+
 -- Empurra um timestamp pra segunda-feira 00:00 (America/Sao_Paulo) se ele cair
 -- num fim de semana (sábado ou domingo); nos demais dias devolve sem alterar.
 -- Usada pra calcular prazo de contato sem contar sábado/domingo como tempo útil.
