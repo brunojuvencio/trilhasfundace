@@ -258,9 +258,35 @@
     .lead-detail-body { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
     @media (max-width: 720px) { .lead-detail-body { grid-template-columns: 1fr; } }
 
-    .lead-detail-field { display: grid; gap: 2px; padding: 8px 0; border-bottom: 1px solid var(--line); }
-    .lead-detail-field .label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
-    .lead-detail-field .value { font-size: 0.86rem; color: var(--ink); }
+    .lead-detail-field {
+      display: grid; grid-template-columns: 22px 1fr 1fr; align-items: center; gap: 10px;
+      padding: 10px 2px; border-bottom: 1px solid var(--line);
+    }
+    .lead-detail-field .icon {
+      width: 20px; height: 20px; border-radius: 999px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; color: #fff;
+    }
+    .lead-detail-field .icon.filled { background: var(--ok); }
+    .lead-detail-field .icon.empty { background: rgba(24,20,17,0.18); }
+    .lead-detail-field .label { font-size: 0.82rem; font-weight: 700; color: var(--ink); }
+    .lead-detail-field .value { font-size: 0.84rem; color: var(--ink); text-align: right; }
+    .lead-detail-field .value.empty { color: var(--muted); font-style: italic; }
+    .lead-detail-field .value-with-action { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+    .lead-phone-pill { border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; font-size: 0.82rem; }
+    .lead-wa-icon-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 26px; height: 26px; border-radius: 999px; background: #1f7a52; color: #fff;
+      text-decoration: none; font-size: 0.8rem; flex-shrink: 0;
+    }
+
+    .ploomes-status-box {
+      padding: 10px 14px; border-radius: 10px; font-size: 0.84rem; font-weight: 700;
+      background: var(--panel); border: 1px solid var(--line); color: var(--muted);
+    }
+    .ploomes-status-box.status-sim { background: var(--ok-soft); color: var(--ok); border-color: transparent; }
+    .ploomes-status-box.status-nao { background: rgba(24,20,17,0.06); color: var(--ink); border-color: transparent; }
+    .ploomes-status-box.status-error { background: var(--danger-soft); color: var(--danger); border-color: transparent; }
 
     .lead-detail-section { margin-bottom: 22px; }
     .lead-detail-section h3 { font-size: 0.8rem; font-weight: 800; margin-bottom: 8px; color: var(--ink); }
@@ -407,11 +433,8 @@
           </div>
           <div class="lead-detail-section">
             <h3>Já existe no funil comercial (Ploomes)?</h3>
-            <select id="lead-detail-ploomes">
-              <option value="">Não verificado</option>
-              <option value="sim">Sim, já existe</option>
-              <option value="nao">Não existe</option>
-            </select>
+            <div id="lead-detail-ploomes-status" class="ploomes-status-box">Verificando...</div>
+            <button type="button" class="button button-ghost" id="lead-detail-ploomes-recheck" style="margin-top:6px;">Verificar de novo</button>
           </div>
           <div class="lead-detail-section">
             <h3>Follow-up</h3>
@@ -553,7 +576,8 @@
     const leadDetailContactEl = document.getElementById("lead-detail-contact");
     const leadDetailNotesEl = document.getElementById("lead-detail-notes");
     const leadDetailNotesSavedEl = document.getElementById("lead-detail-notes-saved");
-    const leadDetailPloomesEl = document.getElementById("lead-detail-ploomes");
+    const leadDetailPloomesStatusEl = document.getElementById("lead-detail-ploomes-status");
+    const leadDetailPloomesRecheckBtn = document.getElementById("lead-detail-ploomes-recheck");
     const leadDetailFollowupsEl = document.getElementById("lead-detail-followups");
     let currentDetailItem = null;
 
@@ -1591,22 +1615,8 @@
       }
     }
 
-    const LEAD_FIELD_LABELS = [
-      ["email", "E-mail"],
-      ["telefone", "Telefone"],
-      ["cidade", "Cidade"],
-      ["empresa", "Empresa"],
-      ["cargo", "Cargo"],
-      ["area_formacao", "Área de formação"],
-      ["possui_formacao_superior", "Formação superior"],
-      ["pretende_pos", "Pretende pós/MBA"],
-      ["created_at", "Cadastro no formulário"],
-      ["utm_source", "Origem (UTM source)"],
-      ["utm_campaign", "Campanha (UTM campaign)"]
-    ];
-
     function formatLeadFieldValue(key, value) {
-      if (value === null || value === undefined || value === "") return "—";
+      if (value === null || value === undefined || value === "") return "";
       if (key === "possui_formacao_superior") return value ? "Sim" : "Não";
       if (key === "pretende_pos") {
         return { sim_agora: "Sim, imediatamente", sim_depois: "Sim, mas não agora", nao: "Não" }[value] || value;
@@ -1615,13 +1625,25 @@
       return String(value);
     }
 
+    function renderLeadDetailField(label, value, valueHtml) {
+      const isEmpty = value === "" || value === null || value === undefined;
+      return `
+        <div class="lead-detail-field">
+          <span class="icon ${isEmpty ? "empty" : "filled"}">${isEmpty ? "○" : "✓"}</span>
+          <span class="label">${escapeHtml(label)}</span>
+          <span class="value ${isEmpty ? "empty" : ""}">${valueHtml !== undefined ? valueHtml : (isEmpty ? "Não informado" : escapeHtml(value))}</span>
+        </div>
+      `;
+    }
+
     async function openLeadDetail(item) {
       currentDetailItem = item;
       leadDetailNameEl.textContent = item.lead_nome || item.lead_email;
       leadDetailContactEl.innerHTML = `<div class="loading-state">Carregando...</div>`;
       leadDetailFollowupsEl.innerHTML = `<div class="loading-state">Carregando...</div>`;
       leadDetailNotesEl.value = "";
-      leadDetailPloomesEl.value = "";
+      leadDetailPloomesStatusEl.textContent = "Verificando...";
+      leadDetailPloomesStatusEl.className = "ploomes-status-box";
       leadDetailModalEl.hidden = false;
 
       const { data, error } = await db.rpc("get_sdr_lead_full_details", {
@@ -1638,21 +1660,75 @@
       const lead = data.lead || {};
       const trigger = data.trigger || {};
 
-      leadDetailContactEl.innerHTML = LEAD_FIELD_LABELS.map(([key, label]) => `
-        <div class="lead-detail-field">
-          <span class="label">${escapeHtml(label)}</span>
-          <span class="value">${escapeHtml(formatLeadFieldValue(key, lead[key]))}</span>
-        </div>
-      `).join("");
+      const phone = normalizeWhatsappPhone(lead.telefone);
+      const phoneValueHtml = phone
+        ? `<span class="value-with-action"><span class="lead-phone-pill">${escapeHtml(lead.telefone)}</span><a class="lead-wa-icon-btn" target="_blank" rel="noopener" href="https://wa.me/${phone}">💬</a></span>`
+        : undefined;
+
+      leadDetailContactEl.innerHTML = [
+        renderLeadDetailField("Nome", lead.nome),
+        renderLeadDetailField("E-mail", lead.email),
+        renderLeadDetailField("Telefone", lead.telefone, phoneValueHtml),
+        renderLeadDetailField("Cidade", lead.cidade),
+        renderLeadDetailField("Empresa", lead.empresa),
+        renderLeadDetailField("Cargo", lead.cargo),
+        renderLeadDetailField("Área de formação", lead.area_formacao),
+        renderLeadDetailField("Formação superior", formatLeadFieldValue("possui_formacao_superior", lead.possui_formacao_superior)),
+        renderLeadDetailField("Pretende pós/MBA", formatLeadFieldValue("pretende_pos", lead.pretende_pos)),
+        renderLeadDetailField("Cadastro no formulário", formatLeadFieldValue("created_at", lead.created_at)),
+        renderLeadDetailField("Origem", lead.utm_source),
+        renderLeadDetailField("Campanha", lead.utm_campaign)
+      ].join("");
 
       leadDetailNotesEl.value = trigger.notes || "";
-      leadDetailPloomesEl.value = trigger.ploomes_status || "";
+
+      checkPloomesCommercial(item);
 
       if (item.trigger_id) {
         const { data: tasks, error: tasksError } = await db.rpc("list_sdr_followup_tasks", { p_trigger_id: item.trigger_id });
         renderLeadDetailFollowups(tasksError ? [] : (tasks || []));
       } else {
         leadDetailFollowupsEl.innerHTML = `<p class="modal-sub">Follow-up disponível depois que o lead sair da etapa inicial.</p>`;
+      }
+    }
+
+    async function checkPloomesCommercial(item) {
+      leadDetailPloomesStatusEl.textContent = "Verificando no Ploomes...";
+      leadDetailPloomesStatusEl.className = "ploomes-status-box";
+      try {
+        const response = await fetch(`${window.SUPABASE_CONFIG.url}/functions/v1/ploomes-check-commercial`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: window.SUPABASE_CONFIG.anonKey,
+            Authorization: `Bearer ${(await db.auth.getSession()).data.session.access_token}`
+          },
+          body: JSON.stringify({
+            trailSlug: item.trail_slug || TRILHA_SLUG,
+            triggerType: item.trigger_type,
+            email: item.lead_email
+          })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Falha na verificação.");
+
+        if (currentDetailItem !== item) return; // usuário já trocou de card
+
+        if (!result.contactFound) {
+          leadDetailPloomesStatusEl.textContent = "Contato não encontrado no Ploomes.";
+          leadDetailPloomesStatusEl.className = "ploomes-status-box status-nao";
+        } else if (result.existsInCommercial) {
+          const etapas = (result.deals || []).map(d => d.etapa).filter(Boolean).join(", ");
+          leadDetailPloomesStatusEl.textContent = `Sim, já existe no Funil Comercial${etapas ? ` (${etapas})` : ""}.`;
+          leadDetailPloomesStatusEl.className = "ploomes-status-box status-sim";
+        } else {
+          leadDetailPloomesStatusEl.textContent = "Ainda não existe no Funil Comercial.";
+          leadDetailPloomesStatusEl.className = "ploomes-status-box status-nao";
+        }
+      } catch (error) {
+        console.error("[admin-sdr-marketing] Falha ao verificar Ploomes:", error);
+        leadDetailPloomesStatusEl.textContent = "Não foi possível verificar agora.";
+        leadDetailPloomesStatusEl.className = "ploomes-status-box status-error";
       }
     }
 
@@ -1718,15 +1794,8 @@
       setTimeout(() => leadDetailNotesSavedEl.classList.remove("show"), 2000);
     });
 
-    leadDetailPloomesEl.addEventListener("change", async () => {
-      if (!currentDetailItem) return;
-      const { error } = await db.rpc("set_sdr_lead_ploomes_status", {
-        p_trail_slug: currentDetailItem.trail_slug || TRILHA_SLUG,
-        p_trigger_type: currentDetailItem.trigger_type,
-        p_lead_email: currentDetailItem.lead_email,
-        p_status: leadDetailPloomesEl.value || null
-      });
-      if (error) alert("Não foi possível salvar agora.");
+    leadDetailPloomesRecheckBtn.addEventListener("click", () => {
+      if (currentDetailItem) checkPloomesCommercial(currentDetailItem);
     });
 
     function tickReorder() {
