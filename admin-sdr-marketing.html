@@ -888,6 +888,10 @@
               <input type="checkbox" class="stage-loss-toggle" data-stage-id="${stage.id}" ${stage.is_loss_stage ? "checked" : ""}>
               Etapa de perda (pede motivo ao mover pra cá)
             </label>
+            <label class="followup-check stage-loss-check">
+              <input type="checkbox" class="stage-auto-responded-toggle" data-stage-id="${stage.id}" ${stage.auto_responded ? "checked" : ""}>
+              Marca "Lead respondeu" automaticamente ao mover pra cá
+            </label>
           ` : ""}
         </div>
       `).join("");
@@ -907,10 +911,22 @@
       stageListBodyEl.querySelectorAll(".stage-loss-toggle").forEach(checkbox => {
         checkbox.addEventListener("change", () => onToggleStageLoss(Number(checkbox.dataset.stageId), checkbox.checked));
       });
+      stageListBodyEl.querySelectorAll(".stage-auto-responded-toggle").forEach(checkbox => {
+        checkbox.addEventListener("change", () => onToggleStageAutoResponded(Number(checkbox.dataset.stageId), checkbox.checked));
+      });
     }
 
     async function onToggleStageLoss(stageId, isLoss) {
       const { error } = await db.rpc("set_sdr_pipeline_stage_loss_flag", { p_stage_id: stageId, p_is_loss_stage: isLoss });
+      if (error) {
+        alert("Não foi possível salvar agora.");
+        return;
+      }
+      await loadStages();
+    }
+
+    async function onToggleStageAutoResponded(stageId, autoResponded) {
+      const { error } = await db.rpc("set_sdr_pipeline_stage_auto_responded_flag", { p_stage_id: stageId, p_auto_responded: autoResponded });
       if (error) {
         alert("Não foi possível salvar agora.");
         return;

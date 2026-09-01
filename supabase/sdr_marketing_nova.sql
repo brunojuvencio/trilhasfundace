@@ -79,6 +79,7 @@ create table if not exists public.sdr_pipeline_stages (
   ordem integer not null default 1,
   is_default boolean not null default false,
   is_loss_stage boolean not null default false,
+  auto_responded boolean not null default false,
   created_at timestamptz not null default now()
 );
 
@@ -89,6 +90,7 @@ alter table public.sdr_pipeline_stages
   add column if not exists ordem integer not null default 1,
   add column if not exists is_default boolean not null default false,
   add column if not exists is_loss_stage boolean not null default false,
+  add column if not exists auto_responded boolean not null default false,
   add column if not exists created_at timestamptz not null default now();
 
 alter table public.sdr_contact_triggers
@@ -277,6 +279,40 @@ $$;
 revoke all on function public.set_sdr_pipeline_stage_loss_flag(bigint, boolean) from public;
 grant execute on function public.set_sdr_pipeline_stage_loss_flag(bigint, boolean) to authenticated;
 
+-- Marca (ou desmarca) uma etapa como "marca resposta automaticamente": mover
+-- um lead pra ela liga o "Lead respondeu" sozinho, sem precisar do checkbox.
+create or replace function public.set_sdr_pipeline_stage_auto_responded_flag(
+  p_stage_id bigint,
+  p_auto_responded boolean
+)
+returns public.sdr_pipeline_stages
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_row public.sdr_pipeline_stages;
+begin
+  if not public.is_admin() then
+    raise exception 'Acesso negado.';
+  end if;
+
+  update public.sdr_pipeline_stages
+  set auto_responded = p_auto_responded
+  where id = p_stage_id
+  returning * into v_row;
+
+  if v_row.id is null then
+    raise exception 'Etapa não encontrada.';
+  end if;
+
+  return v_row;
+end;
+$$;
+
+revoke all on function public.set_sdr_pipeline_stage_auto_responded_flag(bigint, boolean) from public;
+grant execute on function public.set_sdr_pipeline_stage_auto_responded_flag(bigint, boolean) to authenticated;
+
 create or replace function public.reorder_sdr_pipeline_stages(
   p_funil text,
   p_stage_ids bigint[]
@@ -369,6 +405,7 @@ declare
   v_email citext := lower(trim(coalesce(p_lead_email, '')));
   v_is_default boolean;
   v_is_loss boolean;
+  v_auto_responded boolean;
   v_loss_reason text := nullif(trim(coalesce(p_loss_reason, '')), '');
   v_row public.sdr_contact_triggers;
 begin
@@ -380,7 +417,7 @@ begin
     raise exception 'Parâmetros obrigatórios ausentes.';
   end if;
 
-  select is_default, is_loss_stage into v_is_default, v_is_loss
+  select is_default, is_loss_stage, auto_responded into v_is_default, v_is_loss, v_auto_responded
   from public.sdr_pipeline_stages
   where id = p_stage_id and funil = v_trigger_type;
 
@@ -392,12 +429,14 @@ begin
     raise exception 'Informe o motivo da perda.';
   end if;
 
-  insert into public.sdr_contact_triggers (trail_slug, trigger_type, lead_email, stage_id, stage_changed_at, contacted_at, contacted_by, loss_reason)
+  insert into public.sdr_contact_triggers (trail_slug, trigger_type, lead_email, stage_id, stage_changed_at, contacted_at, contacted_by, loss_reason, responded, responded_at)
   values (
     v_trail_slug, v_trigger_type, v_email, p_stage_id, now(),
     case when not v_is_default then now() else null end,
     case when not v_is_default then coalesce(auth.jwt() ->> 'email', 'admin') else null end,
-    case when v_is_loss then v_loss_reason else null end
+    case when v_is_loss then v_loss_reason else null end,
+    case when v_auto_responded then true else null end,
+    case when v_auto_responded then now() else null end
   )
   on conflict (trail_slug, trigger_type, lead_email) do update
   set
@@ -413,7 +452,15 @@ begin
       when public.sdr_contact_triggers.contacted_by is not null then public.sdr_contact_triggers.contacted_by
       else coalesce(auth.jwt() ->> 'email', 'admin')
     end,
-    loss_reason = case when v_is_loss then v_loss_reason else public.sdr_contact_triggers.loss_reason end
+    loss_reason = case when v_is_loss then v_loss_reason else public.sdr_contact_triggers.loss_reason end,
+    responded = case
+      when v_auto_responded then true
+      else public.sdr_contact_triggers.responded
+    end,
+    responded_at = case
+      when v_auto_responded and public.sdr_contact_triggers.responded is not true then now()
+      else public.sdr_contact_triggers.responded_at
+    end
   returning * into v_row;
 
   return v_row;
