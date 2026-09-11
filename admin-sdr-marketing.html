@@ -160,6 +160,7 @@
     .badge-overdue { background: var(--danger-soft); color: var(--danger); }
     .badge-soon { background: var(--warn-soft); color: var(--warn); }
     .badge-ok { background: var(--ok-soft); color: var(--ok); }
+    .badge-score { background: var(--accent-soft); color: var(--accent); }
     .badge-nophone { background: var(--danger-soft); color: var(--danger); }
 
     .lead-trigger { color: var(--muted); font-size: 0.86rem; margin-bottom: 6px; }
@@ -1652,6 +1653,10 @@
         ? `<div class="kcard-meta"><strong>Motivo:</strong> ${escapeHtml(item.motivo_perda)}</div>`
         : "";
 
+      const scoreBadge = item.situacao === "A" && item.lead_score > 0
+        ? `<span class="badge badge-score" title="Cliques nos e-mails + urgência imediata">🔥 Prioridade: ${item.lead_score}</span>`
+        : "";
+
       const funilStages = stagesByFunil[currentFunil] || [];
       const moveOptions = funilStages
         .filter(s => s.id !== item.stage_id)
@@ -1679,7 +1684,7 @@
       return `
         <article class="kcard urgency-${state}" draggable="true" data-key="${escapeHtml(itemKey(item))}">
           <div class="kcard-name">${escapeHtml(item.lead_nome || item.lead_email)}</div>
-          <div class="kcard-badges">${urgencyBadge}${phoneBadge}</div>
+          <div class="kcard-badges">${urgencyBadge}${scoreBadge}${phoneBadge}</div>
           <div class="kcard-meta">${timeMeta}</div>
           ${renderFollowupBadge(item)}
           ${lossReasonMeta}
@@ -1715,9 +1720,18 @@
           ${stages.map(stage => {
             const stageItems = items
               .filter(item => item.stage_id === stage.id)
-              .sort((a, b) => stage.is_default
-                ? new Date(a.prazo_em) - new Date(b.prazo_em)
-                : new Date(a.stage_desde) - new Date(b.stage_desde));
+              .sort((a, b) => {
+                // Prioridade de abordagem (clique nos e-mails + urgência) só
+                // manda na ordem da etapa "Primeira abordagem" da Situação A.
+                if (currentFunil === "A" && stage.nome === "Primeira abordagem") {
+                  const scoreDiff = (b.lead_score || 0) - (a.lead_score || 0);
+                  if (scoreDiff !== 0) return scoreDiff;
+                  return new Date(a.stage_desde) - new Date(b.stage_desde);
+                }
+                return stage.is_default
+                  ? new Date(a.prazo_em) - new Date(b.prazo_em)
+                  : new Date(a.stage_desde) - new Date(b.stage_desde);
+              });
 
             return `
               <div class="board-column" data-stage-id="${stage.id}">
