@@ -274,12 +274,16 @@ function buildAttributionSummary(lead: LeadRow) {
 
 async function createContact(lead: LeadRow) {
   const attributionSummary = buildAttributionSummary(lead);
+  const phone = normalizePhone(lead.telefone ?? "");
   const response = await ploomesFetch("/Contacts", {
     method: "POST",
     body: JSON.stringify({
       Name: lead.nome,
       Email: lead.email,
       TypeId: 2,
+      // Sem isso o Ploomes cria o contato com um telefone placeholder
+      // (literalmente a string "null") em vez de deixar o campo vazio.
+      Phones: phone ? [{ PhoneNumber: phone, TypeId: 2 }] : [],
       OtherProperties: attributionSummary
         ? [
             {
@@ -338,6 +342,10 @@ function buildOtherProperties(lead: LeadRow) {
       StringValue: lead.empresa || "",
     },
     {
+      FieldKey: "deal_0FF41F39-ED90-4803-8B2F-DFD455D57F20",
+      StringValue: lead.cidade || "",
+    },
+    {
       FieldKey: "deal_DAF0E02D-E986-43E3-A98E-2BC89614BB43",
       StringValue: lead.cargo || "",
     },
@@ -349,10 +357,17 @@ function buildOtherProperties(lead: LeadRow) {
       FieldKey: "deal_C4A0DCDB-A9E7-4CD3-A52A-4BF2D093072A",
       StringValue: lead.area_formacao || "",
     },
-    {
-      FieldKey: "deal_C47CFF53-2019-4960-AA8C-C2E1BFA936A7",
-      StringValue: getTrailName(lead),
-    },
+    // "Curso de interesse" e um campo de lista (nao aceita texto livre no
+    // Ploomes) — pra trilha nova de marketing a opcao e sempre "MKTEST - MBA
+    // EAD Gestao de Marketing Estrategico" (id 77318, confirmado via API em
+    // 2026-09-02).
+    ...(isMarketingNovaTrail(lead)
+      ? [{
+          FieldKey: "deal_C8266CDA-D79B-454A-9AE1-8997A9A13D0D",
+          IntegerValue: 77318,
+          ObjectValueId: 77318,
+        }]
+      : []),
     {
       FieldKey: "deal_74219D35-6B80-48C4-BC22-29DD64B3EAE5",
       StringValue: lead.pretende_pos === "sim_agora" ? "Imediato" : lead.pretende_pos,
@@ -563,15 +578,28 @@ Deno.serve(async request => {
 
     const attributionSummary = buildAttributionSummary(lead);
     const existingDeals = contactAlreadyExisted ? await getExistingDeals(contact.Id) : [];
-    const dealId = await createDeal(contact.Id, lead);
-
-    if (attributionSummary) {
-      await createInteractionRecord(contact.Id, `Atribuicao capturada na inscricao:\n${attributionSummary}`);
+    // Evita duplicar negocio: se esse contato ja tem um negocio nesse mesmo
+    // funil (ex.: sync chamado de novo pelo popup de oferta do MBA depois do
+    // sync inicial no formulario), reaproveita em vez de criar outro.
+    const targetPipelineId = getDealPipelineId(lead);
+    const existingDealInPipeline = existingDeals.find(deal => deal.Pipeline?.Id === targetPipelineId);
+    const dealId = existingDealInPipeline ? existingDealInPipeline.Id : await createDeal(contact.Id, lead);
+    if (existingDealInPipeline) {
+      console.info(`[ploomes-sync-lead] Negocio ja existia nesse funil (dealId=${existingDealInPipeline.Id}) — reaproveitado, sem criar duplicata.`);
     }
 
-    if (contactAlreadyExisted && existingDeals.length) {
-      const content = buildHistoryMessage(existingDeals);
-      await createInteractionRecord(contact.Id, content, dealId);
+    // Se so reaproveitou o negocio ja existente, nao ha nada novo a registrar
+    // (evita interacoes repetidas a cada novo disparo do sync pro mesmo lead).
+    if (!existingDealInPipeline) {
+      if (attributionSummary) {
+        await createInteractionRecord(contact.Id, `Atribuicao capturada na inscricao:\n${attributionSummary}`);
+      }
+
+      const otherDeals = existingDeals.filter(deal => deal.Id !== dealId);
+      if (contactAlreadyExisted && otherDeals.length) {
+        const content = buildHistoryMessage(otherDeals);
+        await createInteractionRecord(contact.Id, content, dealId);
+      }
     }
 
     await markLead(email, "synced", String(contact.Id), String(dealId), undefined, getDealPipelineId(lead), getDealStageId(lead));
