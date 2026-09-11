@@ -179,6 +179,7 @@
     }
     .modal-shell.open { display: grid; }
     .modal {
+      position: relative;
       width: min(100%, 560px);
       background: linear-gradient(180deg, rgba(18,18,18,0.99), rgba(8,8,8,0.99));
       border: 1px solid rgba(255,255,255,0.12);
@@ -187,6 +188,39 @@
       box-shadow: 0 32px 100px rgba(0,0,0,0.6);
       overflow: hidden;
     }
+    .modal-close-x {
+      position: absolute;
+      top: 14px; right: 14px;
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.06);
+      border: none;
+      border-radius: 50%;
+      color: var(--muted);
+      font-size: 1.15rem;
+      line-height: 1;
+      cursor: pointer;
+      z-index: 2;
+      transition: background 0.16s, color 0.16s;
+    }
+    .modal-close-x:hover { background: rgba(255,255,255,0.14); color: var(--white); }
+    .modal-skip-link {
+      display: block;
+      width: 100%;
+      background: none;
+      border: none;
+      margin-top: 4px;
+      padding: 4px;
+      font: inherit;
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.4);
+      text-decoration: underline;
+      text-align: center;
+      cursor: pointer;
+      transition: color 0.16s, opacity 0.16s;
+    }
+    .modal-skip-link:hover { color: rgba(255,255,255,0.62); }
+    .modal-skip-link:disabled { opacity: 0.5; cursor: not-allowed; }
 
     /* Loading bar */
     .modal-loader {
@@ -346,6 +380,7 @@
       </div>
 
       <div class="modal-inner">
+        <button type="button" class="modal-close-x" id="mba-modal-close-x" aria-label="Fechar" hidden>&times;</button>
         <div class="modal-eyebrow">
           <span class="modal-eyebrow-dot"></span>
           Enquanto criamos seu acesso
@@ -355,12 +390,16 @@
         <div class="modal-copy-strong" id="mba-modal-strong">
           O programa tem investimento médio de <strong>R$ 500 por mês</strong>. Se quiser entender a estrutura e o formato, nosso time explica — sem compromisso.
         </div>
-        <div class="choice-grid">
+        <div class="choice-grid" id="mba-choice-grid">
           <button type="button" class="choice-button" data-choice="sim">Quero conhecer o programa</button>
           <button type="button" class="choice-button" data-choice="nao">Agora não, obrigado</button>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer" id="mba-modal-footer">
           <button type="button" class="modal-continue" id="modal-continue" disabled>Acessar minha trilha gratuita</button>
+        </div>
+        <div class="modal-footer" id="mba-single-footer" hidden>
+          <button type="button" class="modal-continue" id="mba-single-cta">Falar com um especialista agora</button>
+          <button type="button" class="modal-skip-link" id="mba-skip-link">prefiro só continuar na trilha gratuita por enquanto</button>
         </div>
       </div>
 
@@ -398,8 +437,25 @@
     const modalShell = document.getElementById("mba-modal-shell");
     const modalContinue = document.getElementById("modal-continue");
     const choiceButtons = Array.from(document.querySelectorAll("[data-choice]"));
+    const mbaChoiceGrid = document.getElementById("mba-choice-grid");
+    const mbaModalFooter = document.getElementById("mba-modal-footer");
+    const mbaSingleFooter = document.getElementById("mba-single-footer");
+    const mbaSingleCta = document.getElementById("mba-single-cta");
+    const mbaSkipLink = document.getElementById("mba-skip-link");
+    const mbaCloseX = document.getElementById("mba-modal-close-x");
     const ATTR_STORAGE_KEY = "fundace_trilha_attribution";
     const ATTR_STORAGE_EMAIL_PREFIX = "fundace_trilha_attribution:";
+
+    // WhatsApp do time comercial pra quem clica em "Falar com um
+    // especialista agora" no popup da trilha nova de marketing.
+    const MARKETING_NOVA_WHATSAPP_NUMBER = "5516997235109";
+
+    function buildMarketingNovaWhatsappLink() {
+      const firstName = (nomeParam || "").trim().split(/\s+/)[0] || "";
+      const greeting = firstName ? `Olá! Me chamo ${firstName}` : "Olá!";
+      const message = `${greeting}, acabei de me cadastrar na trilha gratuita de Marketing da Fundace e quero saber mais sobre o MBA USP em Gestão de Marketing Estratégico.`;
+      return `https://wa.me/${MARKETING_NOVA_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+    }
 
     const offerState = {
       needsPopup: false,
@@ -429,6 +485,12 @@
       return normalizeText(value).includes("marketing");
     }
 
+    // Trilha nova (lançada em 2026-08) — tem popup próprio, diferente da
+    // "Trilha de Marketing Estratégico" original.
+    function isMarketingNovaTrailName(value) {
+      return normalizeText(value).includes("mercado em transformacao");
+    }
+
     function isFinancasTrailName(value) {
       return normalizeText(value).includes("financas") || normalizeText(value).includes("finanças");
     }
@@ -441,6 +503,7 @@
     function currentTrailSlug(context = offerState.leadContext) {
       if (isGestaoProjetosTrailName(context?.nome_trilha) || trilhaParam === "gestao-projetos") return "gestao-projetos";
       if (isGestaoTrailName(context?.nome_trilha) || trilhaParam === "gestao") return "gestao";
+      if (isMarketingNovaTrailName(context?.nome_trilha) || trilhaParam === "marketing-nova") return "marketing-nova";
       if (isMarketingTrailName(context?.nome_trilha) || trilhaParam === "marketing") return "marketing";
       if (isFinancasTrailName(context?.nome_trilha) || trilhaParam === "financas") return "financas";
       if (isGdeTrailName(context?.nome_trilha) || trilhaParam === "semana-ia-no-direito" || trilhaParam === "gde") return "semana-ia-no-direito";
@@ -450,7 +513,22 @@
     function updateTrailCopy(context = offerState.leadContext) {
       const slug = currentTrailSlug(context);
 
-      if (slug === "marketing") {
+      // A trilha nova de marketing tem um popup de formato próprio (1 CTA +
+      // link secundário + X pra fechar) — as demais trilhas mantêm o
+      // formato padrão (2 escolhas + botão de continuar).
+      const isMarketingNova = slug === "marketing-nova";
+      mbaChoiceGrid.hidden = isMarketingNova;
+      mbaModalFooter.hidden = isMarketingNova;
+      mbaSingleFooter.hidden = !isMarketingNova;
+      mbaCloseX.hidden = !isMarketingNova;
+
+      if (slug === "marketing-nova") {
+        document.title = "Crie sua senha | Trilha Marketing Fundace";
+        backLink.href = "./captacao-marketing-nova.html";
+        modalTitle.textContent = "A trilha é o começo. O próximo passo pode transformar sua carreira em marketing.";
+        modalCopy.textContent = "Profissionais que dominam marketing estratégico de verdade costumam querer ir além de uma introdução. O MBA USP Gestão de Marketing Estratégico é o único MBA USP ligado a uma escola de negócios — professores da FEA-RP/USP, certificado USP e aplicação real de estratégia, posicionamento e geração de resultados.";
+        modalStrong.innerHTML = "O programa tem investimento médio de <strong>R$ 500 por mês</strong>. Ao clicar abaixo, nosso time entra em contato em até algumas horas pelo WhatsApp para explicar a estrutura e o formato — sem compromisso.";
+      } else if (slug === "marketing") {
         document.title = "Crie sua senha | Trilha Marketing Fundace";
         backLink.href = "./captacao-marketing.html";
         modalTitle.textContent = "A trilha é o começo. O próximo passo pode transformar sua carreira em marketing.";
@@ -498,7 +576,7 @@
     updateTrailCopy();
 
     if (!emailParam) {
-      const fallbackMap = { gestao: "./captacao-gestao.html", "gestao-projetos": "./captacao-gestao-projetos.html", marketing: "./captacao-marketing.html", financas: "./captacao-financas.html", "semana-ia-no-direito": "./captacao-gde.html" };
+      const fallbackMap = { gestao: "./captacao-gestao.html", "gestao-projetos": "./captacao-gestao-projetos.html", marketing: "./captacao-marketing.html", "marketing-nova": "./captacao-marketing-nova.html", financas: "./captacao-financas.html", "semana-ia-no-direito": "./captacao-gde.html" };
       window.location.href = fallbackMap[trilhaParam] || "./captacao.html";
     }
 
@@ -806,9 +884,10 @@
       });
     });
 
-    modalContinue.addEventListener("click", async () => {
-      modalContinue.disabled = true;
-      modalContinue.textContent = "Salvando resposta...";
+    async function resolveOfferAndContinue(choice, triggerEl, busyText, idleText) {
+      offerState.selectedChoice = choice;
+      triggerEl.disabled = true;
+      if (busyText) triggerEl.textContent = busyText;
 
       try {
         await saveOfferChoice();
@@ -817,9 +896,28 @@
         showMessage("error-msg", "Não foi possível salvar sua resposta agora. Tente novamente.");
         openOfferModal();
       } finally {
-        modalContinue.disabled = false;
-        modalContinue.textContent = "Cadastrar senha na trilha gratuita";
+        triggerEl.disabled = false;
+        if (idleText) triggerEl.textContent = idleText;
       }
+    }
+
+    modalContinue.addEventListener("click", () => {
+      resolveOfferAndContinue(offerState.selectedChoice, modalContinue, "Salvando resposta...", "Cadastrar senha na trilha gratuita");
+    });
+
+    mbaSingleCta.addEventListener("click", () => {
+      // Abre o WhatsApp já na hora do clique (síncrono), pra não correr
+      // risco de o navegador bloquear a aba como pop-up depois dos awaits.
+      window.open(buildMarketingNovaWhatsappLink(), "_blank", "noopener");
+      resolveOfferAndContinue("sim", mbaSingleCta, "Enviando...", "Falar com um especialista agora");
+    });
+
+    mbaSkipLink.addEventListener("click", () => {
+      resolveOfferAndContinue("nao", mbaSkipLink, null, null);
+    });
+
+    mbaCloseX.addEventListener("click", () => {
+      closeOfferModal();
     });
 
     form.addEventListener("submit", async event => {
