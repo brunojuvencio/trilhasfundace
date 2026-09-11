@@ -183,6 +183,25 @@ function isGdeTrail(lead: LeadRow) {
   return trailName.includes("direito") || trailName.includes("gde");
 }
 
+// Lista que dispara a automação "TRILHA MKT" (id 137) no ActiveCampaign —
+// só quem entra aqui recebe a sequência de e-mails antes do SDR ligar.
+const ACTIVECAMPAIGN_SITUACAO_A_LIST_ID = (Deno.env.get("ACTIVECAMPAIGN_SITUACAO_A_LIST_ID") ?? "73").trim();
+
+function isTestLead(lead: LeadRow) {
+  const haystacks = [lead.nome, lead.email, lead.cidade, lead.empresa, lead.cargo, lead.area_formacao];
+  return haystacks.some(value => normalizeText(cleanString(value)).includes("teste"));
+}
+
+// Mesmo critério da Situação A no painel SDR: formação superior + interesse
+// em pós (imediato ou não agora), tirando lead de teste.
+function qualifiesForSituacaoAAutomation(lead: LeadRow) {
+  if (!isMarketingNovaTrail(lead)) return false;
+  if (isTestLead(lead)) return false;
+  if (!lead.possui_formacao_superior) return false;
+  const pretendePos = cleanString(lead.pretende_pos);
+  return pretendePos === "sim_agora" || pretendePos === "sim_depois";
+}
+
 function splitName(nome: string) {
   const parts = nome.trim().split(/\s+/).filter(Boolean);
   return {
@@ -447,6 +466,10 @@ Deno.serve(async request => {
     const listId = await resolveListId(getListConfigForLead(lead));
     const contactId = await syncContact({ nome, email, telefone, fieldValues: buildFieldValues(lead) });
     await ensureListSubscription(contactId, listId);
+
+    if (qualifiesForSituacaoAAutomation(lead)) {
+      await ensureListSubscription(contactId, ACTIVECAMPAIGN_SITUACAO_A_LIST_ID);
+    }
     await markLead(email, "synced", contactId, listId);
     console.info(`[activecampaign-sync-lead] Lead ${email} sincronizado com sucesso. contactId=${contactId}, listId=${listId}`);
 

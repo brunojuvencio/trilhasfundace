@@ -926,6 +926,64 @@ using (public.is_admin()) with check (public.is_admin());
 
 create index if not exists sdr_followup_tasks_trigger_idx on public.sdr_followup_tasks (trigger_id);
 
+-- Registra, por lead, quais e-mails da automação "TRILHA MKT" tiveram link
+-- clicado (um clique por e-mail, deduplicado pela unique constraint) — vira
+-- pontuação de prioridade de abordagem em get_marketing_nova_sdr_all().
+create table if not exists public.sdr_email_link_clicks (
+  id bigint generated always as identity primary key,
+  trail_slug text not null,
+  trigger_type text not null,
+  lead_email citext not null,
+  step integer not null,
+  clicked_at timestamptz not null default now(),
+  unique (trail_slug, trigger_type, lead_email, step)
+);
+
+alter table public.sdr_email_link_clicks enable row level security;
+
+drop policy if exists "Admins can read sdr email link clicks" on public.sdr_email_link_clicks;
+create policy "Admins can read sdr email link clicks"
+on public.sdr_email_link_clicks for select to authenticated
+using (public.is_admin());
+
+-- Chamada pelo webhook de clique do ActiveCampaign (não pelo painel). Sem
+-- grant pra anon/authenticated de propósito — só a service role chama isso.
+create or replace function public.record_sdr_email_link_click(
+  p_lead_email text,
+  p_campaign_id integer
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_trail_slug constant text := 'trilha-nova-de-marketing';
+  v_trigger_type constant text := 'intencao_imediata';
+  v_email citext := lower(trim(coalesce(p_lead_email, '')));
+  -- Mapa fixo dos 5 e-mails da automação "TRILHA MKT" (ids de campanha
+  -- confirmados via API do ActiveCampaign em 2026-09-11).
+  v_step integer := case p_campaign_id
+    when 981 then 1 -- TRILHA MKT 0
+    when 973 then 2 -- TRILHA MKT 1
+    when 975 then 3 -- QUIZ MKTEST TRILHA
+    when 977 then 4 -- TRILHA MKT 3
+    when 979 then 5 -- MKTEST TRILHA 4
+    else null
+  end;
+begin
+  if v_email = '' or v_step is null then
+    return;
+  end if;
+
+  insert into public.sdr_email_link_clicks (trail_slug, trigger_type, lead_email, step)
+  values (v_trail_slug, v_trigger_type, v_email, v_step)
+  on conflict (trail_slug, trigger_type, lead_email, step) do nothing;
+end;
+$$;
+
+revoke all on function public.record_sdr_email_link_click(text, integer) from public;
+
 -- Apaga os follow-ups pendentes (não concluídos) de um trigger e recria a
 -- partir dos templates da etapa atual dele, ancorados em stage_changed_at.
 create or replace function public.regenerate_sdr_followup_tasks(p_trigger_id bigint)
@@ -1014,6 +1072,155 @@ $$;
 
 revoke all on function public.toggle_sdr_followup_task(bigint, boolean) from public;
 grant execute on function public.toggle_sdr_followup_task(bigint, boolean) to authenticated;
+
+-- Helper interno: garante o checklist de follow-up de uma etapa pra um
+-- gatilho, criando as tarefas só se ainda não existe nenhuma (pendente ou
+-- feita) vinda dos templates dessa etapa. Reaproveitado tanto pela etapa de
+-- automação de e-mail quanto pela transição pra "Primeira abordagem".
+create or replace function public.sdr_ensure_followup_checklist(
+  p_trigger_id bigint,
+  p_stage_id bigint,
+  p_anchor timestamptz
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_cursor timestamptz;
+  v_tpl record;
+begin
+  if p_trigger_id is null or p_stage_id is null then
+    return;
+  end if;
+
+  if exists (
+    select 1 from public.sdr_followup_tasks ft
+    join public.sdr_followup_templates tpl on tpl.id = ft.template_id
+    where ft.trigger_id = p_trigger_id and tpl.stage_id = p_stage_id
+  ) then
+    return;
+  end if;
+
+  v_cursor := coalesce(p_anchor, now());
+  for v_tpl in
+    select * from public.sdr_followup_templates where stage_id = p_stage_id order by ordem asc
+  loop
+    v_cursor := v_cursor + make_interval(secs => v_tpl.dias_apos_anterior * 86400);
+    insert into public.sdr_followup_tasks (trigger_id, template_id, nome, mensagem, due_at)
+    values (p_trigger_id, v_tpl.id, v_tpl.nome, v_tpl.mensagem, v_cursor);
+  end loop;
+end;
+$$;
+
+revoke all on function public.sdr_ensure_followup_checklist(bigint, bigint, timestamptz) from public;
+
+-- Chamada pelo webhook do ActiveCampaign (não pelo painel), um disparo por
+-- e-mail da automação "TRILHA MKT": move o lead pra "Em automação de
+-- e-mail" (se ainda não estiver lá ou mais adiante), garante o checklist de
+-- "Nutrição" dessa etapa, e marca como feita a nutrição correspondente ao
+-- e-mail que acabou de sair (p_step = ordem do template). Quando o último
+-- e-mail sai (p_step = 5), a nutrição terminou: o card avança sozinho pra
+-- "Primeira abordagem", que já entra com a tarefa "Herbert: fazer o
+-- primeiro contato" visível como a primeira da lista. Sem grant pra
+-- anon/authenticated de propósito — só a service role (usada pela Edge
+-- Function do webhook) pode chamar isso, então não precisa checar
+-- is_admin() nem segredo aqui dentro.
+drop function if exists public.mark_sdr_lead_entered_email_automation(text);
+drop function if exists public.mark_sdr_lead_entered_email_automation(text, integer);
+create or replace function public.mark_sdr_lead_entered_email_automation(
+  p_lead_email text,
+  p_step integer default null
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_trail_slug constant text := 'trilha-nova-de-marketing';
+  v_trigger_type constant text := 'intencao_imediata';
+  v_email citext := lower(trim(coalesce(p_lead_email, '')));
+  v_automacao_stage_id bigint;
+  v_automacao_ordem integer;
+  v_abordagem_stage_id bigint;
+  v_abordagem_ordem integer;
+  v_trigger_id bigint;
+  v_current_stage_id bigint;
+  v_current_ordem integer;
+  v_stage_changed_at timestamptz;
+begin
+  if v_email = '' then
+    return;
+  end if;
+
+  select id, ordem into v_automacao_stage_id, v_automacao_ordem
+  from public.sdr_pipeline_stages
+  where funil = v_trigger_type and stage_key = 'em_automacao_de_email';
+
+  if v_automacao_stage_id is null then
+    return;
+  end if;
+
+  select id, ordem into v_abordagem_stage_id, v_abordagem_ordem
+  from public.sdr_pipeline_stages
+  where funil = v_trigger_type and stage_key = 'primeira_abordagem';
+
+  select t.id, t.stage_id, st.ordem
+  into v_trigger_id, v_current_stage_id, v_current_ordem
+  from public.sdr_contact_triggers t
+  left join public.sdr_pipeline_stages st on st.id = t.stage_id
+  where t.trail_slug = v_trail_slug and t.trigger_type = v_trigger_type and t.lead_email = v_email;
+
+  -- Não anda pra trás: se o SDR já moveu esse lead pra uma etapa mais
+  -- avançada que "Primeira abordagem", nada aqui deve mexer no estágio.
+  if v_current_ordem is not null and v_current_ordem > coalesce(v_abordagem_ordem, v_automacao_ordem) then
+    return;
+  end if;
+
+  if v_trigger_id is null then
+    insert into public.sdr_contact_triggers (trail_slug, trigger_type, lead_email, stage_id, stage_changed_at)
+    values (v_trail_slug, v_trigger_type, v_email, v_automacao_stage_id, now())
+    returning id, v_automacao_stage_id, stage_changed_at into v_trigger_id, v_current_stage_id, v_stage_changed_at;
+  elsif v_current_stage_id is distinct from v_automacao_stage_id and v_current_ordem is null then
+    -- gatilho existia sem etapa (caso raro) — entra na automação normalmente
+    update public.sdr_contact_triggers
+    set stage_id = v_automacao_stage_id, stage_changed_at = now()
+    where id = v_trigger_id
+    returning v_automacao_stage_id, stage_changed_at into v_current_stage_id, v_stage_changed_at;
+  else
+    select stage_changed_at into v_stage_changed_at
+    from public.sdr_contact_triggers where id = v_trigger_id;
+  end if;
+
+  perform public.sdr_ensure_followup_checklist(v_trigger_id, v_automacao_stage_id, v_stage_changed_at);
+
+  if p_step is not null then
+    update public.sdr_followup_tasks ft
+    set done_at = now(), done_by = 'ActiveCampaign (automação)'
+    from public.sdr_followup_templates tpl
+    where ft.template_id = tpl.id
+      and ft.trigger_id = v_trigger_id
+      and tpl.stage_id = v_automacao_stage_id
+      and tpl.ordem = p_step
+      and ft.done_at is null;
+  end if;
+
+  -- Último e-mail da sequência: nutrição terminou, avança sozinho pra
+  -- "Primeira abordagem" (só se o card ainda estiver na automação).
+  if p_step = 5 and v_abordagem_stage_id is not null and v_current_stage_id = v_automacao_stage_id then
+    update public.sdr_contact_triggers
+    set stage_id = v_abordagem_stage_id, stage_changed_at = now()
+    where id = v_trigger_id
+    returning stage_changed_at into v_stage_changed_at;
+
+    perform public.sdr_ensure_followup_checklist(v_trigger_id, v_abordagem_stage_id, v_stage_changed_at);
+  end if;
+end;
+$$;
+
+revoke all on function public.mark_sdr_lead_entered_email_automation(text, integer) from public;
 
 -- Salva a anotação livre do lead.
 create or replace function public.set_sdr_lead_notes(
@@ -1145,6 +1352,34 @@ as $$
   end;
 $$;
 
+-- Filtro de lead de teste: se qualquer campo preenchido no formulário contém
+-- a palavra "teste", o lead é excluído automaticamente de todas as
+-- situações (A, B e C) — vale pro painel inteiro (Kanban, relatórios,
+-- métricas), não só pra fila.
+create or replace function public.sdr_is_test_lead(
+  p_nome text,
+  p_email text,
+  p_cidade text,
+  p_empresa text,
+  p_cargo text,
+  p_area_formacao text
+)
+returns boolean
+language sql
+immutable
+as $$
+  select
+    coalesce(p_nome, '') ilike '%teste%'
+    or coalesce(p_email, '') ilike '%teste%'
+    or coalesce(p_cidade, '') ilike '%teste%'
+    or coalesce(p_empresa, '') ilike '%teste%'
+    or coalesce(p_cargo, '') ilike '%teste%'
+    or coalesce(p_area_formacao, '') ilike '%teste%';
+$$;
+
+revoke all on function public.sdr_is_test_lead(text, text, text, text, text, text) from public;
+grant execute on function public.sdr_is_test_lead(text, text, text, text, text, text) to authenticated;
+
 -- Universo completo de gatilhos da trilha nova de Marketing (situações A e B),
 -- SEM corte por data — usado tanto pela fila (que aplica o corte) quanto pelas
 -- métricas (que precisam do histórico inteiro). Função interna, não exposta.
@@ -1177,7 +1412,8 @@ returns table (
   proximo_followup_id bigint,
   proximo_followup_nome text,
   proximo_followup_vence timestamptz,
-  followups_pendentes integer
+  followups_pendentes integer,
+  lead_score integer
 )
 language plpgsql
 security definer
@@ -1215,20 +1451,17 @@ begin
     l.email::citext,
     l.telefone,
     l.created_at,
-    (
-      (date_trunc('day', public.sdr_skip_weekend(l.created_at) at time zone 'America/Sao_Paulo') + interval '1 day' - interval '1 second')
-      at time zone 'America/Sao_Paulo'
-    ),
+    calc_prazo.prazo,
     t.contacted_at,
     t.contacted_by,
     t.responded,
     t.responded_at,
     t.approach_tag,
-    coalesce(st.id, ds.id),
-    coalesce(st.nome, ds.nome),
-    coalesce(st.ordem, ds.ordem),
-    coalesce(st.is_default, ds.is_default, true),
-    coalesce(st.is_loss_stage, ds.is_loss_stage, false),
+    coalesce(st.id, case when calc_prazo.prazo >= now() then ds_lead.id else ds_auto.id end),
+    coalesce(st.nome, case when calc_prazo.prazo >= now() then ds_lead.nome else ds_auto.nome end),
+    coalesce(st.ordem, case when calc_prazo.prazo >= now() then ds_lead.ordem else ds_auto.ordem end),
+    coalesce(st.is_default, case when calc_prazo.prazo >= now() then ds_lead.is_default else ds_auto.is_default end, true),
+    coalesce(st.is_loss_stage, case when calc_prazo.prazo >= now() then ds_lead.is_loss_stage else ds_auto.is_loss_stage end, false),
     coalesce(t.stage_changed_at, l.created_at),
     t.loss_reason,
     t.id,
@@ -1237,14 +1470,27 @@ begin
     fu.id,
     fu.nome,
     fu.due_at,
-    fu.pendentes
+    fu.pendentes,
+    -- Prioridade de abordagem: 2 pontos por e-mail distinto da automação em
+    -- que o lead clicou o link + 10 pontos se marcou urgência imediata.
+    (coalesce(clk.click_count, 0) * 2 + case when l.pretende_pos = 'sim_agora' then 10 else 0 end)
   from public.leads l
   left join public.sdr_contact_triggers t
     on t.trail_slug = v_trail_slug
     and t.trigger_type = 'intencao_imediata'
     and t.lead_email = l.email
   left join public.sdr_pipeline_stages st on st.id = t.stage_id
-  left join public.sdr_pipeline_stages ds on ds.funil = 'intencao_imediata' and ds.is_default = true
+  -- Sem gatilho ainda: fica em "Lead" enquanto está dentro do prazo; depois
+  -- que o prazo estoura, passa a valer como estando em "Em automação de
+  -- e-mail" (sem precisar de ninguem mover o card manualmente).
+  left join public.sdr_pipeline_stages ds_lead on ds_lead.funil = 'intencao_imediata' and ds_lead.stage_key = 'lead'
+  left join public.sdr_pipeline_stages ds_auto on ds_auto.funil = 'intencao_imediata' and ds_auto.stage_key = 'em_automacao_de_email'
+  left join lateral (
+    select (
+      (date_trunc('day', public.sdr_skip_weekend(l.created_at) at time zone 'America/Sao_Paulo') + interval '1 day' - interval '1 second')
+      at time zone 'America/Sao_Paulo'
+    ) as prazo
+  ) calc_prazo on true
   left join lateral (
     select ft.id, ft.nome, ft.due_at, cnt.pendentes
     from public.sdr_followup_tasks ft
@@ -1257,14 +1503,26 @@ begin
     order by ft.due_at asc
     limit 1
   ) fu on true
+  left join lateral (
+    select count(*)::int as click_count
+    from public.sdr_email_link_clicks c
+    where c.trail_slug = v_trail_slug and c.trigger_type = 'intencao_imediata' and c.lead_email = l.email
+  ) clk on true
   where l.nome_trilha = v_trail_nome
-    and l.pretende_pos = 'sim_agora'
+    -- A partir de 2026-09-11, "sim, mas não agora" também entra na Situação A
+    -- (só "não pretendo" fica de fora) — mas isso não é retroativo: lead
+    -- antigo com "sim_depois" continua fora, só quem entrou de hoje em diante.
+    and (
+      l.pretende_pos = 'sim_agora'
+      or (l.pretende_pos = 'sim_depois' and l.created_at >= timestamptz '2026-09-11 00:00:00-03')
+    )
     -- Formacao superior so bloqueia gente nova (sem nenhum registro em
     -- sdr_contact_triggers ainda); quem ja tinha historico continua visivel.
     and (l.possui_formacao_superior = true or t.id is not null)
     -- Quem confirmou "Quero conhecer o programa" migra pra Situação C e sai
     -- daqui, pra não duplicar o mesmo lead em dois quadros ao mesmo tempo.
     and coalesce(l.consultor_contact_opt_in, false) = false
+    and not public.sdr_is_test_lead(l.nome, l.email::text, l.cidade, l.empresa, l.cargo, l.area_formacao)
 
   union all
 
@@ -1302,7 +1560,8 @@ begin
     fu.id,
     fu.nome,
     fu.due_at,
-    fu.pendentes
+    fu.pendentes,
+    0
   from (
     select ulp.user_id, max(ulp.completed_at) as gatilho_em
     from public.user_lesson_progress ulp
@@ -1332,6 +1591,7 @@ begin
     limit 1
   ) fu on true
   where (l.possui_formacao_superior = true or t.id is not null)
+    and not public.sdr_is_test_lead(coalesce(l.nome, u.raw_user_meta_data ->> 'name'), coalesce(l.email::text, u.email), l.cidade, l.empresa, l.cargo, l.area_formacao)
 
   union all
 
@@ -1368,7 +1628,8 @@ begin
     fu.id,
     fu.nome,
     fu.due_at,
-    fu.pendentes
+    fu.pendentes,
+    0
   from public.leads l
   left join public.sdr_contact_triggers t
     on t.trail_slug = v_trail_slug
@@ -1389,7 +1650,8 @@ begin
     limit 1
   ) fu on true
   where l.nome_trilha = v_trail_nome
-    and l.consultor_contact_opt_in = true;
+    and l.consultor_contact_opt_in = true
+    and not public.sdr_is_test_lead(l.nome, l.email::text, l.cidade, l.empresa, l.cargo, l.area_formacao);
 end;
 $$;
 
@@ -1427,7 +1689,8 @@ returns table (
   proximo_followup_id bigint,
   proximo_followup_nome text,
   proximo_followup_vence timestamptz,
-  followups_pendentes integer
+  followups_pendentes integer,
+  lead_score integer
 )
 language sql
 security definer
@@ -1439,8 +1702,21 @@ as $$
   -- que gatilhar fica na fila até ser contatado, não importa há quanto tempo.
   select *
   from public.get_marketing_nova_sdr_all()
-  where gatilho_em >= timestamptz '2026-08-25 00:00:00-03'
-     or contatado_em is not null
+  where (
+      gatilho_em >= timestamptz '2026-08-25 00:00:00-03'
+      or contatado_em is not null
+    )
+    -- Por enquanto (2026-09-11), tira da fila quem já passou do prazo da
+    -- Situação A e ainda não foi contatado (cai em "Em automação de
+    -- e-mail") — a automação ainda não existe de verdade, então não faz
+    -- sentido a SDR ver esses leads agora. Reverter isso quando a
+    -- automação de e-mail estiver rodando.
+    and not (
+      situacao = 'A'
+      and trigger_id is null
+      and contatado_em is null
+      and prazo_em < now()
+    )
   order by situacao asc, prazo_em asc;
 $$;
 
