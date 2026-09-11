@@ -7,28 +7,44 @@
   <meta name="description" content="Trilha gratuita da FUNDACE USP: gestão de projetos, IA, Design Thinking e liderança. 3 aulas gravadas com certificado.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Archivo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --yellow: #FEB737;
-      --yellow-dim: rgba(254,183,55,0.12);
-      --yellow-glow: rgba(254,183,55,0.22);
-      --bg: #080808;
-      --surface: rgba(255,255,255,0.035);
-      --border: rgba(255,255,255,0.07);
-      --border-y: rgba(254,183,55,0.18);
-      --white: #FFFFFF;
-      --muted: rgba(255,255,255,0.5);
-      --faint: rgba(255,255,255,0.28);
+      --color-bg: #F7F4EC;
+      --color-bg-raised: #F1EDE1;
+      --color-black: #0D0D0D;
+
+      --color-yellow: #F2B705;
+      --color-yellow-soft: #FCE8A8;
+      --color-yellow-deep: #B8860A;
+
+      --text-primary: #0D0D0D;
+      --text-secondary: #3a3a3a;
+      --text-muted: #6a6a6a;
+      --text-on-dark-primary: #ffffff;
+      --text-on-dark-muted: #b8b5ac;
+
+      --gradient-gold: linear-gradient(135deg, #B8860A 0%, #F2B705 45%, #FFE27A 65%, #B8860A 100%);
+
+      --font-display: "Oswald", "Arial Narrow", sans-serif;
+      --font-body: "Archivo", "Helvetica Neue", sans-serif;
+
+      --shadow-soft: 0 18px 40px -24px rgba(13, 13, 13, 0.35);
+      --shadow-medium: 0 20px 45px -30px rgba(13, 13, 13, 0.35);
+      --shadow-strong: 0 30px 60px -28px rgba(13, 13, 13, 0.45);
+      --shadow-gold-glow: 0 28px 60px -28px rgba(184, 134, 10, 0.45);
+
+      --section-pad-block: clamp(5rem, 10vw, 7rem);
+      --section-pad-inline: clamp(1.5rem, 6vw, 4rem);
     }
 
     html { scroll-behavior: smooth; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--white);
+      font-family: var(--font-body);
+      background: var(--color-bg);
+      color: var(--text-primary);
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
     }
@@ -37,28 +53,65 @@
       content: '';
       position: fixed;
       inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-      opacity: 0.025;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.055;
+      mix-blend-mode: multiply;
       pointer-events: none;
       z-index: 999;
     }
 
     a { color: inherit; }
 
-    /* ── HERO ── */
+    h1, h2, h3 {
+      font-family: var(--font-display);
+      font-weight: 500;
+      line-height: 1.15;
+      letter-spacing: -0.01em;
+    }
+
+    em {
+      font-style: italic;
+      font-family: var(--font-display);
+      color: var(--color-yellow-deep);
+    }
+
+    .section-kicker {
+      display: inline-block;
+      color: var(--color-yellow-deep);
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .divider-under {
+      display: block;
+      width: 72px;
+      height: 2px;
+      margin: 18px auto 0;
+      background: linear-gradient(to right, transparent, var(--color-yellow-deep) 35%, var(--color-yellow) 55%, transparent);
+      border-radius: 100px;
+    }
+
+    .divider-under.left { margin: 18px 0 0; }
+
+    /* ── HERO (--color-bg) ── */
     .hero {
       min-height: 92vh;
       position: relative;
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      background: var(--color-bg);
     }
 
     .blob-1 {
       position: absolute;
       top: -180px; right: -140px;
       width: 600px; height: 600px;
-      background: radial-gradient(circle at 40% 40%, rgba(254,183,55,0.11) 0%, transparent 60%);
+      background: radial-gradient(circle at 40% 40%, rgba(184,134,10,0.14) 0%, transparent 60%);
       filter: blur(40px);
       pointer-events: none;
     }
@@ -67,7 +120,7 @@
       position: absolute;
       bottom: -120px; left: 10%;
       width: 500px; height: 400px;
-      background: radial-gradient(circle, rgba(254,183,55,0.05) 0%, transparent 65%);
+      background: radial-gradient(circle, rgba(242,183,5,0.10) 0%, transparent 65%);
       filter: blur(60px);
       pointer-events: none;
     }
@@ -76,7 +129,7 @@
       position: absolute;
       top: 0; right: 22%;
       width: 1px; height: 100%;
-      background: linear-gradient(to bottom, transparent, rgba(254,183,55,0.08) 30%, rgba(254,183,55,0.08) 70%, transparent);
+      background: linear-gradient(to bottom, transparent, rgba(184,134,10,0.16) 30%, rgba(184,134,10,0.16) 70%, transparent);
       transform: rotate(8deg) translateX(0);
       transform-origin: top center;
       pointer-events: none;
@@ -94,7 +147,7 @@
       margin: 0 auto;
     }
 
-    .logo-wrap { display: flex; align-items: center; width: clamp(95px, 8.5vw, 123px); line-height: 0; }
+    .logo-wrap { display: flex; align-items: center; width: clamp(150px, 13vw, 190px); line-height: 0; }
     .brand-logo { display: block; width: 100%; height: auto; }
 
     .hero-body {
@@ -104,7 +157,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 32px 72px 80px;
+      padding: 32px var(--section-pad-inline) 80px;
       max-width: 900px;
       width: 100%;
       margin: 0 auto;
@@ -116,52 +169,47 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 8px 16px;
-      border-radius: 100px;
-      background: rgba(254,183,55,0.08);
-      border: 1px solid rgba(254,183,55,0.22);
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--yellow);
-      letter-spacing: 0.04em;
+      padding: 0.5rem 1.1rem;
+      border-radius: 999px;
+      background: transparent;
+      border: 1.5px solid var(--color-yellow-deep);
+      font-family: var(--font-body);
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-primary);
       margin-bottom: 26px;
       animation: fadeUp 0.5s ease 0s both;
     }
 
+    .hero-badge svg { stroke: var(--color-yellow-deep); }
+
     h1 {
-      font-family: 'Inter', sans-serif;
-      font-weight: 700;
-      font-size: clamp(30px, 4.4vw, 54px);
-      line-height: 1.06;
-      letter-spacing: -0.03em;
-      color: var(--white);
+      font-size: clamp(2.25rem, 5vw, 3.5rem);
+      color: var(--text-primary);
       margin-bottom: 22px;
+      white-space: normal;
       animation: fadeUp 0.5s ease 0.08s both;
     }
 
-    h1 em {
-      font-style: normal;
-      background: linear-gradient(90deg, #FEB737, #FFCF6B);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
     .hero-tagline {
+      font-family: var(--font-body);
       font-size: clamp(18px, 2.2vw, 24px);
       font-weight: 600;
-      line-height: 1.25;
-      color: rgba(255,255,255,0.88);
+      line-height: 1.3;
+      color: var(--text-secondary);
       max-width: 620px;
       margin: 0 auto 18px;
       animation: fadeUp 0.5s ease 0.14s both;
     }
 
     .subhead {
+      font-family: var(--font-body);
       font-size: clamp(15px, 1.55vw, 18px);
       font-weight: 400;
       line-height: 1.72;
-      color: var(--muted);
+      color: var(--text-muted);
       max-width: 600px;
       margin: 0 auto 36px;
       animation: fadeUp 0.5s ease 0.2s both;
@@ -180,29 +228,31 @@
     .cta-btn {
       display: inline-flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 18px;
+      justify-content: center;
+      gap: 0.9rem;
       min-width: 300px;
-      background: var(--yellow);
-      color: #000;
-      font-family: 'Inter', sans-serif;
-      font-size: 14px; font-weight: 700;
+      background: var(--gradient-gold);
+      color: var(--color-black);
+      font-family: var(--font-body);
+      font-size: 0.85rem; font-weight: 600;
       text-decoration: none;
-      padding: 18px 28px;
-      border-radius: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.9rem 2rem;
+      border-radius: 8px;
       border: none; cursor: pointer;
-      box-shadow: 0 16px 38px rgba(254,183,55,0.16), inset 0 1px 0 rgba(255,255,255,0.32);
-      transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+      box-shadow: var(--shadow-gold-glow);
+      transition: transform 0.2s ease, background 0.2s ease;
     }
 
     .cta-btn:hover {
-      transform: translateY(-3px);
-      filter: brightness(1.04);
-      box-shadow: 0 18px 46px rgba(254,183,55,0.32), inset 0 1px 0 rgba(255,255,255,0.4);
+      background: var(--color-yellow-deep);
+      color: #fff;
+      transform: translateY(-2px);
     }
 
     .cta-btn .arrow { transition: transform 0.2s ease; }
-    .cta-btn:hover .arrow { transform: translateX(4px); }
+    .cta-btn:hover .arrow { transform: translateX(3px); }
 
     .hero-note {
       display: flex;
@@ -210,8 +260,9 @@
       justify-content: center;
       gap: 8px;
       margin-top: 22px;
+      font-family: var(--font-body);
       font-size: 13px;
-      color: var(--faint);
+      color: var(--text-muted);
       animation: fadeUp 0.5s ease 0.34s both;
     }
 
@@ -225,77 +276,57 @@
       .hero-body { padding: 28px 24px 56px; }
     }
 
-    /* ── INTRO SECTION ── */
+    /* ── scroll reveal ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.is-visible { opacity: 1; transform: none; }
+
+    /* ── INTRO SECTION (--color-bg-raised) ── */
     .intro-section {
       position: relative;
-      padding: 100px 72px;
-      background:
-        radial-gradient(ellipse at 8% 55%, rgba(254,183,55,0.07), transparent 38%),
-        radial-gradient(ellipse at 92% 10%, rgba(254,183,55,0.04), transparent 32%),
-        linear-gradient(180deg, #080808 0%, #090909 100%);
-      border-top: 1px solid rgba(254,183,55,0.08);
+      padding: var(--section-pad-block) var(--section-pad-inline);
+      background: var(--color-bg-raised);
       text-align: center;
     }
 
     .intro-wrap { max-width: 760px; margin: 0 auto; }
 
     .intro-wrap h2 {
-      font-size: clamp(24px, 3vw, 38px);
-      line-height: 1.14;
-      letter-spacing: -0.03em;
-      color: var(--white);
+      font-size: clamp(1.75rem, 2.7vw, 2.75rem);
+      color: var(--text-primary);
       margin-bottom: 26px;
     }
 
     .intro-wrap p {
+      font-family: var(--font-body);
       font-size: 16px;
       line-height: 1.75;
-      color: rgba(255,255,255,0.5);
+      color: var(--text-secondary);
       margin-bottom: 14px;
     }
 
-    .intro-wrap strong { color: rgba(255,255,255,0.85); font-weight: 600; }
+    .intro-wrap strong { color: var(--text-primary); font-weight: 600; }
 
     @media (max-width: 480px) {
       .intro-section { padding: 72px 24px; }
     }
 
-    /* ── SECTION KICKER ── */
-    .section-kicker {
-      display: inline-block;
-      color: var(--yellow);
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      margin-bottom: 16px;
-    }
-
-    /* ── LEARN (CURRICULUM) SECTION ── */
+    /* ── LEARN (CURRICULUM) SECTION (--color-bg) ── */
     .learn-section {
       position: relative;
-      padding: 110px 72px;
-      background: #F7F6F3;
-      border-top: 1px solid rgba(0,0,0,0.06);
-      border-bottom: 1px solid rgba(0,0,0,0.06);
+      padding: var(--section-pad-block) var(--section-pad-inline);
+      background: var(--color-bg);
     }
 
     .learn-wrap { max-width: 1200px; margin: 0 auto; }
     .learn-head { text-align: center; max-width: 720px; margin: 0 auto 56px; }
 
     .learn-head h2 {
-      font-size: clamp(22px, 2.6vw, 34px);
-      line-height: 1.08;
-      letter-spacing: -0.035em;
-      color: #0d0d0d;
-    }
-
-    .learn-head h2 em {
-      font-style: normal;
-      background: linear-gradient(90deg, #FEB737, #FFCF6B);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      font-size: clamp(1.4rem, 2.6vw, 2.1rem);
+      color: var(--text-primary);
     }
 
     .learn-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
@@ -305,66 +336,58 @@
       display: flex;
       flex-direction: column;
       padding: 30px 26px;
-      border-radius: 22px;
-      border: 1px solid rgba(0,0,0,0.07);
-      background: #FFFFFF;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+      border-radius: 14px;
+      border: 1px solid rgba(13,13,13,0.08);
+      background: var(--color-bg-raised);
+      box-shadow: var(--shadow-soft);
       overflow: hidden;
       transition: transform 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease;
     }
 
-    .learn-card::before {
-      content: '';
-      position: absolute;
-      inset: -1px;
-      background: radial-gradient(circle at 20% 0%, rgba(254,183,55,0.09), transparent 38%);
-      pointer-events: none;
-    }
-
-    .learn-card > * { position: relative; z-index: 1; }
-
     .learn-card:hover {
       transform: translateY(-5px);
-      border-color: rgba(254,183,55,0.35);
-      box-shadow: 0 12px 36px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+      border-color: rgba(184,134,10,0.4);
+      box-shadow: var(--shadow-gold-glow);
     }
 
     .learn-icon {
       width: 44px; height: 44px;
-      border-radius: 13px;
-      background: rgba(254,183,55,0.1);
-      border: 1px solid rgba(254,183,55,0.22);
+      border-radius: 12px;
+      background: var(--color-yellow-soft);
+      border: 1px solid rgba(184,134,10,0.3);
       display: flex; align-items: center; justify-content: center;
       margin-bottom: 20px;
     }
 
     .learn-eyebrow {
       display: inline-block;
+      font-family: var(--font-body);
       font-size: 11px;
       font-weight: 700;
       letter-spacing: 0.14em;
       text-transform: uppercase;
-      color: rgba(254,183,55,0.9);
+      color: var(--color-yellow-deep);
       margin-bottom: 8px;
     }
 
-    .learn-card h3 { font-size: 21px; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 6px; color: #0d0d0d; }
-    .learn-card .learn-sub { font-size: 13px; color: rgba(15,15,15,0.45); margin-bottom: 18px; }
+    .learn-card h3 { font-size: 21px; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 6px; color: var(--text-primary); }
+    .learn-card .learn-sub { font-family: var(--font-body); font-size: 13px; color: var(--text-muted); margin-bottom: 18px; }
 
     .learn-card ul { list-style: none; display: flex; flex-direction: column; gap: 11px; margin-top: auto; }
 
     .learn-card ul li {
       display: flex; align-items: flex-start; gap: 10px;
-      font-size: 14px; line-height: 1.55; color: rgba(15,15,15,0.62);
+      font-family: var(--font-body);
+      font-size: 14px; line-height: 1.55; color: var(--text-secondary);
     }
 
     .learn-card ul li::before {
       content: '';
       width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px;
       border-radius: 50%;
-      background: rgba(254,183,55,0.14);
-      border: 1px solid rgba(254,183,55,0.5);
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1.5 5L4 7.5L8.5 2' stroke='%23FEB737' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background: var(--color-yellow-soft);
+      border: 1px solid var(--color-yellow-deep);
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1.5 5L4 7.5L8.5 2' stroke='%23B8860A' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
       background-size: 8px 8px; background-position: center; background-repeat: no-repeat;
     }
 
@@ -373,25 +396,22 @@
       .learn-grid { grid-template-columns: 1fr; }
     }
 
-    /* ── AUDIENCE SECTION ── */
+    /* ── AUDIENCE SECTION (--color-bg-raised) ── */
     .audience-section {
       position: relative;
-      padding: 110px 72px;
-      background:
-        radial-gradient(circle at 80% 30%, rgba(254,183,55,0.06), transparent 32%),
-        linear-gradient(180deg, #080808 0%, #0a0a0a 100%);
-      border-top: 1px solid rgba(254,183,55,0.08);
+      padding: var(--section-pad-block) var(--section-pad-inline);
+      background: var(--color-bg-raised);
     }
 
     .audience-wrap { max-width: 1000px; margin: 0 auto; text-align: center; }
     .audience-head { margin-bottom: 22px; }
-    .audience-head h2 { font-size: clamp(22px, 2.6vw, 34px); letter-spacing: -0.03em; }
-    .audience-head h2 em { font-style: normal; color: var(--yellow); }
+    .audience-head h2 { font-size: clamp(1.4rem, 2.6vw, 2.1rem); color: var(--text-primary); }
 
     .audience-wrap > p {
+      font-family: var(--font-body);
       font-size: 16px;
       line-height: 1.72;
-      color: rgba(255,255,255,0.48);
+      color: var(--text-secondary);
       max-width: 660px;
       margin: 0 auto 12px;
     }
@@ -408,27 +428,29 @@
       align-items: center;
       gap: 12px;
       padding: 18px 18px;
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(255,255,255,0.03);
-      color: rgba(255,255,255,0.8);
+      border-radius: 14px;
+      border: 1px solid rgba(13,13,13,0.08);
+      background: var(--color-bg);
+      box-shadow: var(--shadow-soft);
+      color: var(--text-secondary);
+      font-family: var(--font-body);
       font-size: 14px;
       line-height: 1.4;
       text-align: left;
-      transition: all 0.25s ease;
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
     }
 
     .audience-card:hover {
       transform: translateY(-4px);
-      border-color: rgba(254,183,55,0.22);
-      background: rgba(254,183,55,0.05);
+      border-color: rgba(184,134,10,0.35);
+      box-shadow: var(--shadow-gold-glow);
     }
 
     .audience-icon {
       width: 32px; height: 32px; flex-shrink: 0;
       border-radius: 10px;
-      background: rgba(254,183,55,0.1);
-      border: 1px solid rgba(254,183,55,0.22);
+      background: var(--color-yellow-soft);
+      border: 1px solid rgba(184,134,10,0.3);
       display: flex; align-items: center; justify-content: center;
     }
 
@@ -441,35 +463,33 @@
       .audience-grid { grid-template-columns: 1fr; }
     }
 
-    /* ── BENEFITS SECTION ── */
+    /* ── BENEFITS SECTION (--color-bg) ── */
     .benefits-section {
       position: relative;
-      padding: 110px 72px;
-      background: #F7F6F3;
-      border-top: 1px solid rgba(0,0,0,0.06);
+      padding: var(--section-pad-block) var(--section-pad-inline);
+      background: var(--color-bg);
     }
 
     .benefits-wrap { max-width: 1200px; margin: 0 auto; }
     .benefits-head { text-align: center; max-width: 640px; margin: 0 auto 48px; }
-    .benefits-head h2 { font-size: clamp(22px, 2.6vw, 34px); letter-spacing: -0.03em; color: #0d0d0d; }
-    .benefits-head h2 em { font-style: normal; color: var(--yellow); }
+    .benefits-head h2 { font-size: clamp(1.4rem, 2.6vw, 2.1rem); color: var(--text-primary); }
 
     .benefits-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
 
     .benefit-card {
       padding: 28px 22px;
-      border-radius: 20px;
-      border: 1px solid rgba(0,0,0,0.07);
-      background: #FFFFFF;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-      transition: transform 0.24s ease, border-color 0.24s ease;
+      border-radius: 14px;
+      border: 1px solid rgba(13,13,13,0.08);
+      background: var(--color-bg-raised);
+      box-shadow: var(--shadow-soft);
+      transition: transform 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease;
     }
 
-    .benefit-card:hover { transform: translateY(-4px); border-color: rgba(254,183,55,0.3); }
+    .benefit-card:hover { transform: translateY(-4px); border-color: rgba(184,134,10,0.35); box-shadow: var(--shadow-gold-glow); }
 
     .benefit-card .learn-icon { margin-bottom: 18px; }
-    .benefit-card h3 { font-size: 16px; margin-bottom: 8px; color: #0d0d0d; }
-    .benefit-card p { font-size: 13.5px; line-height: 1.6; color: rgba(15,15,15,0.5); }
+    .benefit-card h3 { font-size: 16px; margin-bottom: 8px; color: var(--text-primary); }
+    .benefit-card p { font-family: var(--font-body); font-size: 13.5px; line-height: 1.6; color: var(--text-muted); }
 
     @media (max-width: 900px) {
       .benefits-section { padding: 80px 24px; }
@@ -480,90 +500,94 @@
       .benefits-grid { grid-template-columns: 1fr; }
     }
 
-    /* ── REGISTER SECTION ── */
+    /* ── REGISTER SECTION (--color-black, alto impacto) ── */
     .register-section {
       position: relative;
-      padding: 110px 72px;
-      background:
-        radial-gradient(ellipse at 5% 40%, rgba(254,183,55,0.09), transparent 36%),
-        radial-gradient(ellipse at 95% 70%, rgba(254,183,55,0.05), transparent 30%),
-        linear-gradient(180deg, #090909 0%, #080808 100%);
-      border-top: 1px solid rgba(254,183,55,0.1);
+      padding: var(--section-pad-block) var(--section-pad-inline);
+      background: var(--color-black);
     }
 
     .register-wrap { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1.15fr; gap: 80px; align-items: start; }
     .register-copy { padding-top: 12px; }
 
-    .reg-headline { font-size: clamp(22px, 2.6vw, 34px); font-weight: 700; line-height: 1.08; letter-spacing: -0.04em; color: var(--white); margin-bottom: 20px; }
-    .reg-headline em { font-style: normal; background: linear-gradient(90deg, #FEB737, #FFCF6B); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .reg-sub { font-size: 16px; line-height: 1.7; color: rgba(255,255,255,0.44); margin-bottom: 36px; max-width: 420px; }
+    .register-section .section-kicker { color: var(--color-yellow); }
+
+    .reg-headline { font-size: clamp(1.75rem, 2.7vw, 2.75rem); color: var(--text-on-dark-primary); margin-bottom: 20px; }
+    .register-section em { color: var(--color-yellow); }
+    .reg-sub { font-family: var(--font-body); font-size: 16px; line-height: 1.7; color: var(--text-on-dark-muted); margin-bottom: 36px; max-width: 420px; }
 
     .reg-badge {
       display: inline-flex; align-items: center; gap: 8px;
-      padding: 10px 18px; border-radius: 12px;
-      background: rgba(254,183,55,0.07); border: 1px solid rgba(254,183,55,0.18);
-      font-size: 13px; font-weight: 700; color: var(--yellow); letter-spacing: 0.04em;
+      padding: 0.5rem 1.1rem; border-radius: 999px;
+      background: transparent; border: 1.5px solid var(--color-yellow-deep);
+      font-family: var(--font-body);
+      font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--color-yellow);
     }
+
+    .reg-badge svg { stroke: var(--color-yellow); }
 
     .form-card {
       position: relative;
-      background: rgba(255,255,255,0.025);
-      border: 1px solid rgba(254,183,55,0.16);
-      border-radius: 24px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(242,183,5,0.18);
+      border-radius: 16px;
       padding: 40px 36px;
       overflow: hidden;
+      box-shadow: var(--shadow-strong);
     }
 
     .form-card::before {
       content: '';
       position: absolute; top: 0; left: 36px; right: 36px; height: 2px;
-      background: linear-gradient(90deg, transparent, var(--yellow), transparent);
+      background: linear-gradient(90deg, transparent, var(--color-yellow), transparent);
       border-radius: 100px;
     }
 
-    .form-card h3 { font-size: 20px; margin-bottom: 4px; }
-    .form-card .form-sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+    .form-card h3 { font-size: 20px; margin-bottom: 4px; color: var(--text-on-dark-primary); }
+    .form-card .form-sub { font-family: var(--font-body); font-size: 13px; color: var(--text-on-dark-muted); margin-bottom: 24px; }
 
     .form-grid { display: flex; flex-direction: column; gap: 20px; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .field { display: flex; flex-direction: column; gap: 7px; }
 
     .field label, .radio-label-title {
-      font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.42);
+      font-family: var(--font-body);
+      font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-on-dark-muted);
     }
 
-    .field label span, .radio-label-title span { color: var(--yellow); }
+    .field label span, .radio-label-title span { color: var(--color-yellow); }
 
     .field input, .field select {
       width: 100%;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.09);
-      border-radius: 12px;
+      background: rgba(255,255,255,0.045);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
       padding: 13px 16px;
-      font-family: 'Inter', sans-serif;
+      font-family: var(--font-body);
       font-size: 14px;
-      color: var(--white);
+      color: var(--text-on-dark-primary);
       outline: none;
       transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
       -webkit-appearance: none; appearance: none;
     }
 
-    .field input::placeholder { color: rgba(255,255,255,0.22); }
+    .field input::placeholder { color: rgba(255,255,255,0.24); }
 
     .field input:focus, .field select:focus {
-      border-color: rgba(254,183,55,0.55);
-      box-shadow: 0 0 0 3px rgba(254,183,55,0.1);
-      background: rgba(255,255,255,0.06);
+      border-color: rgba(242,183,5,0.55);
+      box-shadow: 0 0 0 3px rgba(242,183,5,0.12);
+      background: rgba(255,255,255,0.065);
     }
 
     .field input.error, .field select.error { border-color: rgba(239,68,68,0.6); box-shadow: 0 0 0 3px rgba(239,68,68,0.08); }
 
     .field select {
-      background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.35)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.4)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
       background-repeat: no-repeat; background-position: right 14px center; padding-right: 38px; cursor: pointer;
     }
 
-    .field select option { background: #111; color: #fff; }
+    .field select option { background: #171717; color: #fff; }
 
     .radio-group { display: flex; flex-direction: column; gap: 10px; }
     .radio-options { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -571,94 +595,93 @@
 
     .radio-option {
       display: inline-flex; align-items: center; gap: 8px;
-      padding: 9px 16px; border-radius: 100px;
-      border: 1px solid rgba(255,255,255,0.09);
-      background: rgba(255,255,255,0.03);
-      font-size: 13px; color: rgba(255,255,255,0.6);
+      padding: 9px 16px; border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.035);
+      font-family: var(--font-body);
+      font-size: 13px; color: var(--text-on-dark-muted);
       cursor: pointer; transition: all 0.18s ease; user-select: none;
     }
 
-    .radio-option:hover { border-color: rgba(254,183,55,0.3); color: rgba(255,255,255,0.85); background: rgba(254,183,55,0.06); }
+    .radio-option:hover { border-color: rgba(242,183,5,0.35); color: #fff; background: rgba(242,183,5,0.08); }
 
     .radio-option input[type="radio"] {
       appearance: none; -webkit-appearance: none;
       width: 14px; height: 14px; border-radius: 50%;
-      border: 1.5px solid rgba(255,255,255,0.25);
+      border: 1.5px solid rgba(255,255,255,0.28);
       background: transparent; flex-shrink: 0; transition: all 0.18s ease; margin: 0;
     }
 
-    .radio-option input[type="radio"]:checked { border-color: var(--yellow); background: var(--yellow); box-shadow: 0 0 0 3px rgba(254,183,55,0.18); }
-    .radio-option:has(input:checked) { border-color: rgba(254,183,55,0.45); background: rgba(254,183,55,0.1); color: var(--yellow); }
+    .radio-option input[type="radio"]:checked { border-color: var(--color-yellow); background: var(--color-yellow); box-shadow: 0 0 0 3px rgba(242,183,5,0.2); }
+    .radio-option:has(input:checked) { border-color: rgba(242,183,5,0.5); background: rgba(242,183,5,0.12); color: var(--color-yellow); }
 
-    .form-consent { font-size: 12px; color: rgba(255,255,255,0.28); line-height: 1.65; }
+    .form-consent { font-family: var(--font-body); font-size: 12px; color: rgba(255,255,255,0.3); line-height: 1.65; }
 
-    .msg-box { display: none; padding: 14px 18px; border-radius: 12px; font-size: 14px; font-weight: 500; line-height: 1.5; }
-    .msg-box.success { display: block; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); color: #86efac; }
-    .msg-box.error { display: block; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.28); color: #fca5a5; }
+    .msg-box { display: none; padding: 14px 18px; border-radius: 10px; font-family: var(--font-body); font-size: 14px; font-weight: 500; line-height: 1.5; }
+    .msg-box.success { display: block; background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.3); color: #86efac; }
+    .msg-box.error { display: block; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
 
     .submit-btn {
       width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
-      background: var(--yellow); color: #000;
-      font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 700;
-      padding: 18px 28px; border-radius: 14px; border: none; cursor: pointer;
-      box-shadow: 0 12px 36px rgba(254,183,55,0.2), inset 0 1px 0 rgba(255,255,255,0.3);
-      transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease, opacity 0.2s ease;
-      letter-spacing: -0.01em;
+      background: var(--gradient-gold); color: var(--color-black);
+      font-family: var(--font-body); font-size: 0.85rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      padding: 0.95rem 2rem; border-radius: 8px; border: none; cursor: pointer;
+      box-shadow: var(--shadow-gold-glow);
+      transition: transform 0.2s ease, background 0.2s ease, opacity 0.2s ease;
     }
 
-    .submit-btn:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.05); box-shadow: 0 18px 48px rgba(254,183,55,0.32), inset 0 1px 0 rgba(255,255,255,0.38); }
-    .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .submit-btn:hover:not(:disabled) { background: var(--color-yellow-deep); color: #fff; transform: translateY(-2px); }
+    .submit-btn:disabled { opacity: 0.55; cursor: not-allowed; }
 
-    @media (max-width: 1050px) { .register-section { padding: 90px 48px; } .register-wrap { gap: 56px; } }
+    @media (max-width: 1050px) { .register-section { padding-left: 48px; padding-right: 48px; } .register-wrap { gap: 56px; } }
     @media (max-width: 900px) { .register-section { padding: 80px 24px; } .register-wrap { grid-template-columns: 1fr; gap: 48px; } .reg-sub { max-width: 100%; } }
     @media (max-width: 600px) { .form-card { padding: 32px 24px; } .form-row { grid-template-columns: 1fr; } }
     @media (max-width: 480px) { .register-section { padding: 64px 24px; } .form-card { padding: 28px 20px; } }
 
-    /* ── MBA SECTION ── */
+    /* ── MBA SECTION (--color-bg-raised) ── */
     .mba-section {
       position: relative;
-      padding: 110px 72px;
-      background:
-        radial-gradient(circle at 20% 30%, rgba(254,183,55,0.08), transparent 34%),
-        linear-gradient(180deg, #080808 0%, #0a0a0a 100%);
-      border-top: 1px solid rgba(254,183,55,0.08);
+      padding: var(--section-pad-block) var(--section-pad-inline);
+      background: var(--color-bg-raised);
     }
 
     .mba-wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1.15fr 1fr; gap: 56px; align-items: center; }
 
-    .mba-content h2 { font-size: clamp(22px, 2.6vw, 34px); line-height: 1.08; letter-spacing: -0.035em; margin-bottom: 18px; }
-    .mba-content h2 em { font-style: normal; color: var(--yellow); }
-    .mba-content .mba-lead { font-size: 18px; font-weight: 600; color: rgba(255,255,255,0.85); margin-bottom: 20px; line-height: 1.4; }
-    .mba-content p { font-size: 16px; line-height: 1.72; color: var(--muted); margin-bottom: 16px; max-width: 520px; }
+    .mba-content h2 { font-size: clamp(1.4rem, 2.6vw, 2.1rem); margin-bottom: 18px; color: var(--text-primary); }
+    .mba-content .mba-lead { font-family: var(--font-body); font-size: 18px; font-weight: 600; color: var(--text-primary); margin-bottom: 20px; line-height: 1.4; }
+    .mba-content p { font-family: var(--font-body); font-size: 16px; line-height: 1.72; color: var(--text-secondary); margin-bottom: 16px; max-width: 520px; }
 
     .mba-link {
       display: inline-flex; align-items: center; gap: 8px;
       margin-top: 12px;
-      font-size: 14px; font-weight: 700; color: var(--yellow);
-      text-decoration: none; border-bottom: 1px solid rgba(254,183,55,0.4); padding-bottom: 4px;
+      font-family: var(--font-body);
+      font-size: 14px; font-weight: 700; color: var(--color-yellow-deep);
+      text-decoration: none; border-bottom: 1px solid rgba(184,134,10,0.45); padding-bottom: 4px;
       transition: all 0.2s ease;
     }
 
-    .mba-link:hover { transform: translateX(4px); border-color: var(--yellow); }
+    .mba-link:hover { transform: translateX(4px); border-color: var(--color-yellow-deep); }
 
     .mba-card {
-      background: rgba(255,255,255,0.025);
-      border: 1px solid rgba(254,183,55,0.16);
-      border-radius: 22px;
+      background: var(--color-bg);
+      border: 1px solid rgba(13,13,13,0.08);
+      border-radius: 14px;
       padding: 28px 26px;
+      box-shadow: var(--shadow-soft);
     }
 
-    .mba-card-head { display: flex; align-items: center; gap: 12px; padding-bottom: 18px; margin-bottom: 18px; border-bottom: 1px solid rgba(255,255,255,0.08); }
-    .mba-card-head p { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--yellow); font-weight: 700; margin-bottom: 2px; }
-    .mba-card-head strong { font-size: 15px; font-weight: 600; color: var(--white); }
+    .mba-card-head { display: flex; align-items: center; gap: 12px; padding-bottom: 18px; margin-bottom: 18px; border-bottom: 1px solid rgba(13,13,13,0.08); }
+    .mba-card-head p { font-family: var(--font-body); font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--color-yellow-deep); font-weight: 700; margin-bottom: 2px; }
+    .mba-card-head strong { font-size: 15px; font-weight: 600; color: var(--text-primary); }
 
     .mba-card ul { list-style: none; display: flex; flex-direction: column; gap: 12px; }
-    .mba-card ul li { display: flex; align-items: center; gap: 10px; font-size: 14px; color: rgba(255,255,255,0.85); }
+    .mba-card ul li { display: flex; align-items: center; gap: 10px; font-family: var(--font-body); font-size: 14px; color: var(--text-secondary); }
 
     .mba-card ul li::before {
       content: ''; width: 16px; height: 16px; flex-shrink: 0; border-radius: 50%;
-      background: rgba(254,183,55,0.14); border: 1px solid rgba(254,183,55,0.5);
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1.5 5L4 7.5L8.5 2' stroke='%23FEB737' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background: var(--color-yellow-soft); border: 1px solid var(--color-yellow-deep);
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1.5 5L4 7.5L8.5 2' stroke='%23B8860A' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
       background-size: 8px 8px; background-position: center; background-repeat: no-repeat;
     }
 
@@ -668,17 +691,17 @@
       .mba-content p { max-width: 100%; }
     }
 
-    /* ── FOOTER ── */
+    /* ── FOOTER (--color-black) ── */
     .site-footer {
       padding: 32px 72px;
       border-top: 1px solid rgba(255,255,255,0.08);
-      background: #080808;
+      background: var(--color-black);
       display: flex; align-items: center; justify-content: space-between;
       gap: 16px; flex-wrap: wrap;
     }
 
     .site-footer img { height: 22px; width: auto; opacity: 0.75; }
-    .site-footer span { font-size: 12px; color: rgba(255,255,255,0.4); }
+    .site-footer span { font-family: var(--font-body); font-size: 12px; color: var(--text-on-dark-muted); }
 
     @media (max-width: 480px) {
       .site-footer { padding: 24px; justify-content: center; text-align: center; }
@@ -725,7 +748,7 @@
 
   <nav class="nav">
     <div class="logo-wrap">
-      <img class="brand-logo" src="./Logo Fundace-F-BRANCO (1).png" alt="Fundace">
+      <img class="brand-logo" src="./Logo Fundace-USP-FEARP-PRETO.png" alt="Fundace">
     </div>
   </nav>
 
@@ -733,7 +756,7 @@
     <div class="hero-left">
 
       <span class="hero-badge">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FEB737" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"></path><circle cx="12" cy="8" r="6"></circle></svg>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"></path><circle cx="12" cy="8" r="6"></circle></svg>
         Trilha Gratuita
       </span>
 
@@ -751,7 +774,7 @@
       </div>
 
       <div class="hero-note">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"></path><path d="M22 10v6"></path><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"></path></svg>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6a6a6a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"></path><path d="M22 10v6"></path><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"></path></svg>
         Pré-requisito: graduação completa
       </div>
 
@@ -759,26 +782,28 @@
   </div>
 </section>
 
-<section class="intro-section">
+<section class="intro-section reveal">
   <div class="intro-wrap">
     <h2>Hoje, liderar projetos vai muito além de controlar prazos e cronogramas.</h2>
-    <p>As organizações buscam profissionais capazes de integrar <strong>estratégia, inovação, tecnologia e pessoas</strong> para entregar resultados com mais eficiência e impacto.</p>
+    <span class="divider-under"></span>
+    <p style="margin-top: 26px;">As organizações buscam profissionais capazes de integrar <strong>estratégia, inovação, tecnologia e pessoas</strong> para entregar resultados com mais eficiência e impacto.</p>
     <p>Se você quer desenvolver essa visão, a Trilha de Gestão de Projetos foi criada para você.</p>
   </div>
 </section>
 
 <section class="learn-section">
   <div class="learn-wrap">
-    <div class="learn-head">
+    <div class="learn-head reveal">
       <span class="section-kicker">Conteúdo</span>
       <h2>O que você vai <em>aprender</em></h2>
+      <span class="divider-under"></span>
     </div>
 
     <div class="learn-grid">
 
-      <div class="learn-card">
+      <div class="learn-card reveal">
         <div class="learn-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FEB737" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 18V5"></path><path d="M15 13a4.17 4.17 0 0 1-3-4 4.17 4.17 0 0 1-3 4"></path><path d="M17.598 6.5A3 3 0 1 0 12 5a3 3 0 1 0-5.598 1.5"></path><path d="M17.997 5.125a4 4 0 0 1 2.526 5.77"></path><path d="M18 18a4 4 0 0 0 2-7.464"></path><path d="M19.967 17.483A4 4 0 1 1 12 18a4 4 0 1 1-7.967-.517"></path><path d="M6 18a4 4 0 0 1-2-7.464"></path><path d="M6.003 5.125a4 4 0 0 0-2.526 5.77"></path></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B8860A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 18V5"></path><path d="M15 13a4.17 4.17 0 0 1-3-4 4.17 4.17 0 0 1-3 4"></path><path d="M17.598 6.5A3 3 0 1 0 12 5a3 3 0 1 0-5.598 1.5"></path><path d="M17.997 5.125a4 4 0 0 1 2.526 5.77"></path><path d="M18 18a4 4 0 0 0 2-7.464"></path><path d="M19.967 17.483A4 4 0 1 1 12 18a4 4 0 1 1-7.967-.517"></path><path d="M6 18a4 4 0 0 1-2-7.464"></path><path d="M6.003 5.125a4 4 0 0 0-2.526 5.77"></path></svg>
         </div>
         <span class="learn-eyebrow">Aula 1</span>
         <h3>Gestão de Projetos na Era da IA</h3>
@@ -790,9 +815,9 @@
         </ul>
       </div>
 
-      <div class="learn-card">
+      <div class="learn-card reveal">
         <div class="learn-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FEB737" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"></path><path d="M9 18h6"></path><path d="M10 22h4"></path></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B8860A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"></path><path d="M9 18h6"></path><path d="M10 22h4"></path></svg>
         </div>
         <span class="learn-eyebrow">Aula 2</span>
         <h3>Criar e entregar</h3>
@@ -804,9 +829,9 @@
         </ul>
       </div>
 
-      <div class="learn-card">
+      <div class="learn-card reveal">
         <div class="learn-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FEB737" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="8" x="3" y="3" rx="2"></rect><path d="M7 11v4a2 2 0 0 0 2 2h4"></path><rect width="8" height="8" x="13" y="13" rx="2"></rect></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B8860A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="8" x="3" y="3" rx="2"></rect><path d="M7 11v4a2 2 0 0 0 2 2h4"></path><rect width="8" height="8" x="13" y="13" rx="2"></rect></svg>
         </div>
         <span class="learn-eyebrow">Aula 3</span>
         <h3>Projetos e Processos</h3>
@@ -824,36 +849,37 @@
 
 <section class="audience-section">
   <div class="audience-wrap">
-    <div class="audience-head">
+    <div class="audience-head reveal">
       <span class="section-kicker">Público</span>
       <h2>Para quem é esta <em>Trilha?</em></h2>
+      <span class="divider-under"></span>
     </div>
 
-    <p>A Trilha foi desenvolvida para profissionais graduados que desejam evoluir sua atuação e compreender como novas tecnologias e metodologias estão transformando a gestão de projetos.</p>
+    <p style="margin-top: 26px;">A Trilha foi desenvolvida para profissionais graduados que desejam evoluir sua atuação e compreender como novas tecnologias e metodologias estão transformando a gestão de projetos.</p>
     <p>É indicada para quem busca visão estratégica, decisões mais assertivas e projetos com mais inovação, eficiência e geração de valor.</p>
 
     <div class="audience-grid">
-      <div class="audience-card">
+      <div class="audience-card reveal">
         <span class="audience-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FEB737" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B8860A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></svg>
         </span>
         Gestores e líderes de projetos
       </div>
-      <div class="audience-card">
+      <div class="audience-card reveal">
         <span class="audience-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FEB737" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B8860A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></svg>
         </span>
         Coordenadores e PMOs
       </div>
-      <div class="audience-card">
+      <div class="audience-card reveal">
         <span class="audience-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FEB737" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B8860A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></svg>
         </span>
         Empreendedores e sócios
       </div>
-      <div class="audience-card">
+      <div class="audience-card reveal">
         <span class="audience-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FEB737" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B8860A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></svg>
         </span>
         Profissionais em transição estratégica
       </div>
@@ -863,38 +889,39 @@
 
 <section class="benefits-section">
   <div class="benefits-wrap">
-    <div class="benefits-head">
+    <div class="benefits-head reveal">
       <h2>Por que <em>participar?</em></h2>
+      <span class="divider-under"></span>
     </div>
 
     <div class="benefits-grid">
-      <div class="benefit-card">
+      <div class="benefit-card reveal">
         <div class="learn-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FEB737" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 7h6v6"></path><path d="m22 7-8.5 8.5-5-5L2 17"></path></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8860A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 7h6v6"></path><path d="m22 7-8.5 8.5-5-5L2 17"></path></svg>
         </div>
         <h3>Conteúdo prático e atualizado</h3>
         <p>Conheça as principais tendências transformando a gestão e entenda como aplicá-las nas organizações.</p>
       </div>
 
-      <div class="benefit-card">
+      <div class="benefit-card reveal">
         <div class="learn-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FEB737" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8860A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
         </div>
         <h3>Visão estratégica</h3>
         <p>Desenvolva uma perspectiva ampla sobre gestão, inovação, processos e tecnologia para decidir com segurança.</p>
       </div>
 
-      <div class="benefit-card">
+      <div class="benefit-card reveal">
         <div class="learn-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FEB737" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"></path><path d="M22 10v6"></path><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"></path></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8860A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"></path><path d="M22 10v6"></path><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"></path></svg>
         </div>
         <h3>Professores de mercado</h3>
         <p>Aprenda com especialistas que unem pesquisa, prática profissional e vivência em projetos reais.</p>
       </div>
 
-      <div class="benefit-card">
+      <div class="benefit-card reveal">
         <div class="learn-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FEB737" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8860A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
         </div>
         <h3>Flexibilidade total</h3>
         <p>Acesso imediato às aulas gravadas. Assista quando e onde quiser, no seu ritmo.</p>
@@ -906,17 +933,17 @@
 <section class="register-section" id="inscricao">
   <div class="register-wrap">
 
-    <div class="register-copy">
+    <div class="register-copy reveal">
       <span class="section-kicker">Inscrição gratuita</span>
       <h2 class="reg-headline">Comece agora a <em>Trilha de Gestão de Projetos</em></h2>
       <p class="reg-sub">Desenvolva uma visão mais estratégica para liderar projetos, pessoas e resultados.</p>
       <div class="reg-badge">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FEB737" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"></path><circle cx="12" cy="8" r="6"></circle></svg>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"></path><circle cx="12" cy="8" r="6"></circle></svg>
         Pré-requisito: graduação completa
       </div>
     </div>
 
-    <div class="register-form-col">
+    <div class="register-form-col reveal">
       <div class="form-card">
         <h3>Garanta sua vaga</h3>
         <p class="form-sub">Leva menos de 1 minuto.</p>
@@ -998,7 +1025,7 @@
 <section class="mba-section">
   <div class="mba-wrap">
 
-    <div class="mba-content">
+    <div class="mba-content reveal">
       <span class="section-kicker">MBA com Certificado USP</span>
       <h2>Essa é só a primeira parte da sua evolução em <em>Gestão de Projetos.</em></h2>
       <p class="mba-lead">Conheça a abordagem do MBA com Certificado USP em Gestão de Projetos.</p>
@@ -1008,7 +1035,7 @@
       <a href="#" class="mba-link">Conheça o MBA →</a>
     </div>
 
-    <div class="mba-card">
+    <div class="mba-card reveal">
       <div class="mba-card-head">
         <div>
           <p>Certificação</p>
@@ -1034,6 +1061,25 @@
 <script src="./supabase/config.js"></script>
 <script src="./supabase/tracking.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // Scroll reveal (fade + translateY ao entrar na viewport)
+  (function() {
+    const revealEls = document.querySelectorAll(".reveal");
+    if (!("IntersectionObserver" in window) || !revealEls.length) {
+      revealEls.forEach(function(el) { el.classList.add("is-visible"); });
+      return;
+    }
+    const observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.3 });
+    revealEls.forEach(function(el) { observer.observe(el); });
+  })();
+</script>
 <script>
   const { createClient } = supabase;
   const db = createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
