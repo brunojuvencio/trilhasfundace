@@ -19,6 +19,12 @@ type LeadRow = {
   email: string;
   telefone: string;
   nome_trilha: string | null;
+  cidade: string | null;
+  area_formacao: string | null;
+  empresa: string | null;
+  cargo: string | null;
+  possui_formacao_superior: boolean | null;
+  pretende_pos: string | null;
   utm_source: string | null;
   utm_medium: string | null;
   utm_campaign: string | null;
@@ -28,6 +34,32 @@ type LeadRow = {
   fbclid: string | null;
   landing_page_url: string | null;
   referrer_url: string | null;
+};
+
+// Campos customizados ja existentes no ActiveCampaign (nao criamos nenhum
+// novo — so reaproveitamos o que ja estava cadastrado la).
+const AC_FIELD_CARGO = "1";
+const AC_FIELD_CURSO = "8";
+const AC_FIELD_AREA_FORMACAO = "14";
+const AC_FIELD_FORMACAO_SUPERIOR = "13";
+const AC_FIELD_EMPRESA = "12";
+const AC_FIELD_CIDADE = "15";
+const AC_FIELD_UTM_SOURCE = "22";
+const AC_FIELD_UTM_MEDIUM = "23";
+const AC_FIELD_UTM_CAMPAIGN = "24";
+const AC_FIELD_UTM_CONTENT = "25";
+const AC_FIELD_UTM_TERM = "26";
+// "Pretende fazer uma pós-graduação ou MBA em Marketing?" — dropdown com as
+// opcoes cadastradas exatamente como os valores brutos do formulario
+// (sim_agora / sim_depois / nao), usado so pelas trilhas de marketing.
+const AC_FIELD_PRETENDE_POS_MARKETING = "31";
+// "Pretende fazer pós-graduação" — radio generico usado pelas demais
+// trilhas, com rotulos proprios (nao bate com os valores brutos do form).
+const AC_FIELD_PRETENDE_POS_GERAL = "36";
+const AC_PRETENDE_POS_GERAL_LABELS: Record<string, string> = {
+  sim_agora: "sim_imediatamente",
+  sim_depois: "sim_mas futuramente",
+  nao: "nao pretendo",
 };
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
@@ -44,9 +76,10 @@ const activeCampaignFinancasListId = (Deno.env.get("ACTIVECAMPAIGN_FINANCAS_LIST
 const activeCampaignFinancasListName = (Deno.env.get("ACTIVECAMPAIGN_FINANCAS_LIST_NAME") ?? "TrilhaFinancas").trim();
 const activeCampaignMarketingListId = (Deno.env.get("ACTIVECAMPAIGN_MARKETING_LIST_ID") ?? "35").trim();
 const activeCampaignMarketingListName = (Deno.env.get("ACTIVECAMPAIGN_MARKETING_LIST_NAME") ?? "TrilhaMarketing").trim();
+const activeCampaignMarketingNovaListId = (Deno.env.get("ACTIVECAMPAIGN_MARKETING_NOVA_LIST_ID") ?? "72").trim();
+const activeCampaignMarketingNovaListName = (Deno.env.get("ACTIVECAMPAIGN_MARKETING_NOVA_LIST_NAME") ?? "TrilhaMarketingNova").trim();
 const activeCampaignGdeListId = (Deno.env.get("ACTIVECAMPAIGN_GDE_LIST_ID") ?? "66").trim();
 const activeCampaignGdeListName = (Deno.env.get("ACTIVECAMPAIGN_GDE_LIST_NAME") ?? "TrilhaGDE").trim();
-const activeCampaignTrailFieldId = (Deno.env.get("ACTIVECAMPAIGN_TRAIL_FIELD_ID") ?? "").trim();
 
 if (!supabaseUrl || !serviceRoleKey) {
   throw new Error("SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY são obrigatórios.");
@@ -136,6 +169,13 @@ function isFinancasTrail(lead: LeadRow) {
 function isMarketingTrail(lead: LeadRow) {
   const trailName = normalizeText(cleanString(lead.nome_trilha));
   return trailName.includes("marketing");
+}
+
+// Trilha nova (lançada em 2026-08), separada da "Trilha de Marketing
+// Estratégico" original — precisa de lista própria no ActiveCampaign.
+function isMarketingNovaTrail(lead: LeadRow) {
+  const trailName = normalizeText(cleanString(lead.nome_trilha));
+  return trailName.includes("mercado em transformacao");
 }
 
 function isGdeTrail(lead: LeadRow) {
@@ -230,6 +270,13 @@ function getListConfigForLead(lead: LeadRow) {
     };
   }
 
+  if (isMarketingNovaTrail(lead)) {
+    return {
+      id: activeCampaignMarketingNovaListId,
+      name: activeCampaignMarketingNovaListName,
+    };
+  }
+
   if (isMarketingTrail(lead)) {
     return {
       id: activeCampaignMarketingListId,
@@ -246,7 +293,7 @@ function getListConfigForLead(lead: LeadRow) {
 async function getLeadByEmail(email: string) {
   const { data, error } = await adminClient
     .from("leads")
-    .select("id,nome,email,telefone,nome_trilha,utm_source,utm_medium,utm_campaign,utm_term,utm_content,gclid,fbclid,landing_page_url,referrer_url")
+    .select("id,nome,email,telefone,nome_trilha,cidade,area_formacao,empresa,cargo,possui_formacao_superior,pretende_pos,utm_source,utm_medium,utm_campaign,utm_term,utm_content,gclid,fbclid,landing_page_url,referrer_url")
     .eq("email", email)
     .maybeSingle<LeadRow>();
 
@@ -261,7 +308,37 @@ async function getLeadByEmail(email: string) {
   return data;
 }
 
-async function syncContact(payload: { nome: string; email: string; telefone: string }) {
+function buildFieldValues(lead: LeadRow) {
+  const values: Array<{ field: string; value: string }> = [
+    { field: AC_FIELD_CARGO, value: cleanString(lead.cargo) },
+    { field: AC_FIELD_EMPRESA, value: cleanString(lead.empresa) },
+    { field: AC_FIELD_CIDADE, value: cleanString(lead.cidade) },
+    { field: AC_FIELD_AREA_FORMACAO, value: cleanString(lead.area_formacao) },
+    { field: AC_FIELD_CURSO, value: cleanString(lead.nome_trilha) },
+    { field: AC_FIELD_UTM_SOURCE, value: cleanString(lead.utm_source) },
+    { field: AC_FIELD_UTM_MEDIUM, value: cleanString(lead.utm_medium) },
+    { field: AC_FIELD_UTM_CAMPAIGN, value: cleanString(lead.utm_campaign) },
+    { field: AC_FIELD_UTM_CONTENT, value: cleanString(lead.utm_content) },
+    { field: AC_FIELD_UTM_TERM, value: cleanString(lead.utm_term) },
+  ];
+
+  if (lead.possui_formacao_superior !== null) {
+    values.push({ field: AC_FIELD_FORMACAO_SUPERIOR, value: lead.possui_formacao_superior ? "Sim" : "Não" });
+  }
+
+  const pretendePos = cleanString(lead.pretende_pos);
+  if (pretendePos) {
+    if (isMarketingTrail(lead) || isMarketingNovaTrail(lead)) {
+      values.push({ field: AC_FIELD_PRETENDE_POS_MARKETING, value: pretendePos });
+    } else {
+      values.push({ field: AC_FIELD_PRETENDE_POS_GERAL, value: AC_PRETENDE_POS_GERAL_LABELS[pretendePos] ?? pretendePos });
+    }
+  }
+
+  return values.filter(item => item.value !== "");
+}
+
+async function syncContact(payload: { nome: string; email: string; telefone: string; fieldValues: Array<{ field: string; value: string }> }) {
   const { firstName, lastName } = splitName(payload.nome);
   const phone = normalizePhone(payload.telefone);
 
@@ -273,6 +350,7 @@ async function syncContact(payload: { nome: string; email: string; telefone: str
         firstName: firstName || payload.nome,
         lastName: lastName || "",
         phone: phone || undefined,
+        fieldValues: payload.fieldValues,
       },
     }),
   });
@@ -304,43 +382,6 @@ async function ensureListSubscription(contactId: string, listId: string) {
         list: listId,
         contact: contactId,
         status: 1,
-      },
-    }),
-  });
-}
-
-async function upsertFieldValue(contactId: string, fieldId: string, value: string) {
-  const normalizedValue = value.trim();
-  if (!normalizedValue) return;
-
-  const existingData = await activeCampaignFetch(`/api/3/contacts/${contactId}/fieldValues`);
-  const existingValues = Array.isArray(existingData.fieldValues)
-    ? existingData.fieldValues as Array<Record<string, unknown>>
-    : [];
-
-  const existing = existingValues.find(item => String(item.field ?? "") === fieldId);
-
-  if (existing) {
-    await activeCampaignFetch(`/api/3/fieldValues/${existing.id}`, {
-      method: "PUT",
-      body: JSON.stringify({
-        fieldValue: {
-          contact: contactId,
-          field: fieldId,
-          value: normalizedValue,
-        },
-      }),
-    });
-    return;
-  }
-
-  await activeCampaignFetch("/api/3/fieldValues", {
-    method: "POST",
-    body: JSON.stringify({
-      fieldValue: {
-        contact: contactId,
-        field: fieldId,
-        value: normalizedValue,
       },
     }),
   });
@@ -404,11 +445,7 @@ Deno.serve(async request => {
 
     const lead = await getLeadByEmail(email);
     const listId = await resolveListId(getListConfigForLead(lead));
-    const contactId = await syncContact({ nome, email, telefone });
-    await upsertFieldValue(contactId, "22", lead.utm_source ?? "");
-    if (activeCampaignTrailFieldId) {
-      await upsertFieldValue(contactId, activeCampaignTrailFieldId, lead.nome_trilha ?? payload.nome_trilha ?? "");
-    }
+    const contactId = await syncContact({ nome, email, telefone, fieldValues: buildFieldValues(lead) });
     await ensureListSubscription(contactId, listId);
     await markLead(email, "synced", contactId, listId);
     console.info(`[activecampaign-sync-lead] Lead ${email} sincronizado com sucesso. contactId=${contactId}, listId=${listId}`);
